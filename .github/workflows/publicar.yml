@@ -27,12 +27,27 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # O endpoint público do CEMADEN é instável. Se a coleta falhar, o último dado publicado é
+      # reaproveitado (com a data original), e o site avisa que o dado está desatualizado.
       - name: Buscar chuva do CEMADEN
         run: node scripts/fetch-chuva.mjs
-      # Rios são opcionais: se a API da Defesa Civil falhar, o site publica só com a chuva.
+        continue-on-error: true
       - name: Buscar nível dos rios (Defesa Civil RS)
         run: node scripts/fetch-rios.mjs
         continue-on-error: true
+      - name: Reaproveitar último dado publicado se a coleta falhou
+        env:
+          BASE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data
+        run: |
+          mkdir -p data
+          for arq in chuva-rs.json rios-rs.json; do
+            if [ ! -f "data/$arq" ]; then
+              echo "coleta de $arq falhou; tentando reaproveitar o publicado"
+              curl -fsS --retry 3 "$BASE/$arq" -o "data/$arq" || rm -f "data/$arq"
+            fi
+          done
+          # sem chuva não há site: falha de propósito só se nunca houve dado
+          test -f data/chuva-rs.json
       - name: Montar site
         run: |
           mkdir _site

@@ -22,7 +22,7 @@ async function buscar() {
       if (corpo.errors) throw new Error(JSON.stringify(corpo.errors).slice(0, 200));
       return corpo.data.tags_data;
     } catch (err) {
-      console.warn(`tentativa ${i}/${TENTATIVAS} falhou: ${err.message}`);
+      console.warn(`tentativa ${i}/${TENTATIVAS} falhou: ${err.message} (${err.cause?.code ?? err.name})`);
       if (i === TENTATIVAS) throw err;
       await new Promise((r) => setTimeout(r, 2000 * i));
     }

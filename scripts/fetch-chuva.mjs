@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 const ENDPOINT = 'https://resources.cemaden.gov.br/graficos/interativo/getJson2.php?uf=RS';
 const SAIDA = new URL('../data/chuva-rs.json', import.meta.url);
-const TENTATIVAS = 3;
+const TENTATIVAS = 5;
 
 async function buscar() {
   for (let i = 1; i <= TENTATIVAS; i++) {
@@ -13,9 +13,9 @@ async function buscar() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
     } catch (err) {
-      console.warn(`tentativa ${i}/${TENTATIVAS} falhou: ${err.message}`);
+      console.warn(`tentativa ${i}/${TENTATIVAS} falhou: ${err.message} (${err.cause?.code ?? err.name})`);
       if (i === TENTATIVAS) throw err;
-      await new Promise((r) => setTimeout(r, 2000 * i));
+      await new Promise((r) => setTimeout(r, 5000 * i));
     }
   }
 }

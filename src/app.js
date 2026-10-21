@@ -20,6 +20,7 @@ const SITUACOES = [
 ];
 const COR_SEM_LIMIAR = '#ffffff';
 const LEITURA_RECENTE_MS = 30 * 60 * 1000;
+const DADO_VELHO_MS = 60 * 60 * 1000; // o workflow roda a cada 15 min; passou disso, a coleta está falhando
 const COR_SEM_DADO = getComputedStyle(document.documentElement).getPropertyValue('--sem-dado').trim() || '#cfd6dd';
 
 const fmtMm = (v) => `${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mm`;
@@ -158,6 +159,18 @@ cobertura();
 document.getElementById('atualizado').textContent =
   `Chuva (CEMADEN) coletada em ${fmtHora(chuva.geradoEm)}` +
   (rios ? `; rios (Defesa Civil RS) em ${fmtHora(rios.geradoEm)}.` : '; dados de rios indisponíveis no momento.');
+
+const velhos = [
+  ['chuva', chuva.geradoEm],
+  ...(rios ? [['rios', rios.geradoEm]] : []),
+].filter(([, quando]) => Date.now() - Date.parse(quando) > DADO_VELHO_MS);
+if (velhos.length) {
+  const aviso = document.getElementById('aviso-dados');
+  aviso.hidden = false;
+  aviso.textContent =
+    `Atenção: os dados de ${velhos.map(([nome]) => nome).join(' e ')} estão desatualizados (a fonte está ` +
+    'instável). O que aparece abaixo pode não refletir a situação atual. Consulte a Defesa Civil.';
+}
 
 const mapa = new maplibregl.Map({
   container: 'mapa',
