@@ -1,3 +1,4 @@
 # gerado a cada execução; o workflow publica a versão mais recente sem commitar
 data/chuva-rs.json
+data/rios-rs.json
 _site/

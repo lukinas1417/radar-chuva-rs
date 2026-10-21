@@ -29,6 +29,10 @@ jobs:
           node-version: 22
       - name: Buscar chuva do CEMADEN
         run: node scripts/fetch-chuva.mjs
+      # Rios são opcionais: se a API da Defesa Civil falhar, o site publica só com a chuva.
+      - name: Buscar nível dos rios (Defesa Civil RS)
+        run: node scripts/fetch-rios.mjs
+        continue-on-error: true
       - name: Montar site
         run: |
           mkdir _site
