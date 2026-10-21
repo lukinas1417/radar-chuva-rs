@@ -51,17 +51,21 @@ export async function carregarDados() {
   chuva.estacoes.forEach((e) => adicionar(e, 'CEMADEN'));
   (rios?.pluviometros ?? []).forEach((e) => adicionar(e, 'Defesa Civil RS'));
 
-  const agora = Date.now();
+  // "Recente" é medido contra o momento da coleta, não contra agora: uma coleta antiga é tratada pelo
+  // aviso de dados desatualizados, em vez de descartar as estações e passar a falsa ideia de normalidade.
+  const referencia = rios ? Date.parse(rios.geradoEm) : 0;
   const estacoesRio = new Map(); // codIbge -> estações de rio com leitura recente
   for (const e of rios?.estacoes ?? []) {
-    const recente = agora - Date.parse(e.ultimaLeitura) <= LEITURA_RECENTE_MS && !e.emManutencao;
+    const recente = referencia - Date.parse(e.ultimaLeitura) <= LEITURA_RECENTE_MS && !e.emManutencao;
     const municipio = municipioDe(indice, e.lon, e.lat);
     if (!municipio) continue;
     if (!estacoesRio.has(municipio.codIbge)) estacoesRio.set(municipio.codIbge, []);
     estacoesRio.get(municipio.codIbge).push({ ...e, recente });
   }
 
-  return { chuva, rios, malha, indice, porCodigo, pluviometros, estacoesRio };
+  const riosComLeitura = [...estacoesRio.values()].flat().filter((e) => e.recente && e.situacao !== null).length;
+
+  return { chuva, rios, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura };
 }
 
 // Maior acumulado entre as estações ativas do município; null se não houver nenhuma.

@@ -136,6 +136,12 @@ function desenharAtencao() {
     $('atencao-texto').textContent = 'Rios indisponíveis';
     return;
   }
+  if (!dados.riosComLeitura) {
+    ponto.style.setProperty('--c', COR_ALERTA);
+    $('atencao-texto').textContent = 'Sem leitura recente dos rios';
+    botao.disabled = true;
+    return;
+  }
   if (!emRisco.length) {
     ponto.style.setProperty('--c', '#69d38a');
     $('atencao-texto').textContent = 'Nenhum rio fora da normalidade';
