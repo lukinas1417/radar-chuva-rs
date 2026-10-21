@@ -47,3 +47,8 @@ Em 21/10/2026: chuva em 428 estações ativas, em 187 dos 497 municípios do RS;
 ## Fontes
 
 Rede Observacional do CEMADEN/MCTI (citar a fonte conforme os termos de uso da PED), Rede Hidrometeorológica da Defesa Civil do RS e malha municipal do IBGE.
+
+## Licença
+
+O código é distribuído sob a licença [MIT](LICENSE). Os **dados** não são cobertos por ela: pertencem
+ao CEMADEN, à Defesa Civil do RS e ao IBGE, e seguem os termos de cada órgão.
