@@ -1,7 +1,7 @@
 # Radar de Chuva RS
 
-Mapa web da chuva acumulada (1 h, 6 h, 24 h e 72 h) nos municípios do Rio Grande do Sul, com dados
-em tempo quase real da rede de pluviômetros do CEMADEN, e do nível dos rios (125 estações da Defesa
+Mapa web da chuva acumulada (1 h, 6 h, 24 h e 48 h) nos municípios do Rio Grande do Sul, com dados
+em tempo quase real dos pluviômetros do CEMADEN e da Defesa Civil do RS, e do nível dos rios (125 estações da Defesa
 Civil do RS, com a situação de normalidade, atenção, alerta ou inundação). Municípios sem pluviômetro
 ativo aparecem em cinza: o mapa mostra também onde **não há** dado.
 
@@ -24,7 +24,10 @@ node scripts/serve.mjs              # http://localhost:8080
   `data/chuva-rs.json` normalizado.
 - O CEMADEN só preenche o acumulado quando choveu na janela. Por isso `"-"` em estação com leitura
   recente (últimas 3 h) vira **0 mm**, e estação sem leitura recente vira **sem dado** (`null`).
-- O valor de cada município é o maior acumulado entre as estações ativas dele.
+- A API da Defesa Civil também traz a chuva de seus pluviômetros. `fetch-rios.mjs` atribui cada estação a um
+  município por ponto-em-polígono na malha do IBGE, e o site junta as duas fontes.
+- O valor de cada município é o maior acumulado entre as estações ativas dele (das duas fontes).
+- Como a atribuição usa a malha simplificada, estações muito próximas de uma divisa podem cair no município vizinho.
 - `scripts/fetch-rios.mjs` consulta a [API da Defesa Civil do RS](https://sistemas.defesacivil.rs.gov.br/api-redehidrometeorologica)
   (GraphQL, dados a cada 5 minutos). A API só aceita o texto exato da consulta documentada, guardado em
   `scripts/consultas/tags_data.graphql`.
@@ -35,7 +38,7 @@ node scripts/serve.mjs              # http://localhost:8080
 
 ## Cobertura atual
 
-Em 21/10/2026: chuva em 428 estações ativas, em 187 dos 497 municípios do RS; 125 estações de rio.
+Em 21/10/2026: pluviômetros ativos em 222 dos 497 municípios do RS (187 só pelo CEMADEN; +35 pela Defesa Civil) e 125 estações de rio.
 
 ## Limitações conhecidas
 

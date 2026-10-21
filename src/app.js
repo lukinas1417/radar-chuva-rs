@@ -63,11 +63,14 @@ function pontosRios() {
   };
 }
 
+// Pluviômetros das duas fontes, no mesmo formato. Nas duas há acumulados de 1h, 6h, 24h e 48h.
 const estacoesPorMunicipio = new Map();
-for (const e of chuva.estacoes) {
+const adicionar = (e, fonte) => {
   if (!estacoesPorMunicipio.has(e.codIbge)) estacoesPorMunicipio.set(e.codIbge, []);
-  estacoesPorMunicipio.get(e.codIbge).push(e);
-}
+  estacoesPorMunicipio.get(e.codIbge).push({ ...e, fonte });
+};
+chuva.estacoes.forEach((e) => adicionar(e, 'CEMADEN'));
+(rios?.pluviometros ?? []).forEach((e) => adicionar(e, 'Defesa Civil RS'));
 
 let janela = '24h';
 
@@ -123,23 +126,23 @@ function painelRio(codigo) {
 function cobertura() {
   const cobertos = malha.features.filter((f) => valorDoMunicipio(f.properties.codIbge, janela) !== null).length;
   document.getElementById('cobertura').textContent =
-    `${cobertos} de ${malha.features.length} municípios têm pelo menos um pluviômetro ativo do CEMADEN.`;
+    `${cobertos} de ${malha.features.length} municípios têm pelo menos um pluviômetro ativo (CEMADEN ou Defesa Civil RS).`;
 }
 
 function painel(codIbge, nome) {
   const el = document.getElementById('painel');
   const ativas = (estacoesPorMunicipio.get(codIbge) ?? []).filter((e) => e.ativa);
   if (ativas.length === 0) {
-    el.innerHTML = `<h2>${nome}</h2><p class="vazio">Sem pluviômetro ativo do CEMADEN neste município. Isso não significa que não está chovendo.</p>`;
+    el.innerHTML = `<h2>${nome}</h2><p class="vazio">Sem pluviômetro ativo neste município. Isso não significa que não está chovendo.</p>`;
     return;
   }
   const linhas = ativas
     .map(
       (e) => `<tr>
-        <td>${e.nome}</td>
+        <td>${e.nome}<br><small class="fonte">${e.fonte}</small></td>
         <td>${fmtMm(e.acumuladoMm['1h'])}</td>
         <td>${fmtMm(e.acumuladoMm['24h'])}</td>
-        <td>${fmtMm(e.acumuladoMm['72h'])}</td>
+        <td>${fmtMm(e.acumuladoMm['48h'])}</td>
       </tr>`,
     )
     .join('');
@@ -148,7 +151,7 @@ function painel(codIbge, nome) {
     <h2>${nome}</h2>
     <p class="vazio">${ativas.length} estação(ões) ativa(s). Última leitura: ${fmtHora(ultima)}.</p>
     <table>
-      <thead><tr><th>Estação</th><th>1 h</th><th>24 h</th><th>72 h</th></tr></thead>
+      <thead><tr><th>Estação</th><th>1 h</th><th>24 h</th><th>48 h</th></tr></thead>
       <tbody>${linhas}</tbody>
     </table>`;
 }
@@ -157,8 +160,8 @@ pintarFeatures();
 legenda();
 cobertura();
 document.getElementById('atualizado').textContent =
-  `Chuva (CEMADEN) coletada em ${fmtHora(chuva.geradoEm)}` +
-  (rios ? `; rios (Defesa Civil RS) em ${fmtHora(rios.geradoEm)}.` : '; dados de rios indisponíveis no momento.');
+  `Chuva do CEMADEN coletada em ${fmtHora(chuva.geradoEm)}` +
+  (rios ? `; Defesa Civil RS (chuva e rios) em ${fmtHora(rios.geradoEm)}.` : '; dados da Defesa Civil RS indisponíveis no momento.');
 
 const velhos = [
   ['chuva', chuva.geradoEm],

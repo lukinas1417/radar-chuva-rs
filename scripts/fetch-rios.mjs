@@ -35,6 +35,30 @@ const valor = (campo) => campo?.value ?? null;
 
 const { qualle_meteorologia: bruto } = await buscar();
 
+// --- município de cada estação, por ponto-em-polígono na malha do IBGE ---
+const malha = JSON.parse(await readFile(new URL('../data/municipios-rs.geojson', import.meta.url), 'utf8'));
+
+function dentroDoAnel([x, y], anel) {
+  let dentro = false;
+  for (let i = 0, j = anel.length - 1; i < anel.length; j = i++) {
+    const [xi, yi] = anel[i];
+    const [xj, yj] = anel[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) dentro = !dentro;
+  }
+  return dentro;
+}
+const dentroDoPoligono = (ponto, [externo, ...buracos]) =>
+  dentroDoAnel(ponto, externo) && !buracos.some((b) => dentroDoAnel(ponto, b));
+
+function municipioDe(lon, lat) {
+  for (const f of malha.features) {
+    const { type, coordinates } = f.geometry;
+    const poligonos = type === 'Polygon' ? [coordinates] : coordinates;
+    if (poligonos.some((p) => dentroDoPoligono([lon, lat], p))) return f.properties.codIbge;
+  }
+  return null;
+}
+
 const estacoes = bruto
   .filter((e) => e.show === 'true' && valor(e.data?.rio?.rio_nivel) !== null)
   .map((e) => ({
@@ -60,9 +84,45 @@ const estacoes = bruto
     },
   }));
 
+// Pluviômetros: todas as estações com chuva válida, inclusive as sem sensor de rio.
+// valor null = a estação não enviou a medida nos últimos 20 minutos (documentação da API).
+const LEITURA_RECENTE_MS = 30 * 60 * 1000;
+const agora = Date.now();
+const pluviometros = bruto
+  .filter((e) => e.show === 'true' && e.data?.chuva?.homologacao?.relacao?.valido?.value !== false)
+  .map((e) => {
+    const ac = e.data?.chuva?.acumulado;
+    const ultimaLeitura = paraIso(e.timestamp);
+    const acumuladoMm = {
+      '1h': valor(ac?.h001),
+      '6h': valor(ac?.h006),
+      '24h': valor(ac?.h024),
+      '48h': valor(ac?.h048),
+    };
+    const ativa =
+      Date.parse(ultimaLeitura) >= agora - LEITURA_RECENTE_MS &&
+      e.resource?.estacao?.estado?.manutencao?.value !== true &&
+      Object.values(acumuladoMm).every((v) => v !== null);
+    return {
+      codigo: e.codigo,
+      nome: e.name.general,
+      codIbge: municipioDe(e.position.longitude, e.position.latitude),
+      ultimaLeitura,
+      ativa,
+      acumuladoMm,
+    };
+  });
+const semMunicipio = pluviometros.filter((p) => p.codIbge === null);
+
 await mkdir(new URL('../data/', import.meta.url), { recursive: true });
 await writeFile(
   SAIDA,
-  JSON.stringify({ geradoEm: new Date().toISOString(), fonte: 'Defesa Civil RS', estacoes }, null, 1),
+  JSON.stringify(
+    { geradoEm: new Date().toISOString(), fonte: 'Defesa Civil RS', estacoes, pluviometros: pluviometros.filter((p) => p.codIbge !== null) },
+    null,
+    1,
+  ),
 );
-console.log(`${estacoes.length} estações de rio -> data/rios-rs.json`);
+console.log(
+  `${estacoes.length} estações de rio, ${pluviometros.length - semMunicipio.length} pluviômetros (${semMunicipio.length} sem município na malha) -> data/rios-rs.json`,
+);
