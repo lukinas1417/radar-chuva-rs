@@ -174,10 +174,16 @@ $('lista-atencao').addEventListener('click', (ev) => {
 });
 
 // ---------- cartão do município ----------
+// O cartão abre compacto (nome, chuva e rio) e expande os detalhes sob demanda; a escolha vale na sessão.
+let cartaoExpandido = false;
+
 function htmlCartao(cod, euEstou) {
   const m = dados.porCodigo.get(cod);
   const estacoes = dados.pluviometros.get(cod) ?? [];
   const rios = [...(dados.estacoesRio.get(cod) ?? [])].sort((a, b) => (b.situacao ?? -1) - (a.situacao ?? -1));
+  const vizinhos = estacoes.length ? [] : vizinhosComDado(dados, cod, janela);
+
+  // ----- resumo (sempre visível) -----
   let html = `
     <div class="cartao-topo">
       <div>
@@ -193,39 +199,54 @@ function htmlCartao(cod, euEstou) {
     const v = valorDoMunicipio(dados, cod, janela);
     html += `
       <p class="grande"><span class="num">${fmtMm(v)}</span><span class="un">mm</span></p>
-      <p class="sub">${TEXTO_JANELA[janela]} · ${estacoes.length} ${estacoes.length === 1 ? 'estação' : 'estações'}</p>
-      <div class="barras">${JANELAS.map((j) => {
-        const x = valorDoMunicipio(dados, cod, j);
-        return `<div class="barra${j === janela ? ' ativa' : ''}" style="--c:${faixaDe(x).cor}">
-          <span class="rot">${j}</span><span class="trilho"><i style="width:${Math.min(100, x)}%"></i></span><span class="val">${fmtMm(x)} mm</span></div>`;
-      }).join('')}</div>`;
+      <p class="sub">${TEXTO_JANELA[janela]} · ${estacoes.length} ${estacoes.length === 1 ? 'estação' : 'estações'}</p>`;
   } else {
-    html += `<p class="sub" style="margin-top:14px">Este município não tem pluviômetro ativo nas redes consultadas. Isso não significa que não está chovendo.</p>`;
-    const vizinhos = vizinhosComDado(dados, cod, janela);
-    if (vizinhos.length) {
-      html += `<h3>Dado mais próximo</h3>${vizinhos
-        .map(({ municipio, km }) => {
-          const v = valorDoMunicipio(dados, municipio.codIbge, janela);
-          return `<button class="vizinho" type="button" data-ir="${municipio.codIbge}"><span>${esc(municipio.nome)}</span>
-            <span class="mm" style="color:${faixaDe(v).cor}">${fmtMm(v)} mm</span><span class="km">${Math.round(km)} km</span></button>`;
-        })
-        .join('')}`;
-    }
+    html += '<p class="sub" style="margin-top:12px">Sem pluviômetro ativo neste município. Isso não significa que não está chovendo.</p>';
+  }
+
+  const principal = rios.find((e) => e.recente && e.situacao !== null);
+  if (principal) {
+    const sit = SITUACOES.find((x) => x.valor === principal.situacao);
+    const outros = rios.length > 1 ? ` +${rios.length - 1}` : '';
+    html += `<p class="resumo-rio"><span class="chip" style="--c:${sit.cor}">rio em ${sit.texto}</span><span>${esc(principal.nome)}${outros}</span></p>`;
+  }
+
+  html += `<button class="expandir" type="button" data-expandir aria-expanded="${cartaoExpandido}">
+      <span>${cartaoExpandido ? 'Ocultar detalhes' : 'Ver detalhes'}</span>
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>`;
+
+  // ----- detalhes (expansíveis) -----
+  html += '<div class="detalhes">';
+  if (estacoes.length) {
+    html += `<div class="barras">${JANELAS.map((j) => {
+      const x = valorDoMunicipio(dados, cod, j);
+      return `<div class="barra${j === janela ? ' ativa' : ''}" style="--c:${faixaDe(x).cor}">
+        <span class="rot">${j}</span><span class="trilho"><i style="width:${Math.min(100, x)}%"></i></span><span class="val">${fmtMm(x)} mm</span></div>`;
+    }).join('')}</div>`;
+  } else if (vizinhos.length) {
+    html += `<h3>Dado mais próximo</h3>${vizinhos
+      .map(({ municipio, km }) => {
+        const v = valorDoMunicipio(dados, municipio.codIbge, janela);
+        return `<button class="vizinho" type="button" data-ir="${municipio.codIbge}"><span>${esc(municipio.nome)}</span>
+          <span class="mm" style="color:${faixaDe(v).cor}">${fmtMm(v)} mm</span><span class="km">${Math.round(km)} km</span></button>`;
+      })
+      .join('')}`;
   }
 
   if (rios.length) {
     html += `<h3>Rios</h3>${rios
       .map((e) => {
-        const s = SITUACOES.find((x) => x.valor === e.situacao);
-        const cor = e.recente && s ? s.cor : '#93a6b8';
-        const texto = !e.recente ? 'sem leitura recente' : s ? s.texto : 'sem limiar';
+        const sit = SITUACOES.find((x) => x.valor === e.situacao);
+        const cor = e.recente && sit ? sit.cor : '#93a6b8';
+        const texto = !e.recente ? 'sem leitura recente' : sit ? sit.texto : 'sem limiar';
         const variacao = e.variacaoM === null ? '' : ` · variação ${e.variacaoM > 0 ? '+' : ''}${e.variacaoM.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
         return `<div class="rio"><span>${esc(e.nome)}</span><span class="chip" style="--c:${cor}">${texto}</span>
           <span class="detalhe">nível ${fmtM(e.nivelM)}${variacao}</span></div>`;
       })
       .join('')}`;
     if (rios.some((e) => e.recente && e.situacao >= 1)) {
-      html += `<p class="cartao-pe">A situação é a classificação da Defesa Civil e pode refletir o maior nível recente, não só o atual.</p>`;
+      html += '<p class="cartao-pe">A situação é a classificação da Defesa Civil, comparada às cotas de cada estação, e pode refletir o maior nível recente, não só o atual. As cotas não são divulgadas pela API.</p>';
     }
   }
 
@@ -239,7 +260,7 @@ function htmlCartao(cod, euEstou) {
     const ultima = estacoes.map((e) => e.ultimaLeitura).sort().at(-1);
     html += `<p class="cartao-pe">Leitura mais recente: ${fmtHora(ultima)}</p>`;
   }
-  return html;
+  return html + '</div>';
 }
 
 let euEstouEm = null;
@@ -247,10 +268,12 @@ function selecionar(cod, { voar = true } = {}) {
   selecionado = cod;
   mapa.selecionar(cod);
   const cartao = $('cartao');
+  document.body.classList.toggle('cartao-aberto', cod !== null);
   if (cod === null) {
     cartao.hidden = true;
   } else {
     cartao.innerHTML = htmlCartao(cod, cod === euEstouEm);
+    cartao.classList.toggle('expandido', cartaoExpandido);
     cartao.scrollTop = 0;
     cartao.hidden = false;
     $('sobre').hidden = true;
@@ -261,6 +284,14 @@ function selecionar(cod, { voar = true } = {}) {
 }
 $('cartao').addEventListener('click', (ev) => {
   if (ev.target.closest('[data-fechar]')) return selecionar(null);
+  if (ev.target.closest('[data-expandir]')) {
+    cartaoExpandido = !cartaoExpandido;
+    $('cartao').classList.toggle('expandido', cartaoExpandido);
+    const botao = $('cartao').querySelector('[data-expandir]');
+    botao.setAttribute('aria-expanded', String(cartaoExpandido));
+    botao.querySelector('span').textContent = cartaoExpandido ? 'Ocultar detalhes' : 'Ver detalhes';
+    return;
+  }
   const alvo = ev.target.closest('[data-ir]');
   if (alvo) selecionar(Number(alvo.dataset.ir));
 });

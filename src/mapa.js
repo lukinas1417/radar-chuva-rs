@@ -12,7 +12,7 @@ const celular = () => innerWidth < 760;
 
 // Espaço ocupado pela interface flutuante, para o estado não ficar escondido atrás dela.
 function margens(comCartao = false) {
-  if (celular()) return { top: 150, bottom: comCartao ? 330 : 190, left: 12, right: 12 };
+  if (celular()) return { top: 150, bottom: comCartao ? 350 : 190, left: 12, right: 12 };
   return { top: 56, bottom: 84, left: 340, right: comCartao ? 400 : 30 };
 }
 

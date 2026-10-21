@@ -220,6 +220,13 @@ button { font: inherit; color: inherit; }
 .grande .un { color: var(--suave); font-family: var(--mono); }
 .sub { margin: 4px 0 0; color: var(--suave); font-size: 13.5px; }
 
+.resumo-rio { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 13.5px; color: var(--suave); }
+.expandir { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 14px; padding: 9px 12px; border: 1px solid var(--linha); border-radius: 10px; background: rgba(255, 255, 255, 0.04); color: var(--suave); font-size: 13.5px; cursor: pointer; }
+.expandir:hover { color: var(--texto); background: rgba(255, 255, 255, 0.08); }
+.expandir svg { transition: transform 0.2s; }
+.expandir[aria-expanded='true'] svg { transform: rotate(180deg); }
+#cartao .detalhes { display: none; }
+#cartao.expandido .detalhes { display: block; }
 .barras { display: grid; gap: 9px; margin-top: 16px; }
 .barra { display: grid; grid-template-columns: 32px 1fr 70px; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12.5px; }
 .barra .rot { color: var(--suave); }
@@ -313,7 +320,9 @@ button { font: inherit; color: inherit; }
   .marca { height: 44px; font-size: 16px; }
   #status { top: max(10px, env(safe-area-inset-top)); right: 10px; }
   #status .palavra { display: none; }
-  #cartao { top: auto; left: 8px; right: 8px; bottom: 196px; width: auto; max-height: calc(100dvh - 196px - 150px); padding: 16px; }
+  #cartao { top: auto; left: 8px; right: 8px; bottom: 92px; width: auto; max-height: calc(100dvh - 92px - 150px); padding: 16px; }
+  /* com o cartão aberto a legenda sai da frente; volta ao fechar */
+  body.cartao-aberto #legenda { display: none; }
   .grande .num { font-size: 40px; }
   #sobre { top: 66px; left: 8px; right: 8px; width: auto; }
   #convite { bottom: 196px; }
