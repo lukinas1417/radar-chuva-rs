@@ -91,7 +91,7 @@ function legenda() {
   if (!rios) return;
   const itensRio = SITUACOES.map((s) => `<li><i class="ponto" style="background:${s.cor}"></i>${s.rotulo}</li>`);
   itensRio.push(`<li><i class="ponto" style="background:${COR_SEM_LIMIAR}"></i>sem limiar ou sem leitura</li>`);
-  document.getElementById('legenda-rios').innerHTML = `<li class="titulo">Nível dos rios:</li>${itensRio.join('')}`;
+  document.getElementById('legenda-rios').innerHTML = `<li class="titulo">Rios (situação informada pela Defesa Civil):</li>${itensRio.join('')}`;
 }
 
 const fmtM = (v) => `${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
@@ -108,7 +108,7 @@ function painelRio(codigo) {
     <p class="vazio">Estação de rio · ${e.bacia} · ${e.regiao}</p>
     <table>
       <tbody>
-        <tr><td>Situação do nível</td><td><strong>${textoSituacao(e)}</strong></td></tr>
+        <tr><td>Situação informada pela Defesa Civil</td><td><strong>${textoSituacao(e)}</strong></td></tr>
         <tr><td>Nível</td><td>${fmtM(e.nivelM)}</td></tr>
         <tr><td>Variação (vs. média da última hora)</td><td>${variacao}</td></tr>
         <tr><td>Chuva 1 h / 24 h / 7 dias</td><td>${['1h', '24h', '7d'].map((j) => (e.chuvaMm[j] === null ? '—' : fmtMm(e.chuvaMm[j]))).join(' / ')}</td></tr>
@@ -116,7 +116,7 @@ function painelRio(codigo) {
       </tbody>
     </table>
     ${avisos.map((a) => `<p class="vazio">${a}</p>`).join('')}
-    <p class="vazio">Fonte: Defesa Civil do RS (Rede Hidrometeorológica).</p>`;
+    <p class="vazio">A situação é a classificação da Defesa Civil e pode refletir o maior nível recente, não só o atual. Confira os alertas oficiais. Fonte: Rede Hidrometeorológica da Defesa Civil do RS.</p>`;
 }
 
 function cobertura() {
