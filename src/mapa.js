@@ -16,9 +16,6 @@ function margens(comCartao = false) {
   return { top: 56, bottom: 84, left: 340, right: comCartao ? 400 : 30 };
 }
 
-// No desktop sobra espaço ao redor do estado; um zoom extra o faz ocupar melhor a tela.
-const ZOOM_EXTRA = () => (celular() ? 0 : 0.12);
-
 export function criarMapa({ container, dados, aoSelecionar, aoPassar }) {
   const mapa = new maplibregl.Map({
     container,
@@ -29,11 +26,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar }) {
     attributionControl: false,
   });
 
-  // enquadramento inicial com o zoom extra, antes de qualquer animação
-  const inicio = mapa.cameraForBounds(LIMITES_RS, { padding: margens() });
-  if (inicio) mapa.jumpTo({ center: inicio.center, zoom: inicio.zoom + ZOOM_EXTRA() });
-
-  let relevoLigado = true;
+  let relevoLigado = false; // vista de cima por padrão; o relevo 3D é opcional
   let pronto = false;
   let janelaAtual = '24h';
   let marcadorLocal = null;
@@ -171,7 +164,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar }) {
       const cam = mapa.cameraForBounds(LIMITES_RS, { padding: margens(cartaoAberto) });
       mapa.easeTo({
         center: cam.center,
-        zoom: cam.zoom + ZOOM_EXTRA(),
+        zoom: cam.zoom,
         duration: REDUZIR_MOVIMENTO ? 0 : 1000,
         pitch: relevoLigado ? INCLINACAO : 0,
         bearing: relevoLigado ? -8 : 0,
