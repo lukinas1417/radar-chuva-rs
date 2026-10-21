@@ -1,245 +1,404 @@
-// Mapa de chuva acumulada por município do RS.
-// Valor do município = maior acumulado entre as estações ativas dele.
+// Interface: busca, localização, cartão do município, legenda e estado na URL.
+import {
+  DADO_VELHO_MS,
+  FAIXAS,
+  JANELAS,
+  SITUACOES,
+  carregarDados,
+  faixaDe,
+  municipiosEmRisco,
+  semAcento,
+  valorDoMunicipio,
+  vizinhosComDado,
+} from './dados.js';
+import { municipioDe } from './geo.js';
+import { criarMapa } from './mapa.js';
 
-// Chuva em azul → roxo, para não se confundir com as cores de situação dos rios (verde/amarelo/laranja/vermelho).
-const FAIXAS = [
-  { ate: 0, cor: '#eef4fb', rotulo: 'sem chuva' },
-  { ate: 10, cor: '#c6dbef', rotulo: 'até 10 mm' },
-  { ate: 30, cor: '#8cb8e0', rotulo: '10 a 30 mm' },
-  { ate: 60, cor: '#4a86c5', rotulo: '30 a 60 mm' },
-  { ate: 100, cor: '#2a56a0', rotulo: '60 a 100 mm' },
-  { ate: Infinity, cor: '#4b2a85', rotulo: 'mais de 100 mm' },
-];
+const $ = (id) => document.getElementById(id);
+const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ESCAPES[c]);
 
-// Situação do nível do rio segundo a Defesa Civil RS.
-const SITUACOES = [
-  { valor: 0, cor: '#69a82f', rotulo: 'normalidade' },
-  { valor: 1, cor: '#faba00', rotulo: 'atenção' },
-  { valor: 2, cor: '#e67819', rotulo: 'alerta' },
-  { valor: 3, cor: '#e20228', rotulo: 'inundação' },
-];
-const COR_SEM_LIMIAR = '#ffffff';
-const LEITURA_RECENTE_MS = 30 * 60 * 1000;
-const DADO_VELHO_MS = 60 * 60 * 1000; // o workflow roda a cada 15 min; passou disso, a coleta está falhando
-const COR_SEM_DADO = getComputedStyle(document.documentElement).getPropertyValue('--sem-dado').trim() || '#cfd6dd';
-
-const fmtMm = (v) => `${v.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mm`;
-const fmtHora = (iso) =>
-  new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-
-function faixaDe(valor) {
-  return FAIXAS.find((f) => valor <= f.ate);
-}
-
-async function carregar(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-  return res.json();
-}
-
-// Os rios são opcionais: se a fonte falhar, o mapa de chuva continua funcionando.
-const [chuva, malha, rios] = await Promise.all([
-  carregar('data/chuva-rs.json'),
-  carregar('data/municipios-rs.geojson'),
-  carregar('data/rios-rs.json').catch(() => null),
-]);
-
-const textoSituacao = (e) => SITUACOES.find((s) => s.valor === e.situacao)?.rotulo ?? 'sem limiar cadastrado';
-
-function pontosRios() {
-  if (!rios) return { type: 'FeatureCollection', features: [] };
-  const agora = Date.now();
-  return {
-    type: 'FeatureCollection',
-    features: rios.estacoes.map((e) => {
-      const recente = agora - Date.parse(e.ultimaLeitura) <= LEITURA_RECENTE_MS && !e.emManutencao;
-      const sit = SITUACOES.find((s) => s.valor === e.situacao);
-      return {
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [e.lon, e.lat] },
-        properties: { codigo: e.codigo, cor: recente && sit ? sit.cor : COR_SEM_LIMIAR },
-      };
-    }),
-  };
-}
-
-// Pluviômetros das duas fontes, no mesmo formato. Nas duas há acumulados de 1h, 6h, 24h e 48h.
-const estacoesPorMunicipio = new Map();
-const adicionar = (e, fonte) => {
-  if (!estacoesPorMunicipio.has(e.codIbge)) estacoesPorMunicipio.set(e.codIbge, []);
-  estacoesPorMunicipio.get(e.codIbge).push({ ...e, fonte });
-};
-chuva.estacoes.forEach((e) => adicionar(e, 'CEMADEN'));
-(rios?.pluviometros ?? []).forEach((e) => adicionar(e, 'Defesa Civil RS'));
-
-let janela = '24h';
-
-function valorDoMunicipio(codIbge, j) {
-  const ativas = (estacoesPorMunicipio.get(codIbge) ?? []).filter((e) => e.ativa);
-  if (ativas.length === 0) return null;
-  return Math.max(...ativas.map((e) => e.acumuladoMm[j] ?? 0));
-}
-
-function pintarFeatures() {
-  for (const f of malha.features) {
-    const v = valorDoMunicipio(f.properties.codIbge, janela);
-    f.properties.cor = v === null ? COR_SEM_DADO : faixaDe(v).cor;
-  }
-}
-
-function legenda() {
-  const itens = FAIXAS.map((f) => `<li><i style="background:${f.cor}"></i>${f.rotulo}</li>`);
-  itens.push(`<li><i style="background:${COR_SEM_DADO}"></i>sem pluviômetro ativo</li>`);
-  document.getElementById('legenda').innerHTML = itens.join('');
-
-  if (!rios) return;
-  const itensRio = SITUACOES.map((s) => `<li><i class="ponto" style="background:${s.cor}"></i>${s.rotulo}</li>`);
-  itensRio.push(`<li><i class="ponto" style="background:${COR_SEM_LIMIAR}"></i>sem limiar ou sem leitura</li>`);
-  document.getElementById('legenda-rios').innerHTML = `<li class="titulo">Rios (situação informada pela Defesa Civil):</li>${itensRio.join('')}`;
-}
-
+const fmtMm = (v) => (v === 0 ? '0' : v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
 const fmtM = (v) => `${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
-
-function painelRio(codigo) {
-  const e = rios.estacoes.find((r) => r.codigo === codigo);
-  const el = document.getElementById('painel');
-  const variacao = e.variacaoM === null ? '—' : `${e.variacaoM > 0 ? '+' : ''}${fmtM(e.variacaoM).replace(' m', '')} m`;
-  const avisos = [];
-  if (e.emManutencao) avisos.push('Estação em manutenção.');
-  if (!e.sensorValido) avisos.push('Sensor com dado ainda não homologado.');
-  el.innerHTML = `
-    <h2>${e.nome}</h2>
-    <p class="vazio">Estação de rio · ${e.bacia} · ${e.regiao}</p>
-    <table>
-      <tbody>
-        <tr><td>Situação informada pela Defesa Civil</td><td><strong>${textoSituacao(e)}</strong></td></tr>
-        <tr><td>Nível</td><td>${fmtM(e.nivelM)}</td></tr>
-        <tr><td>Variação (vs. média da última hora)</td><td>${variacao}</td></tr>
-        <tr><td>Chuva 1 h / 24 h / 7 dias</td><td>${['1h', '24h', '7d'].map((j) => (e.chuvaMm[j] === null ? '—' : fmtMm(e.chuvaMm[j]))).join(' / ')}</td></tr>
-        <tr><td>Última leitura</td><td>${fmtHora(e.ultimaLeitura)}</td></tr>
-      </tbody>
-    </table>
-    ${avisos.map((a) => `<p class="vazio">${a}</p>`).join('')}
-    <p class="vazio">A situação é a classificação da Defesa Civil e pode refletir o maior nível recente, não só o atual. Confira os alertas oficiais. Fonte: Rede Hidrometeorológica da Defesa Civil do RS.</p>`;
+const mesmoDia = (a, b) => a.toDateString() === b.toDateString();
+function fmtHora(iso) {
+  const d = new Date(iso);
+  const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return mesmoDia(d, new Date()) ? hora : `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${hora}`;
 }
 
-function cobertura() {
-  const cobertos = malha.features.filter((f) => valorDoMunicipio(f.properties.codIbge, janela) !== null).length;
-  document.getElementById('cobertura').textContent =
-    `${cobertos} de ${malha.features.length} municípios têm pelo menos um pluviômetro ativo (CEMADEN ou Defesa Civil RS).`;
+const TEXTO_JANELA = {
+  '1h': 'na última hora',
+  '6h': 'nas últimas 6 horas',
+  '24h': 'nas últimas 24 horas',
+  '48h': 'nas últimas 48 horas',
+};
+const GRAVIDADE = ['normalidade', 'atenção', 'alerta', 'inundação'];
+const COR_ALERTA = '#ffd23f';
+
+// ---------- aviso temporário ----------
+let temporizadorAviso;
+function mostrarAviso(texto, alerta = false, ms = 7000) {
+  const el = $('aviso');
+  el.textContent = texto;
+  el.classList.toggle('alerta', alerta);
+  el.hidden = false;
+  clearTimeout(temporizadorAviso);
+  temporizadorAviso = setTimeout(() => (el.hidden = true), ms);
 }
 
-function painel(codIbge, nome) {
-  const el = document.getElementById('painel');
-  const ativas = (estacoesPorMunicipio.get(codIbge) ?? []).filter((e) => e.ativa);
-  if (ativas.length === 0) {
-    el.innerHTML = `<h2>${nome}</h2><p class="vazio">Sem pluviômetro ativo neste município. Isso não significa que não está chovendo.</p>`;
+// ---------- dados ----------
+let dados;
+try {
+  dados = await carregarDados();
+} catch (erro) {
+  console.error(erro);
+  $('status-texto').textContent = 'Sem dados';
+  mostrarAviso('Não foi possível carregar os dados agora. Tente novamente em instantes.', true, 15000);
+  throw erro;
+}
+
+// ---------- estado ----------
+const parametros = new URLSearchParams(location.hash.slice(1));
+let janela = JANELAS.includes(parametros.get('j')) ? parametros.get('j') : '24h';
+let selecionado = null;
+
+function gravarEstado() {
+  const p = new URLSearchParams();
+  if (selecionado !== null) p.set('m', selecionado);
+  if (janela !== '24h') p.set('j', janela);
+  const texto = p.toString();
+  history.replaceState(null, '', texto ? `#${texto}` : location.pathname + location.search);
+}
+
+// ---------- mapa ----------
+const mapa = criarMapa({
+  container: 'mapa',
+  dados,
+  aoSelecionar: (cod) => selecionar(cod, { voar: false }),
+  aoPassar: mostrarDica,
+});
+mapa.pintar(janela);
+
+function mostrarDica(cod, ponto) {
+  const dica = $('dica');
+  if (cod === null) {
+    dica.hidden = true;
     return;
   }
-  const linhas = ativas
+  const mm = valorDoMunicipio(dados, cod, janela);
+  dica.innerHTML = `<b>${esc(dados.porCodigo.get(cod).nome)}</b><span>${mm === null ? 'sem dado' : `${fmtMm(mm)} mm`}</span>`;
+  dica.hidden = false;
+  const { width } = dica.getBoundingClientRect();
+  dica.style.left = `${Math.min(ponto.x + 16, innerWidth - width - 8)}px`;
+  dica.style.top = `${ponto.y + 16}px`;
+}
+
+// ---------- legenda ----------
+function desenharLegenda() {
+  const marcas = ['0', '10', '30', '60', '100', '100+'];
+  $('legenda').innerHTML = `
+    <div class="titulo"><span>Chuva acumulada (mm)</span><b>${janela.replace('h', ' h')}</b></div>
+    <div class="escala">${FAIXAS.map((f) => `<i style="--c:${f.cor}"></i>`).join('')}</div>
+    <div class="marcas">${marcas.map((m) => `<span>${m}</span>`).join('')}</div>
+    <div class="linha2">
+      <span><i class="semdado"></i>sem pluviômetro</span>
+      ${SITUACOES.slice(1)
+        .map((s) => `<span><i class="brilho" style="--c:${s.cor}"></i><span class="prefixo">rio em </span>${s.texto}</span>`)
+        .join('')}
+    </div>`;
+}
+
+// ---------- status e resumo de risco ----------
+function desenharStatus() {
+  const fontes = [dados.chuva.geradoEm, ...(dados.rios ? [dados.rios.geradoEm] : [])];
+  const maisAntiga = fontes.reduce((a, b) => (Date.parse(a) < Date.parse(b) ? a : b));
+  const velho = Date.now() - Date.parse(maisAntiga) > DADO_VELHO_MS;
+  const semRios = !dados.rios;
+  const ponto = $('status-ponto');
+  ponto.style.setProperty('--c', velho || semRios ? COR_ALERTA : '#69d38a');
+  ponto.classList.toggle('pulsa', velho || semRios);
+  $('status-texto').innerHTML = `<span class="palavra">${velho ? 'Desatualizado ' : 'Atualizado '}</span><b>${fmtHora(maisAntiga)}</b>`;
+  $('status').title = [
+    `Chuva do CEMADEN: ${fmtHora(dados.chuva.geradoEm)}`,
+    dados.rios ? `Defesa Civil RS (chuva e rios): ${fmtHora(dados.rios.geradoEm)}` : 'Defesa Civil RS: indisponível',
+  ].join('\n');
+  if (velho) mostrarAviso('Os dados estão desatualizados porque a fonte está instável. O que aparece pode não refletir a situação atual. Consulte a Defesa Civil.', true, 12000);
+  else if (semRios) mostrarAviso('Os dados da Defesa Civil RS (rios e parte da chuva) estão indisponíveis no momento.', true, 9000);
+}
+
+const emRisco = municipiosEmRisco(dados);
+function desenharAtencao() {
+  const botao = $('atencao');
+  const ponto = botao.querySelector('.ponto');
+  if (!dados.rios) {
+    ponto.style.setProperty('--c', COR_ALERTA);
+    $('atencao-texto').textContent = 'Rios indisponíveis';
+    return;
+  }
+  if (!emRisco.length) {
+    ponto.style.setProperty('--c', '#69d38a');
+    $('atencao-texto').textContent = 'Nenhum rio fora da normalidade';
+    botao.disabled = true;
+    return;
+  }
+  const pior = SITUACOES[emRisco[0].nivel];
+  ponto.style.setProperty('--c', pior.cor);
+  ponto.classList.add('pulsa');
+  const n = emRisco.length;
+  $('atencao-texto').textContent = `${n} ${n === 1 ? 'município' : 'municípios'} com rio fora da normalidade`;
+  $('lista-atencao').innerHTML = emRisco
     .map(
-      (e) => `<tr>
-        <td>${e.nome}<br><small class="fonte">${e.fonte}</small></td>
-        <td>${fmtMm(e.acumuladoMm['1h'])}</td>
-        <td>${fmtMm(e.acumuladoMm['24h'])}</td>
-        <td>${fmtMm(e.acumuladoMm['48h'])}</td>
-      </tr>`,
+      ({ municipio, nivel }) => `<li><button type="button" data-ir="${municipio.codIbge}">
+        <i class="ponto" style="--c:${SITUACOES[nivel].cor}"></i>${esc(municipio.nome)}<span class="nivel">${GRAVIDADE[nivel]}</span></button></li>`,
     )
     .join('');
-  const ultima = ativas.map((e) => e.ultimaLeitura).sort().at(-1);
-  el.innerHTML = `
-    <h2>${nome}</h2>
-    <p class="vazio">${ativas.length} estação(ões) ativa(s). Última leitura: ${fmtHora(ultima)}.</p>
-    <table>
-      <thead><tr><th>Estação</th><th>1 h</th><th>24 h</th><th>48 h</th></tr></thead>
-      <tbody>${linhas}</tbody>
-    </table>`;
 }
-
-pintarFeatures();
-legenda();
-cobertura();
-document.getElementById('atualizado').textContent =
-  `Chuva do CEMADEN coletada em ${fmtHora(chuva.geradoEm)}` +
-  (rios ? `; Defesa Civil RS (chuva e rios) em ${fmtHora(rios.geradoEm)}.` : '; dados da Defesa Civil RS indisponíveis no momento.');
-
-const velhos = [
-  ['chuva', chuva.geradoEm],
-  ...(rios ? [['rios', rios.geradoEm]] : []),
-].filter(([, quando]) => Date.now() - Date.parse(quando) > DADO_VELHO_MS);
-if (velhos.length) {
-  const aviso = document.getElementById('aviso-dados');
-  aviso.hidden = false;
-  aviso.textContent =
-    `Atenção: os dados de ${velhos.map(([nome]) => nome).join(' e ')} estão desatualizados (a fonte está ` +
-    'instável). O que aparece abaixo pode não refletir a situação atual. Consulte a Defesa Civil.';
-}
-
-const mapa = new maplibregl.Map({
-  container: 'mapa',
-  style: { version: 8, sources: {}, layers: [{ id: 'fundo', type: 'background', paint: { 'background-color': 'transparent' } }] },
-  bounds: [[-57.7, -33.8], [-49.6, -27.0]],
-  fitBoundsOptions: { padding: 10 },
-  attributionControl: false,
+$('atencao').addEventListener('click', () => {
+  const aberto = $('lista-atencao').hidden;
+  $('lista-atencao').hidden = !aberto;
+  $('atencao').setAttribute('aria-expanded', String(aberto));
+});
+$('lista-atencao').addEventListener('click', (ev) => {
+  const alvo = ev.target.closest('[data-ir]');
+  if (!alvo) return;
+  $('lista-atencao').hidden = true;
+  $('atencao').setAttribute('aria-expanded', 'false');
+  selecionar(Number(alvo.dataset.ir));
 });
 
-mapa.on('load', () => {
-  mapa.addSource('municipios', { type: 'geojson', data: malha, promoteId: 'codIbge' });
-  mapa.addLayer({ id: 'preenchimento', type: 'fill', source: 'municipios', paint: { 'fill-color': ['get', 'cor'] } });
-  mapa.addLayer({
-    id: 'contorno',
-    type: 'line',
-    source: 'municipios',
-    paint: { 'line-color': '#ffffff', 'line-width': 0.5, 'line-opacity': 0.8 },
-  });
-  mapa.addLayer({
-    id: 'selecionado',
-    type: 'line',
-    source: 'municipios',
-    filter: ['==', ['get', 'codIbge'], -1],
-    paint: { 'line-color': '#1b2733', 'line-width': 2.5 },
-  });
+// ---------- cartão do município ----------
+function htmlCartao(cod, euEstou) {
+  const m = dados.porCodigo.get(cod);
+  const estacoes = dados.pluviometros.get(cod) ?? [];
+  const rios = [...(dados.estacoesRio.get(cod) ?? [])].sort((a, b) => (b.situacao ?? -1) - (a.situacao ?? -1));
+  let html = `
+    <div class="cartao-topo">
+      <div>
+        <h2>${esc(m.nome)}</h2>
+        ${euEstou ? '<span class="etiqueta">Você está aqui</span>' : ''}
+      </div>
+      <button class="icone" type="button" data-fechar aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>`;
 
-  mapa.addSource('rios', { type: 'geojson', data: pontosRios() });
-  mapa.addLayer({
-    id: 'rios',
-    type: 'circle',
-    source: 'rios',
-    paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 4, 8, 8],
-      'circle-color': ['get', 'cor'],
-      'circle-stroke-color': '#1b2733',
-      'circle-stroke-width': 1.5,
-    },
-  });
-
-  // Estação de rio tem prioridade sobre o município embaixo dela. A área de toque é maior que o ponto.
-  mapa.on('click', (ev) => {
-    const { x, y } = ev.point;
-    const margem = 10;
-    const [rio] = mapa.queryRenderedFeatures([[x - margem, y - margem], [x + margem, y + margem]], { layers: ['rios'] });
-    if (rio) {
-      mapa.setFilter('selecionado', ['==', ['get', 'codIbge'], -1]);
-      painelRio(rio.properties.codigo);
-      return;
+  if (estacoes.length) {
+    const v = valorDoMunicipio(dados, cod, janela);
+    html += `
+      <p class="grande"><span class="num">${fmtMm(v)}</span><span class="un">mm</span></p>
+      <p class="sub">${TEXTO_JANELA[janela]} · ${estacoes.length} ${estacoes.length === 1 ? 'estação' : 'estações'}</p>
+      <div class="barras">${JANELAS.map((j) => {
+        const x = valorDoMunicipio(dados, cod, j);
+        return `<div class="barra${j === janela ? ' ativa' : ''}" style="--c:${faixaDe(x).cor}">
+          <span class="rot">${j}</span><span class="trilho"><i style="width:${Math.min(100, x)}%"></i></span><span class="val">${fmtMm(x)} mm</span></div>`;
+      }).join('')}</div>`;
+  } else {
+    html += `<p class="sub" style="margin-top:14px">Este município não tem pluviômetro ativo nas redes consultadas. Isso não significa que não está chovendo.</p>`;
+    const vizinhos = vizinhosComDado(dados, cod, janela);
+    if (vizinhos.length) {
+      html += `<h3>Dado mais próximo</h3>${vizinhos
+        .map(({ municipio, km }) => {
+          const v = valorDoMunicipio(dados, municipio.codIbge, janela);
+          return `<button class="vizinho" type="button" data-ir="${municipio.codIbge}"><span>${esc(municipio.nome)}</span>
+            <span class="mm" style="color:${faixaDe(v).cor}">${fmtMm(v)} mm</span><span class="km">${Math.round(km)} km</span></button>`;
+        })
+        .join('')}`;
     }
-    const [muni] = mapa.queryRenderedFeatures(ev.point, { layers: ['preenchimento'] });
-    if (!muni) return;
-    mapa.setFilter('selecionado', ['==', ['get', 'codIbge'], muni.properties.codIbge]);
-    painel(muni.properties.codIbge, muni.properties.nome);
-  });
-  mapa.on('mousemove', (ev) => {
-    const alvo = mapa.queryRenderedFeatures(ev.point, { layers: ['rios', 'preenchimento'] });
-    mapa.getCanvas().style.cursor = alvo.length ? 'pointer' : '';
-  });
+  }
+
+  if (rios.length) {
+    html += `<h3>Rios</h3>${rios
+      .map((e) => {
+        const s = SITUACOES.find((x) => x.valor === e.situacao);
+        const cor = e.recente && s ? s.cor : '#93a6b8';
+        const texto = !e.recente ? 'sem leitura recente' : s ? s.texto : 'sem limiar';
+        const variacao = e.variacaoM === null ? '' : ` · variação ${e.variacaoM > 0 ? '+' : ''}${e.variacaoM.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
+        return `<div class="rio"><span>${esc(e.nome)}</span><span class="chip" style="--c:${cor}">${texto}</span>
+          <span class="detalhe">nível ${fmtM(e.nivelM)}${variacao}</span></div>`;
+      })
+      .join('')}`;
+    if (rios.some((e) => e.recente && e.situacao >= 1)) {
+      html += `<p class="cartao-pe">A situação é a classificação da Defesa Civil e pode refletir o maior nível recente, não só o atual.</p>`;
+    }
+  }
+
+  if (estacoes.length) {
+    html += `<details><summary>Estações de chuva (${estacoes.length})</summary>
+      <table><thead><tr><th>Estação</th>${JANELAS.map((j) => `<th>${j}</th>`).join('')}</tr></thead><tbody>
+      ${estacoes
+        .map((e) => `<tr><td>${esc(e.nome)}<small>${esc(e.fonte)}</small></td>${JANELAS.map((j) => `<td>${fmtMm(e.acumuladoMm[j] ?? 0)}</td>`).join('')}</tr>`)
+        .join('')}
+      </tbody></table></details>`;
+    const ultima = estacoes.map((e) => e.ultimaLeitura).sort().at(-1);
+    html += `<p class="cartao-pe">Leitura mais recente: ${fmtHora(ultima)}</p>`;
+  }
+  return html;
+}
+
+let euEstouEm = null;
+function selecionar(cod, { voar = true } = {}) {
+  selecionado = cod;
+  mapa.selecionar(cod);
+  const cartao = $('cartao');
+  if (cod === null) {
+    cartao.hidden = true;
+  } else {
+    cartao.innerHTML = htmlCartao(cod, cod === euEstouEm);
+    cartao.scrollTop = 0;
+    cartao.hidden = false;
+    $('sobre').hidden = true;
+    $('sobre-botao').setAttribute('aria-expanded', 'false');
+    if (voar) mapa.voarPara(cod);
+  }
+  gravarEstado();
+}
+$('cartao').addEventListener('click', (ev) => {
+  if (ev.target.closest('[data-fechar]')) return selecionar(null);
+  const alvo = ev.target.closest('[data-ir]');
+  if (alvo) selecionar(Number(alvo.dataset.ir));
 });
 
-document.getElementById('janelas').addEventListener('click', (ev) => {
+// ---------- busca ----------
+const campo = $('busca');
+const lista = $('resultados');
+let opcoes = [];
+let ativa = -1;
+
+function atualizarOpcoes() {
+  const termo = semAcento(campo.value.trim());
+  if (!termo) return fecharLista();
+  const comeca = [];
+  const contem = [];
+  for (const m of dados.indice) {
+    const nome = semAcento(m.nome);
+    if (nome.startsWith(termo)) comeca.push(m);
+    else if (nome.includes(termo)) contem.push(m);
+  }
+  opcoes = [...comeca, ...contem].slice(0, 8);
+  ativa = opcoes.length ? 0 : -1;
+  lista.innerHTML = opcoes.length
+    ? opcoes
+        .map((m, i) => {
+          const mm = valorDoMunicipio(dados, m.codIbge, janela);
+          return `<li role="option" data-cod="${m.codIbge}" aria-selected="${i === ativa}">${esc(m.nome)}<small>${mm === null ? 'sem dado' : `${fmtMm(mm)} mm`}</small></li>`;
+        })
+        .join('')
+    : '<li class="vazio" role="option" aria-disabled="true">Nenhum município encontrado</li>';
+  lista.hidden = false;
+  campo.setAttribute('aria-expanded', 'true');
+}
+function fecharLista() {
+  lista.hidden = true;
+  campo.setAttribute('aria-expanded', 'false');
+  opcoes = [];
+  ativa = -1;
+}
+function marcarAtiva(i) {
+  ativa = (i + opcoes.length) % opcoes.length;
+  [...lista.children].forEach((li, n) => li.setAttribute('aria-selected', String(n === ativa)));
+  lista.children[ativa]?.scrollIntoView({ block: 'nearest' });
+}
+function escolher(cod) {
+  fecharLista();
+  campo.value = '';
+  campo.blur();
+  selecionar(cod);
+}
+campo.addEventListener('input', atualizarOpcoes);
+campo.addEventListener('focus', () => campo.value && atualizarOpcoes());
+campo.addEventListener('keydown', (ev) => {
+  if (ev.key === 'ArrowDown' && opcoes.length) { ev.preventDefault(); marcarAtiva(ativa + 1); }
+  else if (ev.key === 'ArrowUp' && opcoes.length) { ev.preventDefault(); marcarAtiva(ativa - 1); }
+  else if (ev.key === 'Enter' && opcoes[ativa]) { ev.preventDefault(); escolher(opcoes[ativa].codIbge); }
+  else if (ev.key === 'Escape') { fecharLista(); campo.blur(); }
+});
+lista.addEventListener('mousedown', (ev) => {
+  const li = ev.target.closest('[data-cod]');
+  if (li) { ev.preventDefault(); escolher(Number(li.dataset.cod)); }
+});
+campo.addEventListener('blur', () => setTimeout(fecharLista, 120));
+
+// ---------- localização ----------
+function localizar() {
+  if (!navigator.geolocation) return mostrarAviso('Seu navegador não oferece localização. Use a busca para escolher o município.', true);
+  const botao = $('localizar');
+  botao.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      botao.disabled = false;
+      // A posição só é usada aqui, no navegador, para achar o município. Nada é enviado nem guardado.
+      const municipio = municipioDe(dados.indice, coords.longitude, coords.latitude);
+      if (!municipio) return mostrarAviso('Você parece estar fora do Rio Grande do Sul. Use a busca para escolher um município gaúcho.', true);
+      euEstouEm = municipio.codIbge;
+      mapa.marcarLocal([coords.longitude, coords.latitude]);
+      selecionar(municipio.codIbge);
+    },
+    (erro) => {
+      botao.disabled = false;
+      mostrarAviso(
+        erro.code === erro.PERMISSION_DENIED
+          ? 'Sem permissão para usar a localização. Você ainda pode buscar o município acima.'
+          : 'Não consegui obter sua localização agora. Tente a busca por município.',
+        true,
+      );
+    },
+    { enableHighAccuracy: false, timeout: 12000, maximumAge: 600000 },
+  );
+}
+$('localizar').addEventListener('click', localizar);
+
+const CHAVE_CONVITE = 'radar-chuva-convite';
+const lembrar = (valor) => { try { localStorage.setItem(CHAVE_CONVITE, valor); } catch { /* navegação privada */ } };
+const jaRecusou = () => { try { return localStorage.getItem(CHAVE_CONVITE) === 'recusou'; } catch { return false; } };
+$('convite-sim').addEventListener('click', () => { $('convite').hidden = true; localizar(); });
+$('convite-nao').addEventListener('click', () => { $('convite').hidden = true; lembrar('recusou'); });
+
+async function oferecerLocalizacao() {
+  if (!navigator.geolocation || parametros.has('m')) return;
+  try {
+    const { state } = await navigator.permissions.query({ name: 'geolocation' });
+    if (state === 'granted') return localizar(); // já autorizado antes: sem perguntar de novo
+    if (state === 'denied') return;
+  } catch { /* sem Permissions API: cai no convite */ }
+  if (!jaRecusou()) setTimeout(() => ($('convite').hidden = false), 1500);
+}
+
+// ---------- janela de tempo, relevo e sobre ----------
+function marcarJanela() {
+  document.querySelectorAll('#janelas button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.janela === janela)));
+}
+$('janelas').addEventListener('click', (ev) => {
   const botao = ev.target.closest('button[data-janela]');
   if (!botao) return;
   janela = botao.dataset.janela;
-  document.querySelectorAll('#janelas button').forEach((b) => b.classList.toggle('ativo', b === botao));
-  pintarFeatures();
-  cobertura();
-  mapa.getSource('municipios')?.setData(malha);
+  marcarJanela();
+  mapa.pintar(janela);
+  desenharLegenda();
+  if (selecionado !== null) $('cartao').innerHTML = htmlCartao(selecionado, selecionado === euEstouEm);
+  gravarEstado();
 });
+$('relevo').addEventListener('click', () => $('relevo').setAttribute('aria-pressed', String(mapa.alternarRelevo())));
+$('sobre-botao').addEventListener('click', () => {
+  const abrir = $('sobre').hidden;
+  $('sobre').hidden = !abrir;
+  $('sobre-botao').setAttribute('aria-expanded', String(abrir));
+});
+document.addEventListener('keydown', (ev) => {
+  if (ev.key !== 'Escape' || ev.target === campo) return;
+  $('sobre').hidden = true;
+  $('sobre-botao').setAttribute('aria-expanded', 'false');
+  $('lista-atencao').hidden = true;
+  $('atencao').setAttribute('aria-expanded', 'false');
+  if (selecionado !== null) selecionar(null);
+});
+
+// ---------- início ----------
+marcarJanela();
+desenharLegenda();
+desenharStatus();
+desenharAtencao();
+
+const inicial = Number(parametros.get('m'));
+if (dados.porCodigo.has(inicial)) selecionar(inicial);
+else oferecerLocalizacao();

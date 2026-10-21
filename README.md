@@ -1,11 +1,20 @@
 # Radar de Chuva RS
 
-Mapa web da chuva acumulada (1 h, 6 h, 24 h e 48 h) nos municípios do Rio Grande do Sul, com dados
-em tempo quase real dos pluviômetros do CEMADEN e da Defesa Civil do RS, e do nível dos rios (125 estações da Defesa
-Civil do RS, com a situação de normalidade, atenção, alerta ou inundação). Municípios sem pluviômetro
-ativo aparecem em cinza: o mapa mostra também onde **não há** dado.
+Mapa web em tela cheia, com relevo 3D, da chuva acumulada (1 h, 6 h, 24 h e 48 h) em cada município do Rio
+Grande do Sul. Os dados vêm quase em tempo real dos pluviômetros do CEMADEN e da Defesa Civil do RS, e o contorno
+dos municípios com rio em atenção, alerta ou inundação pulsa suavemente. Municípios sem pluviômetro ativo ficam
+em tom escuro: o mapa mostra também onde **não há** dado.
 
 > Projeto de portfólio. **Não substitui os alertas oficiais da Defesa Civil** (SMS 40199 com o CEP, ou 199).
+
+## Interface
+
+- Mapa em tela cheia; tudo o mais flutua sobre ele em painéis de vidro fosco.
+- **Sua cidade:** o botão de localização (ou o convite na primeira visita) usa a posição aproximada do navegador
+  para achar o município e abrir o cartão dele. A posição é usada só no navegador e nunca é enviada nem guardada.
+- Busca de município com teclado, hover com o valor e, em municípios sem pluviômetro, os vizinhos com dado.
+- O link guarda o município e a janela de tempo (`#m=4314902&j=24h`), então dá para compartilhar uma cidade.
+- Funciona no celular, respeita `prefers-reduced-motion` e hospeda as próprias fontes (sem Google Fonts).
 
 ## Como rodar
 
@@ -31,10 +40,12 @@ node scripts/serve.mjs              # http://localhost:8080
 - `scripts/fetch-rios.mjs` consulta a [API da Defesa Civil do RS](https://sistemas.defesacivil.rs.gov.br/api-redehidrometeorologica)
   (GraphQL, dados a cada 5 minutos). A API só aceita o texto exato da consulta documentada, guardado em
   `scripts/consultas/tags_data.graphql`.
-- A cor de cada estação de rio é a situação informada pela Defesa Civil. Os valores das cotas não são
-  expostos pela API, então o site mostra o nível em metros e a situação, mas não a distância até a cota.
+- O contorno luminoso de cada município usa a pior situação de rio informada pela Defesa Civil entre as estações
+  dele. Os valores das cotas não são expostos pela API, então o site mostra o nível em metros e a situação, mas
+  não a distância até a cota.
 - A camada de rios é opcional: se a API falhar, o site publica só com a chuva.
-- O site é estático (MapLibre GL, sem mapa-base de terceiros).
+- O site é estático (MapLibre GL). O relevo 3D vem dos tiles públicos Terrarium (Mapzen/AWS); as demais camadas
+  são desenhadas a partir da malha do IBGE.
 
 ## Cobertura atual
 

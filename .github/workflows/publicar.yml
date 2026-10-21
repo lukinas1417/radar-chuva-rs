@@ -51,7 +51,7 @@ jobs:
       - name: Montar site
         run: |
           mkdir _site
-          cp -r index.html src data _site/
+          cp -r index.html src assets data _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

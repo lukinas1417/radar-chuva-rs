@@ -2,6 +2,7 @@
 // API: https://sistemas.defesacivil.rs.gov.br/api-redehidrometeorologica
 // A API só aceita o texto exato da consulta documentada (scripts/consultas/tags_data.graphql).
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { indexarMunicipios, municipioDe } from '../src/geo.js';
 
 const ENDPOINT = 'https://redehidrometeorologica.defesacivil.rs.gov.br/graphql';
 const QUERY = await readFile(new URL('./consultas/tags_data.graphql', import.meta.url), 'utf8');
@@ -36,28 +37,8 @@ const valor = (campo) => campo?.value ?? null;
 const { qualle_meteorologia: bruto } = await buscar();
 
 // --- município de cada estação, por ponto-em-polígono na malha do IBGE ---
-const malha = JSON.parse(await readFile(new URL('../data/municipios-rs.geojson', import.meta.url), 'utf8'));
-
-function dentroDoAnel([x, y], anel) {
-  let dentro = false;
-  for (let i = 0, j = anel.length - 1; i < anel.length; j = i++) {
-    const [xi, yi] = anel[i];
-    const [xj, yj] = anel[j];
-    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) dentro = !dentro;
-  }
-  return dentro;
-}
-const dentroDoPoligono = (ponto, [externo, ...buracos]) =>
-  dentroDoAnel(ponto, externo) && !buracos.some((b) => dentroDoAnel(ponto, b));
-
-function municipioDe(lon, lat) {
-  for (const f of malha.features) {
-    const { type, coordinates } = f.geometry;
-    const poligonos = type === 'Polygon' ? [coordinates] : coordinates;
-    if (poligonos.some((p) => dentroDoPoligono([lon, lat], p))) return f.properties.codIbge;
-  }
-  return null;
-}
+const indice = indexarMunicipios(JSON.parse(await readFile(new URL('../data/municipios-rs.geojson', import.meta.url), 'utf8')));
+const municipioDeEstacao = (lon, lat) => municipioDe(indice, lon, lat)?.codIbge ?? null;
 
 const estacoes = bruto
   .filter((e) => e.show === 'true' && valor(e.data?.rio?.rio_nivel) !== null)
@@ -106,7 +87,7 @@ const pluviometros = bruto
     return {
       codigo: e.codigo,
       nome: e.name.general,
-      codIbge: municipioDe(e.position.longitude, e.position.latitude),
+      codIbge: municipioDeEstacao(e.position.longitude, e.position.latitude),
       ultimaLeitura,
       ativa,
       acumuladoMm,
