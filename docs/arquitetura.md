@@ -84,10 +84,32 @@ Também não há analytics, e as fontes de texto ficam no repositório.
 são tratados como limites do sistema, não como obstáculos. Desativar a verificação de TLS faria o site aceitar dado
 de um servidor falso, o que num site de alertas é inaceitável.
 
+## Como o sistema é verificado
+
+Há 40 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
+coleta, para uma falha de teste nunca bloquear a atualização dos dados. Eles cobrem as regras que, se erradas,
+fazem o mapa afirmar algo falso:
+
+- **Geometria** (`tests/geo.test.js`): ponto fora de qualquer município é `null`, e não o mais próximo; buracos em
+  polígonos; municípios com várias partes.
+- **Normalização das fontes** (`tests/normalizar.test.js`): `"-"` vira 0 só em estação ativa; limites de 3 h e de
+  30 min; estação sem limiar cadastrado não vira "normal"; chuva não homologada é descartada.
+- **Regras de negócio** (`tests/dados.test.js`): o município mostra o maior acumulado; sem estação ativa é `null`,
+  nunca 0; **coleta antiga de rios ainda mostra o risco que registrou** (regressão do erro real); sem leitura de rio
+  o risco é `null`, nunca "normal".
+
+A lógica de normalização foi extraída dos scripts para funções puras (`src/normalizar.js`) justamente para ser
+testável. A refatoração foi validada com um teste de regressão: as mesmas respostas reais, com o relógio fixo,
+produziram saídas idênticas byte a byte antes e depois.
+
+Os testes também foram verificados no sentido inverso: injetei de propósito cinco defeitos (inclusive o da falsa
+normalidade) e confirmei que a suíte falha em cada um. Essa verificação foi manual, não está automatizada.
+
 ## Limites e riscos conhecidos
 
-- **Não há testes automatizados.** A validação foi manual, em navegador (desktop e celular), incluindo cenários de
-  falha forçados. É a maior lacuna técnica.
+- **Não há testes de interface nem de integração com as fontes reais.** A tela foi validada manualmente, em
+  navegador (desktop e celular), com cenários de falha forçados. Também não há teste de contrato que avise quando o
+  formato da resposta do CEMADEN ou da Defesa Civil mudar.
 - **Não há monitoramento próprio da coleta.** A única sinalização de falha é o aviso de dado velho na tela.
 - **Dependência do agendador do GitHub**, que já se mostrou irregular.
 - **Fontes sem garantia:** o endpoint do CEMADEN não é documentado e pode mudar; a API da Defesa Civil não declara
@@ -99,8 +121,8 @@ de um servidor falso, o que num site de alertas é inaceitável.
 ## O que eu faria a seguir
 
 1. Um gatilho externo para o agendamento, para o dado não depender da regularidade do GitHub.
-2. Testes automatizados do núcleo: ponto-em-polígono, semântica de `null`, cálculo de frescor e regra de
-   "nunca normal sem leitura".
+2. Testes de contrato contra as fontes reais, para detectar quando o formato de uma resposta mudar, e testes de
+   interface automatizados.
 3. Um alerta próprio quando a coleta falha por mais de um período, além do aviso na tela.
 4. Guardar histórico para mostrar tendência, em vez de só o instante atual.
 5. Uma camada de risco de inundação, condicionada à licença das cartas do Serviço Geológico do Brasil.

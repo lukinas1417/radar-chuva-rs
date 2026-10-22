@@ -55,6 +55,10 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 Requer Node 22+. Sem dependências.
 
 ```sh
+node --test   # 40 testes do núcleo (geometria, normalização das fontes e regras de dados)
+```
+
+```sh
 node scripts/fetch-municipios.mjs   # malha municipal do IBGE (uma vez)
 node scripts/fetch-chuva.mjs        # estações de chuva do CEMADEN (repetir para atualizar)
 node scripts/fetch-rios.mjs         # estações de rio e chuva da Defesa Civil RS (opcional)

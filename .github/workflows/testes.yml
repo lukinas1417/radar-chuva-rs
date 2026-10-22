@@ -1,0 +1,22 @@
+name: Testes
+
+# Roda a cada envio e em pull requests. É separado do workflow de coleta de propósito:
+# uma falha de teste não deve impedir a atualização dos dados que o site publica.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Rodar os testes
+        run: node --test

@@ -1,0 +1,12 @@
+{
+  "name": "radar-chuva-rs",
+  "private": true,
+  "type": "module",
+  "description": "Mapa da chuva e dos rios por município do Rio Grande do Sul. Sem dependências.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
