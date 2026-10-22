@@ -85,6 +85,10 @@ node scripts/serve.mjs              # http://localhost:8080
 DADOS DA REDE OBSERVACIONAL DO CEMADEN/MCTIC (citação exigida pelas regras de utilização da PED), Rede
 Hidrometeorológica da Defesa Civil do RS, malha municipal do IBGE e relevo Terrarium (Mapzen/AWS).
 
+## Autor
+
+Lucas de Mélo Berra, desenvolvedor Full Stack. [Portfólio](https://lukinas1417.github.io/) · [GitHub](https://github.com/lukinas1417).
+
 ## Licença
 
 O código é distribuído sob a licença [MIT](LICENSE). Os **dados** não são cobertos por ela: pertencem
