@@ -60,13 +60,14 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 Requer Node 22+. Sem dependências.
 
 ```sh
-node --test   # 61 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
+node --test   # 74 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
 ```
 
 ```sh
 node scripts/fetch-municipios.mjs   # malha municipal do IBGE (uma vez)
 node scripts/fetch-chuva.mjs        # estações de chuva do CEMADEN (repetir para atualizar)
 node scripts/fetch-rios.mjs         # estações de rio e chuva da Defesa Civil RS (opcional)
+node scripts/fetch-estimativa.mjs   # estimativa de chuva por modelo, Open-Meteo (opcional; ~20 s)
 node scripts/fetch-noticias.mjs     # notícias recentes (opcional)
 node scripts/serve.mjs              # http://localhost:8080
 ```
@@ -79,6 +80,10 @@ node scripts/serve.mjs              # http://localhost:8080
 - `scripts/fetch-rios.mjs` consulta a [API da Defesa Civil do RS](https://sistemas.defesacivil.rs.gov.br/api-redehidrometeorologica)
   (GraphQL, dados a cada 5 minutos). A API só aceita o texto exato da consulta documentada, guardado em
   `scripts/consultas/tags_data.graphql`. Ela traz o nível dos rios e a chuva dos pluviômetros da Defesa Civil.
+- `scripts/fetch-estimativa.mjs` pede ao [Open-Meteo](https://open-meteo.com/) (gratuito para uso não comercial, CC BY 4.0)
+  a precipitação horária das últimas 48 h no centro de cada município e grava `data/estimativa-rs.json`. É um modelo, não uma
+  medição: o mapa só a usa onde não há medição em dia, sempre rotulada ("~", "estimado", cor mais transparente). A coleta é de
+  3 em 3 h para respeitar o limite de chamadas; nas outras execuções o arquivo publicado é reaproveitado.
 - O valor de cada município é o maior acumulado entre as estações ativas dele, das duas fontes.
 - O contorno luminoso usa a pior situação de rio informada pela Defesa Civil entre as estações do município.
 - O relevo 3D vem dos tiles públicos Terrarium (Mapzen/AWS); as demais camadas são desenhadas a partir da malha do IBGE.

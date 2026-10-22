@@ -228,6 +228,7 @@ button { font: inherit; color: inherit; }
 }
 .grande { display: flex; align-items: baseline; gap: 6px; margin: 16px 0 0; }
 .grande .num { font-family: var(--mono); font-size: 46px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
+.grande .selo-estimado { align-self: center; margin-left: 6px; padding: 2px 7px; border: 1px dashed rgba(200, 220, 240, 0.5); border-radius: 999px; color: var(--suave); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
 .grande .un { color: var(--suave); font-family: var(--mono); }
 .sub { margin: 4px 0 0; color: var(--suave); font-size: 13.5px; }
 
@@ -323,6 +324,7 @@ button { font: inherit; color: inherit; }
 #legenda .marcas { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: 4px; font-family: var(--mono); font-size: 10.5px; text-align: center; }
 #legenda .linha2 { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 11px; padding-top: 10px; border-top: 1px solid var(--linha); }
 #legenda .linha2 span { display: inline-flex; align-items: center; gap: 6px; }
+#legenda .estimado { width: 12px; height: 12px; border-radius: 3px; background: #27b6d9; opacity: 0.5; }
 #legenda .semdado { width: 12px; height: 12px; border-radius: 3px; background: #101c29; border: 1px dashed rgba(200, 220, 240, 0.4); }
 #legenda .brilho { width: 14px; height: 8px; border-radius: 4px; background: var(--c); box-shadow: 0 0 8px var(--c); }
 

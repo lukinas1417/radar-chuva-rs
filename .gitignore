@@ -4,3 +4,4 @@ data/rios-rs.json
 _site/
 .env
 data/noticias-rs.json
+data/estimativa-rs.json

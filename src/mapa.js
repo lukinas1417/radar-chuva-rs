@@ -1,5 +1,5 @@
 // Mapa em tela cheia: relevo 3D, municípios coloridos pela chuva e brilho pulsante nos rios em risco.
-import { SITUACOES, faixaDe, riscoDoMunicipio, valorDoMunicipio } from './dados.js';
+import { SITUACOES, chuvaDoMunicipio, faixaDe, riscoDoMunicipio } from './dados.js';
 
 const TILES_RELEVO = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const LIMITES_RS = [[-57.7, -33.8], [-49.6, -27.0]];
@@ -69,11 +69,11 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     janelaAtual = janela;
     for (const f of dados.malha.features) {
       const cod = f.properties.codIbge;
-      const mm = valorDoMunicipio(dados, cod, janela);
+      const chuva = chuvaDoMunicipio(dados, cod, janela);
       const risco = riscoDoMunicipio(dados, cod) ?? 0;
       Object.assign(f.properties, {
-        cor: mm === null ? COR_SEM_DADO : faixaDe(mm).cor,
-        op: mm === null ? 0.62 : 0.84,
+        cor: chuva === null ? COR_SEM_DADO : faixaDe(chuva.mm).cor,
+        op: chuva === null ? 0.62 : chuva.tipo === 'estimado' ? 0.5 : 0.84, // estimado fica mais transparente que o medido
         risco,
         corRisco: SITUACOES.find((s) => s.valor === risco)?.cor ?? '#ffffff',
       });

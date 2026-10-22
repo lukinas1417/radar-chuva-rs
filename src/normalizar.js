@@ -105,3 +105,37 @@ export function normalizarDefesaCivil(bruto, agoraMs, indice) {
 
   return { estacoes, pluviometros };
 }
+
+// ---------- Open-Meteo (estimativa por modelo) ----------
+// Janelas em horas; as mesmas que o mapa mostra para as medições.
+export const JANELAS_ESTIMATIVA = { '1h': 1, '6h': 6, '24h': 24, '48h': 48 };
+// A estimativa é coletada a cada 3 h; passou do dobro disso, deixa de ser usada.
+export const ESTIMATIVA_RENOVAR_MS = 3 * 60 * 60 * 1000;
+export const ESTIMATIVA_VALIDA_MS = 6 * 60 * 60 * 1000;
+
+// Resposta horária de um ponto (`time` em segundos Unix, `precipitation` em mm da hora que TERMINA em `time`)
+// -> acumulado por janela. Horas futuras (a previsão que vem junto) são ignoradas. Janela sem todas as horas
+// ou com buraco vira null: soma parcial subestimaria a chuva.
+export function acumularEstimativa({ time, precipitation }, agoraMs) {
+  const horas = [];
+  for (let i = 0; i < time.length; i++) {
+    if (time[i] * 1000 <= agoraMs) horas.push(precipitation[i]);
+  }
+  const acumulado = {};
+  for (const [janela, n] of Object.entries(JANELAS_ESTIMATIVA)) {
+    const ultimas = horas.slice(-n);
+    const completa = ultimas.length === n && ultimas.every((v) => typeof v === 'number' && Number.isFinite(v));
+    acumulado[janela] = completa ? Math.round(ultimas.reduce((a, b) => a + b, 0) * 10) / 10 : null;
+  }
+  return acumulado;
+}
+
+// `pontos[i]` é a resposta do município `codigos[i]`. Município com qualquer janela sem valor fica de fora.
+export function normalizarEstimativa(pontos, codigos, agoraMs) {
+  return codigos
+    .map((codIbge, i) => ({ codIbge, acumuladoMm: pontos[i]?.hourly ? acumularEstimativa(pontos[i].hourly, agoraMs) : null }))
+    .filter((m) => m.acumuladoMm && Object.values(m.acumuladoMm).every((v) => v !== null));
+}
+
+export const estimativaPrecisaRenovar = (geradoEm, agoraMs) =>
+  !(Date.parse(geradoEm) > agoraMs - ESTIMATIVA_RENOVAR_MS);

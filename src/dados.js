@@ -1,5 +1,6 @@
 // Carrega as fontes e responde perguntas sobre cada município.
 import { distanciaKm, indexarMunicipios, municipioDe } from './geo.js';
+import { ESTIMATIVA_VALIDA_MS } from './normalizar.js';
 
 export const JANELAS = ['1h', '6h', '24h', '48h'];
 
@@ -31,13 +32,14 @@ async function carregar(url) {
   return res.json();
 }
 
-export async function carregarDados() {
-  // A Defesa Civil e as notícias são opcionais: se a fonte falhar, o mapa de chuva do CEMADEN continua funcionando.
-  const [chuva, malha, rios, noticias] = await Promise.all([
+export async function carregarDados(agoraMs = Date.now()) {
+  // Defesa Civil, estimativa e notícias são opcionais: se a fonte falhar, o mapa de chuva do CEMADEN continua funcionando.
+  const [chuva, malha, rios, noticias, estimativaBruta] = await Promise.all([
     carregar('data/chuva-rs.json'),
     carregar('data/municipios-rs.geojson'),
     carregar('data/rios-rs.json').catch(() => null),
     carregar('data/noticias-rs.json').catch(() => null),
+    carregar('data/estimativa-rs.json').catch(() => null),
   ]);
 
   const indice = indexarMunicipios(malha);
@@ -66,7 +68,20 @@ export async function carregarDados() {
 
   const riosComLeitura = [...estacoesRio.values()].flat().filter((e) => e.recente && e.situacao !== null).length;
 
-  return { chuva, rios, noticias, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura };
+  // Estimativa por modelo (Open-Meteo), por município. Velha demais, ou sem data válida, não é usada.
+  const estimativaValida = estimativaBruta && agoraMs - Date.parse(estimativaBruta.geradoEm) <= ESTIMATIVA_VALIDA_MS;
+  const estimativa = new Map(estimativaValida ? estimativaBruta.municipios.map((m) => [m.codIbge, m.acumuladoMm]) : []);
+
+  // Uma fonte de medição só vale como "medida" enquanto a coleta dela é recente.
+  const fontesFrescas = {
+    CEMADEN: agoraMs - Date.parse(chuva.geradoEm) <= DADO_VELHO_MS,
+    'Defesa Civil RS': rios ? agoraMs - Date.parse(rios.geradoEm) <= DADO_VELHO_MS : false,
+  };
+
+  return {
+    chuva, rios, noticias, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura,
+    estimativa, estimativaGeradoEm: estimativaValida ? estimativaBruta.geradoEm : null, fontesFrescas,
+  };
 }
 
 // Maior acumulado entre as estações ativas do município; null se não houver nenhuma.
@@ -74,6 +89,18 @@ export function valorDoMunicipio(dados, codIbge, janela) {
   const estacoes = dados.pluviometros.get(codIbge);
   if (!estacoes?.length) return null;
   return Math.max(...estacoes.map((e) => e.acumuladoMm[janela] ?? 0));
+}
+
+// O que o mapa afirma sobre a chuva do município: medição de pluviômetro de fonte em dia; se não houver,
+// a estimativa do modelo, sempre marcada como tal; se não houver nenhuma, a última medição (a coleta antiga é
+// avisada na interface) ou null. Medição velha nunca é apresentada como atual quando há estimativa.
+export function chuvaDoMunicipio(dados, codIbge, janela) {
+  const frescas = (dados.pluviometros.get(codIbge) ?? []).filter((e) => dados.fontesFrescas[e.fonte]);
+  if (frescas.length) return { mm: Math.max(...frescas.map((e) => e.acumuladoMm[janela] ?? 0)), tipo: 'medido' };
+  const estimado = dados.estimativa.get(codIbge)?.[janela];
+  if (typeof estimado === 'number') return { mm: estimado, tipo: 'estimado' };
+  const ultima = valorDoMunicipio(dados, codIbge, janela);
+  return ultima === null ? null : { mm: ultima, tipo: 'medido' };
 }
 
 // Pior situação de rio entre as estações recentes do município; null se não houver dado.

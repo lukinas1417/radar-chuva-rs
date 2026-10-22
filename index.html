@@ -91,17 +91,18 @@
   <section id="sobre" class="vidro" hidden>
     <h2>Sobre os dados</h2>
     <p><b>Chuva.</b> DADOS DA REDE OBSERVACIONAL DO CEMADEN/MCTIC e pluviômetros da Defesa Civil do RS. O valor de cada município é o maior acumulado entre as estações ativas dele.</p>
+    <p><b>Estimativa.</b> Onde não há medição recente, o mapa mostra (transparente, com “~”) a chuva estimada pelo modelo <a href="https://open-meteo.com/">Open-Meteo</a> (CC BY 4.0) no centro do município. É um modelo, não um pluviômetro: pode errar, principalmente em temporais localizados.</p>
     <p><b>Rios.</b> Rede Hidrometeorológica da Defesa Civil do RS. O contorno luminoso indica a situação informada por ela (atenção, alerta ou inundação) e pode refletir o maior nível recente, não só o atual.</p>
     <p><b>Notícias.</b> Títulos e links do G1 RS e da Agência Brasil (feeds RSS públicos), escolhidos automaticamente por palavras-chave, o que pode errar. O conteúdo é dos veículos: os links levam até eles.</p>
     <p><b>Mapa.</b> Malha municipal do IBGE. Relevo: Mapzen/AWS Terrain Tiles.</p>
-    <p><b>Município em cinza escuro</b> não tem pluviômetro ativo nas redes consultadas, o que não significa ausência de chuva.</p>
+    <p><b>Município em cinza escuro</b> está sem medição e sem estimativa no momento, o que não significa ausência de chuva.</p>
     <p class="aviso"><b>Este projeto não substitui os alertas oficiais.</b> Em emergência, siga a Defesa Civil: SMS 40199 com seu CEP, ou 199.</p>
     <p><a href="https://github.com/lukinas1417/radar-chuva-rs">Código aberto no GitHub</a></p>
   </section>
 
   <footer id="creditos">
     <span>Não substitui os alertas oficiais · SMS 40199</span>
-    <span class="fontes">Dados: CEMADEN/MCTIC, Defesa Civil RS, IBGE</span>
+    <span class="fontes">Dados: CEMADEN/MCTIC, Defesa Civil RS, Open-Meteo, IBGE</span>
   </footer>
 
   <div id="dica" role="tooltip" hidden></div>

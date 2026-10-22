@@ -2,7 +2,7 @@
 // Aqui ficam os testes do erro real de "falsa normalidade" e da regra "estado desconhecido nunca vira normal".
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { carregarDados, faixaDe, municipiosEmRisco, riscoDoMunicipio, semAcento, valorDoMunicipio, vizinhosComDado } from '../src/dados.js';
+import { carregarDados, chuvaDoMunicipio, faixaDe, municipiosEmRisco, riscoDoMunicipio, semAcento, valorDoMunicipio, vizinhosComDado } from '../src/dados.js';
 
 const quadrado = (x, y) => [[[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1], [x, y]]];
 const malha = {
@@ -38,9 +38,9 @@ const rio = (nome, lon, lat, situacao, minAntesDaColeta = 5, extra = {}) => ({
 
 // Troca o fetch global por respostas fixas: nenhum teste usa a rede.
 const original = globalThis.fetch;
-function fontes({ chuva, rios }) {
+function fontes({ chuva, rios, estimativa = null }) {
   globalThis.fetch = async (url) => {
-    const corpo = { 'data/municipios-rs.geojson': malha, 'data/chuva-rs.json': chuva, 'data/rios-rs.json': rios }[url];
+    const corpo = { 'data/municipios-rs.geojson': malha, 'data/chuva-rs.json': chuva, 'data/rios-rs.json': rios, 'data/estimativa-rs.json': estimativa }[url];
     if (!corpo) return { ok: false, status: 404, json: async () => ({}) };
     return { ok: true, status: 200, json: async () => corpo };
   };
@@ -183,4 +183,62 @@ test('as faixas de chuva respeitam os limites: 0 é "sem chuva" e 10 ainda é "a
 test('a busca ignora acentos e maiúsculas', () => {
   assert.equal(semAcento('São José do Norte'), 'sao jose do norte');
   assert.equal(semAcento('ÁGATA'), 'agata');
+});
+
+// ---------- estimativa por modelo ----------
+
+const AGORA = Date.parse(COLETA) + 10 * 60_000;
+const horasAntes = (h) => new Date(AGORA - h * 3_600_000).toISOString();
+const estimativaPadrao = (geradoEm = horasAntes(1)) => ({
+  geradoEm,
+  fonte: 'Open-Meteo',
+  municipios: [
+    { codIbge: 1, acumuladoMm: { '1h': 9, '6h': 9, '24h': 9, '48h': 9 } },
+    { codIbge: 3, acumuladoMm: { '1h': 0.4, '6h': 3, '24h': 12, '48h': 20 } },
+  ],
+});
+
+test('medição em dia vence a estimativa', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null, estimativa: estimativaPadrao() });
+  const dados = await carregarDados(AGORA);
+  assert.deepEqual(chuvaDoMunicipio(dados, 1, '24h'), { mm: 25, tipo: 'medido' });
+});
+
+test('município sem pluviômetro mostra a estimativa, marcada como estimada', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null, estimativa: estimativaPadrao() });
+  const dados = await carregarDados(AGORA);
+  assert.deepEqual(chuvaDoMunicipio(dados, 3, '24h'), { mm: 12, tipo: 'estimado' });
+});
+
+test('sem estimativa, município sem pluviômetro continua sem dado', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null });
+  const dados = await carregarDados(AGORA);
+  assert.equal(chuvaDoMunicipio(dados, 3, '24h'), null);
+});
+
+test('CEMADEN desatualizado: a medição velha cede lugar à estimativa, que nunca é apresentada como medição', async () => {
+  const velha = { ...chuvaPadrao, geradoEm: horasAntes(5) };
+  fontes({ chuva: velha, rios: null, estimativa: estimativaPadrao() });
+  const dados = await carregarDados(AGORA);
+  assert.deepEqual(chuvaDoMunicipio(dados, 1, '24h'), { mm: 9, tipo: 'estimado' });
+});
+
+test('CEMADEN desatualizado e sem estimativa: mantém a última medição (a interface avisa que está velha)', async () => {
+  const velha = { ...chuvaPadrao, geradoEm: horasAntes(5) };
+  fontes({ chuva: velha, rios: null });
+  const dados = await carregarDados(AGORA);
+  assert.deepEqual(chuvaDoMunicipio(dados, 1, '24h'), { mm: 25, tipo: 'medido' });
+});
+
+test('estimativa com mais de 6 h não é usada', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null, estimativa: estimativaPadrao(horasAntes(7)) });
+  const dados = await carregarDados(AGORA);
+  assert.equal(chuvaDoMunicipio(dados, 3, '24h'), null);
+  assert.equal(dados.estimativaGeradoEm, null);
+});
+
+test('estimativa com data inválida é descartada, não tratada como recente', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null, estimativa: estimativaPadrao('ontem') });
+  const dados = await carregarDados(AGORA);
+  assert.equal(chuvaDoMunicipio(dados, 3, '24h'), null);
 });

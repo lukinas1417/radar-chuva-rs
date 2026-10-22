@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { indexarMunicipios } from '../src/geo.js';
-import { normalizarChuvaCemaden, normalizarDefesaCivil, paraIsoCemaden, paraIsoDefesaCivil } from '../src/normalizar.js';
+import { acumularEstimativa, estimativaPrecisaRenovar, normalizarChuvaCemaden, normalizarEstimativa, normalizarDefesaCivil, paraIsoCemaden, paraIsoDefesaCivil } from '../src/normalizar.js';
 
 // ---------- CEMADEN ----------
 
@@ -158,4 +158,56 @@ test('chuva marcada como não homologada é descartada', () => {
 test('estação fora da malha municipal fica com codIbge null (e não no município vizinho)', () => {
   assert.equal(normalizarDC(estacaoDC({ lon: 50, lat: 50 })).pluviometros[0].codIbge, null);
   assert.equal(normalizarDC(estacaoDC()).pluviometros[0].codIbge, 1);
+});
+
+// ---------- Open-Meteo (estimativa) ----------
+
+const AGORA_EST = Date.parse('2026-10-22T14:40:00Z');
+// 72 horas em ponto, de 20/10 00:00Z a 22/10 23:00Z (a previsão do dia vem junto). Cada hora válida marca 1 mm.
+function horario(valorDe = () => 1) {
+  const inicio = Date.parse('2026-10-20T00:00:00Z') / 1000;
+  const time = Array.from({ length: 72 }, (_, i) => inicio + i * 3600);
+  return { time, precipitation: time.map((t) => valorDe(t)) };
+}
+
+test('estimativa soma só as horas já terminadas; a previsão que vem junto é ignorada', () => {
+  // até 22/10 14:00Z há 62 horas passadas; as de 15:00Z em diante são futuras e valem 100 mm cada
+  const h = horario((t) => (t * 1000 <= AGORA_EST ? 1 : 100));
+  assert.deepEqual(acumularEstimativa(h, AGORA_EST), { '1h': 1, '6h': 6, '24h': 24, '48h': 48 });
+});
+
+test('estimativa: janela com buraco (null) vira null, não uma soma parcial', () => {
+  const h = horario();
+  h.precipitation[h.time.findIndex((t) => t * 1000 === Date.parse('2026-10-22T10:00:00Z'))] = null;
+  const r = acumularEstimativa(h, AGORA_EST);
+  assert.equal(r['1h'], 1);
+  assert.equal(r['6h'], null);
+  assert.equal(r['24h'], null);
+});
+
+test('estimativa: poucas horas disponíveis não completam a janela de 48 h', () => {
+  const h = { time: horario().time.slice(30, 72), precipitation: Array(42).fill(1) };
+  const r = acumularEstimativa(h, AGORA_EST);
+  assert.equal(r['24h'], 24);
+  assert.equal(r['48h'], null);
+});
+
+test('estimativa arredonda a 0,1 mm', () => {
+  const h = horario(() => 0.1);
+  assert.equal(acumularEstimativa(h, AGORA_EST)['6h'], 0.6);
+});
+
+test('normalizarEstimativa descarta município sem resposta completa', () => {
+  const ok = { hourly: horario() };
+  const furado = { hourly: horario((t) => (t * 1000 > AGORA_EST - 3600_000 && t * 1000 <= AGORA_EST ? null : 1)) };
+  const r = normalizarEstimativa([ok, furado, undefined], [10, 20, 30], AGORA_EST);
+  assert.deepEqual(r.map((m) => m.codIbge), [10]);
+});
+
+test('a estimativa só é renovada depois de 3 h; data inválida força renovação', () => {
+  const agora = Date.parse('2026-10-22T15:00:00Z');
+  assert.equal(estimativaPrecisaRenovar('2026-10-22T13:00:00Z', agora), false);
+  assert.equal(estimativaPrecisaRenovar('2026-10-22T11:30:00Z', agora), true);
+  assert.equal(estimativaPrecisaRenovar(undefined, agora), true);
+  assert.equal(estimativaPrecisaRenovar('lixo', agora), true);
 });

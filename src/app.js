@@ -5,6 +5,7 @@ import {
   JANELAS,
   SITUACOES,
   carregarDados,
+  chuvaDoMunicipio,
   faixaDe,
   municipiosEmRisco,
   semAcento,
@@ -20,6 +21,8 @@ const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ESCAPES[c]);
 
 const fmtMm = (v) => (v === 0 ? '0' : v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+// Estimativa por modelo leva "~" e "(est.)": nunca se confunde com medição.
+const textoMm = (c) => (c === null ? 'sem dado' : `${c.tipo === 'estimado' ? '~' : ''}${fmtMm(c.mm)} mm${c.tipo === 'estimado' ? ' (est.)' : ''}`);
 const fmtM = (v) => `${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
 const mesmoDia = (a, b) => a.toDateString() === b.toDateString();
 function fmtHora(iso) {
@@ -100,8 +103,7 @@ function mostrarDica(cod, ponto) {
     dica.hidden = true;
     return;
   }
-  const mm = valorDoMunicipio(dados, cod, janela);
-  dica.innerHTML = `<b>${esc(dados.porCodigo.get(cod).nome)}</b><span>${mm === null ? 'sem dado' : `${fmtMm(mm)} mm`}</span>`;
+  dica.innerHTML = `<b>${esc(dados.porCodigo.get(cod).nome)}</b><span>${textoMm(chuvaDoMunicipio(dados, cod, janela))}</span>`;
   dica.hidden = false;
   const { width } = dica.getBoundingClientRect();
   dica.style.left = `${Math.min(ponto.x + 16, innerWidth - width - 8)}px`;
@@ -116,7 +118,8 @@ function desenharLegenda() {
     <div class="escala">${FAIXAS.map((f) => `<i style="--c:${f.cor}"></i>`).join('')}</div>
     <div class="marcas">${marcas.map((m) => `<span>${m}</span>`).join('')}</div>
     <div class="linha2">
-      <span><i class="semdado"></i>sem pluviômetro</span>
+      <span><i class="semdado"></i>sem dado</span>
+      <span><i class="estimado"></i>transparente: estimado</span>
       ${SITUACOES.slice(1)
         .map((s) => `<span><i class="brilho" style="--c:${s.cor}"></i><span class="prefixo">rio em </span>${s.texto}</span>`)
         .join('')}
@@ -141,13 +144,14 @@ function desenharStatus() {
   $('status').title = [
     `Chuva do CEMADEN: ${fmtHora(dados.chuva.geradoEm)}`,
     dados.rios ? `Defesa Civil RS (chuva e rios): ${fmtHora(dados.rios.geradoEm)}` : 'Defesa Civil RS: indisponível',
+    dados.estimativaGeradoEm ? `Estimativa Open-Meteo (modelo): ${fmtHora(dados.estimativaGeradoEm)}` : 'Estimativa Open-Meteo: indisponível',
   ].join('\n');
   if (velho) {
     const quais = [
       chuvaVelha && `chuva do CEMADEN (desde ${fmtHora(dados.chuva.geradoEm)})`,
       riosVelhos && `rios e parte da chuva da Defesa Civil RS (desde ${fmtHora(dados.rios.geradoEm)})`,
     ].filter(Boolean);
-    mostrarAviso(`Dados desatualizados: ${quais.join(' e ')}. A fonte está instável e o que aparece pode não refletir a situação atual. Consulte a Defesa Civil.`, true, 15000);
+    mostrarAviso(`Dados desatualizados: ${quais.join(' e ')}. A fonte está instável e o que aparece pode não refletir a situação atual.${dados.estimativaGeradoEm ? ' Onde não há medição recente, o mapa mostra uma estimativa do modelo Open-Meteo (transparente).' : ''} Consulte a Defesa Civil.`, true, 15000);
   }
   else if (semRios) mostrarAviso('Os dados da Defesa Civil RS (rios e parte da chuva) estão indisponíveis no momento.', true, 9000);
 }
@@ -208,7 +212,9 @@ function htmlCartao(cod, euEstou) {
   const m = dados.porCodigo.get(cod);
   const estacoes = dados.pluviometros.get(cod) ?? [];
   const rios = [...(dados.estacoesRio.get(cod) ?? [])].sort((a, b) => (b.situacao ?? -1) - (a.situacao ?? -1));
-  const vizinhos = estacoes.length ? [] : vizinhosComDado(dados, cod, janela);
+  const chuva = chuvaDoMunicipio(dados, cod, janela);
+  const estimado = chuva?.tipo === 'estimado';
+  const vizinhos = chuva?.tipo === 'medido' ? [] : vizinhosComDado(dados, cod, janela);
 
   // ----- resumo (sempre visível) -----
   let html = `
@@ -222,11 +228,13 @@ function htmlCartao(cod, euEstou) {
       </button>
     </div>`;
 
-  if (estacoes.length) {
-    const v = valorDoMunicipio(dados, cod, janela);
+  if (chuva) {
+    const origem = estimado
+      ? 'estimativa do modelo, não é medição'
+      : `${estacoes.length} ${estacoes.length === 1 ? 'estação' : 'estações'}`;
     html += `
-      <p class="grande"><span class="num">${fmtMm(v)}</span><span class="un">mm</span></p>
-      <p class="sub">${TEXTO_JANELA[janela]} · ${estacoes.length} ${estacoes.length === 1 ? 'estação' : 'estações'}</p>`;
+      <p class="grande"><span class="num">${estimado ? '~' : ''}${fmtMm(chuva.mm)}</span><span class="un">mm</span>${estimado ? '<span class="selo-estimado">estimado</span>' : ''}</p>
+      <p class="sub">${TEXTO_JANELA[janela]} · ${origem}</p>`;
   } else {
     html += '<p class="sub" style="margin-top:12px">Sem pluviômetro ativo neste município. Isso não significa que não está chovendo.</p>';
   }
@@ -245,14 +253,15 @@ function htmlCartao(cod, euEstou) {
 
   // ----- detalhes (expansíveis) -----
   html += '<div class="detalhes">';
-  if (estacoes.length) {
+  if (chuva) {
     html += `<div class="barras">${JANELAS.map((j) => {
-      const x = valorDoMunicipio(dados, cod, j);
+      const x = chuvaDoMunicipio(dados, cod, j).mm;
       return `<div class="barra${j === janela ? ' ativa' : ''}" style="--c:${faixaDe(x).cor}">
-        <span class="rot">${j}</span><span class="trilho"><i style="width:${Math.min(100, x)}%"></i></span><span class="val">${fmtMm(x)} mm</span></div>`;
+        <span class="rot">${j}</span><span class="trilho"><i style="width:${Math.min(100, x)}%"></i></span><span class="val">${estimado ? '~' : ''}${fmtMm(x)} mm</span></div>`;
     }).join('')}</div>`;
-  } else if (vizinhos.length) {
-    html += `<h3>Dado mais próximo</h3>${vizinhos
+  }
+  if (vizinhos.length) {
+    html += `<h3>Medição mais próxima</h3>${vizinhos
       .map(({ municipio, km }) => {
         const v = valorDoMunicipio(dados, municipio.codIbge, janela);
         return `<button class="vizinho" type="button" data-ir="${municipio.codIbge}"><span>${esc(municipio.nome)}</span>
@@ -286,6 +295,9 @@ function htmlCartao(cod, euEstou) {
       </tbody></table></details>`;
     const ultima = estacoes.map((e) => e.ultimaLeitura).sort().at(-1);
     html += `<p class="cartao-pe">Leitura mais recente: ${fmtHora(ultima)}</p>`;
+  }
+  if (estimado) {
+    html += `<p class="cartao-pe">Estimativa do modelo <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> (CC BY 4.0) para o centro do município, calculada às ${fmtHora(dados.estimativaGeradoEm)}. Pode diferir do que choveu de fato, principalmente em temporais localizados.</p>`;
   }
   return html + '</div>';
 }
@@ -345,8 +357,7 @@ function atualizarOpcoes() {
   lista.innerHTML = opcoes.length
     ? opcoes
         .map((m, i) => {
-          const mm = valorDoMunicipio(dados, m.codIbge, janela);
-          return `<li role="option" data-cod="${m.codIbge}" aria-selected="${i === ativa}">${esc(m.nome)}<small>${mm === null ? 'sem dado' : `${fmtMm(mm)} mm`}</small></li>`;
+          return `<li role="option" data-cod="${m.codIbge}" aria-selected="${i === ativa}">${esc(m.nome)}<small>${textoMm(chuvaDoMunicipio(dados, m.codIbge, janela))}</small></li>`;
         })
         .join('')
     : '<li class="vazio" role="option" aria-disabled="true">Nenhum município encontrado</li>';

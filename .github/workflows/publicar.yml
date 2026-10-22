@@ -35,6 +35,13 @@ jobs:
       - name: Buscar nível dos rios (Defesa Civil RS)
         run: node scripts/fetch-rios.mjs
         continue-on-error: true
+      # Estimativa por modelo (Open-Meteo): API gratuita com limite de chamadas, então só é refeita a cada 3 h;
+      # nas demais execuções o arquivo já publicado é reaproveitado pelo próprio script.
+      - name: Buscar estimativa de chuva (Open-Meteo)
+        env:
+          PUBLICADO: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/estimativa-rs.json
+        run: node scripts/fetch-estimativa.mjs
+        continue-on-error: true
       # Notícias são opcionais, como os rios: se as fontes falharem, o site mostra as últimas coletadas.
       - name: Buscar notícias (G1 RS e Agência Brasil)
         run: node scripts/fetch-noticias.mjs
@@ -44,7 +51,7 @@ jobs:
           BASE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data
         run: |
           mkdir -p data
-          for arq in chuva-rs.json rios-rs.json noticias-rs.json; do
+          for arq in chuva-rs.json rios-rs.json estimativa-rs.json noticias-rs.json; do
             if [ ! -f "data/$arq" ]; then
               echo "coleta de $arq falhou; tentando reaproveitar o publicado"
               curl -fsS --retry 3 "$BASE/$arq" -o "data/$arq" || rm -f "data/$arq"
