@@ -110,10 +110,14 @@ function desenharLegenda() {
 }
 
 // ---------- status e resumo de risco ----------
+const dadoVelho = (iso) => Date.now() - Date.parse(iso) > DADO_VELHO_MS;
+const chuvaVelha = dadoVelho(dados.chuva.geradoEm);
+const riosVelhos = dados.rios ? dadoVelho(dados.rios.geradoEm) : false;
+
 function desenharStatus() {
   const fontes = [dados.chuva.geradoEm, ...(dados.rios ? [dados.rios.geradoEm] : [])];
   const maisAntiga = fontes.reduce((a, b) => (Date.parse(a) < Date.parse(b) ? a : b));
-  const velho = Date.now() - Date.parse(maisAntiga) > DADO_VELHO_MS;
+  const velho = chuvaVelha || riosVelhos;
   const semRios = !dados.rios;
   const ponto = $('status-ponto');
   ponto.style.setProperty('--c', velho || semRios ? COR_ALERTA : '#69d38a');
@@ -123,7 +127,13 @@ function desenharStatus() {
     `Chuva do CEMADEN: ${fmtHora(dados.chuva.geradoEm)}`,
     dados.rios ? `Defesa Civil RS (chuva e rios): ${fmtHora(dados.rios.geradoEm)}` : 'Defesa Civil RS: indisponível',
   ].join('\n');
-  if (velho) mostrarAviso('Os dados estão desatualizados porque a fonte está instável. O que aparece pode não refletir a situação atual. Consulte a Defesa Civil.', true, 12000);
+  if (velho) {
+    const quais = [
+      chuvaVelha && `chuva do CEMADEN (desde ${fmtHora(dados.chuva.geradoEm)})`,
+      riosVelhos && `rios e parte da chuva da Defesa Civil RS (desde ${fmtHora(dados.rios.geradoEm)})`,
+    ].filter(Boolean);
+    mostrarAviso(`Dados desatualizados: ${quais.join(' e ')}. A fonte está instável e o que aparece pode não refletir a situação atual. Consulte a Defesa Civil.`, true, 15000);
+  }
   else if (semRios) mostrarAviso('Os dados da Defesa Civil RS (rios e parte da chuva) estão indisponíveis no momento.', true, 9000);
 }
 
@@ -142,9 +152,11 @@ function desenharAtencao() {
     botao.disabled = true;
     return;
   }
+  // Com a coleta de rios antiga, o resumo diz de quando é o dado, em vez de parecer atual.
+  const prefixo = riosVelhos ? `Rios de ${fmtHora(dados.rios.geradoEm)}: ` : '';
   if (!emRisco.length) {
-    ponto.style.setProperty('--c', '#69d38a');
-    $('atencao-texto').textContent = 'Nenhum rio fora da normalidade';
+    ponto.style.setProperty('--c', riosVelhos ? COR_ALERTA : '#69d38a');
+    $('atencao-texto').textContent = `${prefixo}${riosVelhos ? 'nenhum fora da normalidade' : 'Nenhum rio fora da normalidade'}`;
     botao.disabled = true;
     return;
   }
@@ -152,7 +164,7 @@ function desenharAtencao() {
   ponto.style.setProperty('--c', pior.cor);
   ponto.classList.add('pulsa');
   const n = emRisco.length;
-  $('atencao-texto').textContent = `${n} ${n === 1 ? 'município' : 'municípios'} com rio fora da normalidade`;
+  $('atencao-texto').textContent = `${prefixo}${n} ${n === 1 ? 'município' : 'municípios'} com rio fora da normalidade`;
   $('lista-atencao').innerHTML = emRisco
     .map(
       ({ municipio, nivel }) => `<li><button type="button" data-ir="${municipio.codIbge}">
