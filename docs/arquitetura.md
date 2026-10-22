@@ -51,6 +51,8 @@ JSON e desenha o mapa.
 | Significado do `status` de rio é ambíguo na documentação | Rotulado como "situação informada pela Defesa Civil", com nota de que as cotas não são divulgadas | O sistema não afirma o que não sabe |
 | API oficial do CEMADEN (PED): token expira em 4 h e o login tem captcha | Testada e descartada para coleta agendada. O captcha **não é contornado** | Nada: continua no endpoint público |
 | Estação perto de uma divisa cai no município vizinho (malha simplificada) | Limitação documentada; o painel mostra o nome da estação | O usuário pode conferir |
+| Feed de notícias fora do ar | Cada fonte falha sozinha; se nenhuma responde, o último arquivo publicado é reaproveitado. Notícias são opcionais | As últimas notícias, com o horário da coleta (e "Desatualizado" depois de 3 h); sem arquivo, o painel não aparece |
+| Notícia fora de contexto passa pelo filtro de palavras-chave (ex.: um texto sobre o "símbolo da enchente") | Só entra o que tem pontuação mínima e menos de 72 h; limitação **não resolvida**, por ser uma heurística | O "Sobre os dados" avisa que a seleção é automática e pode errar |
 
 ## Decisões e trade-offs
 
@@ -80,16 +82,32 @@ municípios) e no navegador (para achar a cidade do usuário), em um único mód
 **Localização só no cliente.** A posição vira um município dentro do navegador e nunca é enviada nem guardada.
 Também não há analytics, e as fontes de texto ficam no repositório.
 
+**Notícias coletadas no servidor, filtradas no navegador.** Os feeds públicos (G1 RS e Agência Brasil) não aceitam
+leitura direta do navegador de forma confiável, e pedir uma busca por município a cada clique seria multiplicar
+chamadas a terceiros. Então o workflow coleta uma vez por ciclo, guarda só título, trecho curto, fonte, link e data
+(nunca o texto da matéria) e o navegador filtra por cidade. Com uma cidade selecionada, aparecem as notícias que a citam
+(comparação por palavra inteira e sem acento, e "Rio Grande" nunca casa com "Rio Grande do Sul"); se não houver
+nenhuma, o painel **diz isso** e mostra os destaques do estado. A relevância é por palavras-chave e cai com a idade.
+O Google News foi descartado porque o uso automatizado dele tem termos incertos.
+
+**Zoom com limites.** O zoom mínimo é o do enquadramento do estado menos uma folga curta (calculado a cada tamanho de
+tela), para nunca mostrar o estado pequeno com espaço vazio em volta; o máximo é o nível de cidade, porque além disso
+só aparecem as arestas da malha simplificada. Recarregar a página (F5) com uma cidade na URL seleciona a cidade **sem
+aproximar**, como o resto do mapa.
+
 **Proteções não são contornadas.** O captcha do login da PED e a verificação de certificado da API da Defesa Civil
 são tratados como limites do sistema, não como obstáculos. Desativar a verificação de TLS faria o site aceitar dado
 de um servidor falso, o que num site de alertas é inaceitável.
 
 ## Como o sistema é verificado
 
-Há 40 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
+Há 61 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
 coleta, para uma falha de teste nunca bloquear a atualização dos dados. Eles cobrem as regras que, se erradas,
 fazem o mapa afirmar algo falso:
 
+- **Notícias** (`tests/noticias.test.js`): notícia com mais de 72 h não é recente; data no futuro é descartada; fonte
+  nacional só entra se citar o RS; "Rio Grande" não casa com "Rio Grande do Sul"; cidade comparada por palavra inteira;
+  sem notícia da cidade, o painel não diz que as do estado são do município.
 - **Geometria** (`tests/geo.test.js`): ponto fora de qualquer município é `null`, e não o mais próximo; buracos em
   polígonos; municípios com várias partes.
 - **Normalização das fontes** (`tests/normalizar.test.js`): `"-"` vira 0 só em estação ativa; limites de 3 h e de

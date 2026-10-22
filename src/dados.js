@@ -32,11 +32,12 @@ async function carregar(url) {
 }
 
 export async function carregarDados() {
-  // A Defesa Civil é opcional: se a fonte falhar, o mapa de chuva do CEMADEN continua funcionando.
-  const [chuva, malha, rios] = await Promise.all([
+  // A Defesa Civil e as notícias são opcionais: se a fonte falhar, o mapa de chuva do CEMADEN continua funcionando.
+  const [chuva, malha, rios, noticias] = await Promise.all([
     carregar('data/chuva-rs.json'),
     carregar('data/municipios-rs.geojson'),
     carregar('data/rios-rs.json').catch(() => null),
+    carregar('data/noticias-rs.json').catch(() => null),
   ]);
 
   const indice = indexarMunicipios(malha);
@@ -65,7 +66,7 @@ export async function carregarDados() {
 
   const riosComLeitura = [...estacoesRio.values()].flat().filter((e) => e.recente && e.situacao !== null).length;
 
-  return { chuva, rios, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura };
+  return { chuva, rios, noticias, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura };
 }
 
 // Maior acumulado entre as estações ativas do município; null se não houver nenhuma.

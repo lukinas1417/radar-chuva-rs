@@ -13,6 +13,7 @@ import {
 } from './dados.js';
 import { municipioDe } from './geo.js';
 import { criarMapa } from './mapa.js';
+import { noticiasPara } from './noticias.js';
 
 const $ = (id) => document.getElementById(id);
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -72,12 +73,23 @@ function gravarEstado() {
 }
 
 // ---------- mapa ----------
+// O controle deslizante vai do zoom mínimo ao máximo do mapa (que dependem do tamanho da tela).
+const slider = $('zoom-slider');
+function atualizarSlider(zoom, minimo, maximo) {
+  slider.value = String(Math.round(((zoom - minimo) / (maximo - minimo)) * 100));
+}
+
 const mapa = criarMapa({
   container: 'mapa',
   dados,
   aoSelecionar: (cod) => selecionar(cod, { voar: false }),
   aoPassar: mostrarDica,
-  aoAfastar: (afastado) => ($('recentrar').hidden = !afastado),
+  aoAfastar: (afastado) => $('recentrar').classList.toggle('oculto', !afastado),
+  aoZoom: atualizarSlider,
+});
+slider.addEventListener('input', () => {
+  const { min, max } = mapa.faixaZoom();
+  mapa.definirZoom(min + (Number(slider.value) / 100) * (max - min));
 });
 $('recentrar').addEventListener('click', () => mapa.enquadrar());
 mapa.pintar(janela);
@@ -296,6 +308,7 @@ function selecionar(cod, { voar = true } = {}) {
     if (voar) mapa.voarPara(cod);
   }
   gravarEstado();
+  desenharNoticias();
 }
 $('cartao').addEventListener('click', (ev) => {
   if (ev.target.closest('[data-fechar]')) return selecionar(null);
@@ -372,8 +385,10 @@ lista.addEventListener('mousedown', (ev) => {
 campo.addEventListener('blur', () => setTimeout(fecharLista, 120));
 
 // ---------- localização ----------
-function localizar() {
-  if (!navigator.geolocation) return mostrarAviso('Seu navegador não oferece localização. Use a busca para escolher o município.', true);
+// `abrirCartao: false` é o modo discreto (recarregar a página já autorizada): só marca onde o usuário está,
+// sem mexer na seleção e sem avisos.
+function localizar({ abrirCartao = true } = {}) {
+  if (!navigator.geolocation) return abrirCartao && mostrarAviso('Seu navegador não oferece localização. Use a busca para escolher o município.', true);
   const botao = $('localizar');
   botao.disabled = true;
   navigator.geolocation.getCurrentPosition(
@@ -381,17 +396,19 @@ function localizar() {
       botao.disabled = false;
       // A posição só é usada aqui, no navegador, para achar o município. Nada é enviado nem guardado.
       const municipio = municipioDe(dados.indice, coords.longitude, coords.latitude);
-      if (!municipio) return mostrarAviso('Você parece estar fora do Rio Grande do Sul. Use a busca para escolher um município gaúcho.', true);
-      // Sem zoom: a cidade do usuário pisca de leve no mapa e o cartão abre com os dados dela.
+      if (!municipio) return abrirCartao && mostrarAviso('Você parece estar fora do Rio Grande do Sul. Use a busca para escolher um município gaúcho.', true);
+      // Sem zoom: a cidade do usuário pisca de leve no mapa.
       euEstouEm = municipio.codIbge;
       mapa.marcarLocal([coords.longitude, coords.latitude]);
       mapa.destacarEu(municipio.codIbge);
+      if (!abrirCartao) return;
       selecionar(municipio.codIbge, { voar: false });
       // Reenquadra o estado inteiro (sem aproximar) para o cartão não cobrir a cidade destacada.
       mapa.enquadrar();
     },
     (erro) => {
       botao.disabled = false;
+      if (!abrirCartao) return;
       mostrarAviso(
         erro.code === erro.PERMISSION_DENIED
           ? 'Sem permissão para usar a localização. Você ainda pode buscar o município acima.'
@@ -402,7 +419,7 @@ function localizar() {
     { enableHighAccuracy: false, timeout: 12000, maximumAge: 600000 },
   );
 }
-$('localizar').addEventListener('click', localizar);
+$('localizar').addEventListener('click', () => localizar());
 
 const CHAVE_CONVITE = 'radar-chuva-convite';
 const lembrar = (valor) => { try { localStorage.setItem(CHAVE_CONVITE, valor); } catch { /* navegação privada */ } };
@@ -410,14 +427,14 @@ const jaRecusou = () => { try { return localStorage.getItem(CHAVE_CONVITE) === '
 $('convite-sim').addEventListener('click', () => { $('convite').hidden = true; localizar(); });
 $('convite-nao').addEventListener('click', () => { $('convite').hidden = true; lembrar('recusou'); });
 
-async function oferecerLocalizacao() {
-  if (!navigator.geolocation || parametros.has('m')) return;
+async function oferecerLocalizacao({ discreto = false } = {}) {
+  if (!navigator.geolocation) return;
   try {
     const { state } = await navigator.permissions.query({ name: 'geolocation' });
-    if (state === 'granted') return localizar(); // já autorizado antes: sem perguntar de novo
+    if (state === 'granted') return localizar({ abrirCartao: !discreto }); // já autorizado antes: sem perguntar de novo
     if (state === 'denied') return;
   } catch { /* sem Permissions API: cai no convite */ }
-  if (!jaRecusou()) setTimeout(() => ($('convite').hidden = false), 1500);
+  if (!discreto && !jaRecusou()) setTimeout(() => ($('convite').hidden = false), 1500);
 }
 
 // ---------- janela de tempo, relevo e sobre ----------
@@ -446,8 +463,73 @@ document.addEventListener('keydown', (ev) => {
   $('sobre-botao').setAttribute('aria-expanded', 'false');
   $('lista-atencao').hidden = true;
   $('atencao').setAttribute('aria-expanded', 'false');
+  if (noticiasAbertas) {
+    noticiasAbertas = false;
+    $('noticias-botao').setAttribute('aria-expanded', 'false');
+  }
   if (selecionado !== null) selecionar(null);
+  else desenharNoticias();
 });
+
+// ---------- notícias ----------
+// Abaixo do cartão da cidade (no computador) ou pela pílula "Notícias" (no celular). Com uma cidade
+// selecionada mostra as que a citam; sem notícia da cidade, ou sem cidade, mostra as mais relevantes do estado.
+const telaPequena = matchMedia('(max-width: 759px)');
+const NOTICIA_VELHA_MS = 3 * 60 * 60 * 1000;
+let noticiasAbertas = false; // só no celular
+
+function haQuanto(iso) {
+  const min = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  if (min < 60) return `há ${Math.max(min, 1)} min`;
+  if (min < 24 * 60) return `há ${Math.round(min / 60)} h`;
+  return `há ${Math.round(min / (24 * 60))} d`;
+}
+
+function desenharNoticias() {
+  const painel = $('noticias');
+  const botao = $('noticias-botao');
+  const todas = dados.noticias?.noticias ?? [];
+  botao.hidden = todas.length === 0; // o CSS só mostra a pílula no celular
+  if (!todas.length) {
+    painel.hidden = true;
+    return;
+  }
+  painel.hidden = telaPequena.matches ? !noticiasAbertas : false;
+  if (painel.hidden) return;
+
+  const nome = selecionado !== null ? dados.porCodigo.get(selecionado).nome : null;
+  const { doMunicipio, lista } = noticiasPara(todas, nome, { agoraMs: Date.now() });
+  const titulo = doMunicipio ? `Notícias · <b>${esc(nome)}</b>` : 'Notícias · <b>RS</b>';
+  const nota = nome && !doMunicipio ? `<p class="noticias-nota">Nenhuma notícia recente sobre ${esc(nome)} nas fontes consultadas. Destaques do estado:</p>` : '';
+  const velha = Date.now() - Date.parse(dados.noticias.geradoEm) > NOTICIA_VELHA_MS;
+  painel.innerHTML = `
+    <div class="noticias-topo">
+      <h2>${titulo}</h2>
+      ${telaPequena.matches ? '<button class="icone" type="button" data-fechar-noticias aria-label="Fechar notícias"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>' : ''}
+    </div>
+    ${nota}
+    <ul class="lista-noticias">${lista
+      .filter((n) => /^https?:\/\//.test(n.url))
+      .map(
+        (n) => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">
+          <span class="titulo">${esc(n.titulo)}</span><span class="fonte">${esc(n.fonte)} · ${haQuanto(n.publicadoEm)}</span></a></li>`,
+      )
+      .join('')}</ul>
+    <p class="noticias-rodape">${velha ? 'Desatualizado: ' : ''}Fontes: ${esc(dados.noticias.fontes.join(', '))}, coletado às ${fmtHora(dados.noticias.geradoEm)}. Seleção automática por palavras-chave; os links levam aos veículos.</p>`;
+}
+
+$('noticias-botao').addEventListener('click', () => {
+  noticiasAbertas = !noticiasAbertas;
+  $('noticias-botao').setAttribute('aria-expanded', String(noticiasAbertas));
+  desenharNoticias();
+});
+$('noticias').addEventListener('click', (ev) => {
+  if (!ev.target.closest('[data-fechar-noticias]')) return;
+  noticiasAbertas = false;
+  $('noticias-botao').setAttribute('aria-expanded', 'false');
+  desenharNoticias();
+});
+telaPequena.addEventListener('change', desenharNoticias);
 
 // ---------- início ----------
 marcarJanela();
@@ -456,5 +538,12 @@ desenharStatus();
 desenharAtencao();
 
 const inicial = Number(parametros.get('m'));
-if (dados.porCodigo.has(inicial)) selecionar(inicial);
-else oferecerLocalizacao();
+if (dados.porCodigo.has(inicial)) {
+  // Recarregar (F5) ou abrir um link com uma cidade na URL: seleciona a cidade sem aproximar o mapa.
+  selecionar(inicial, { voar: false });
+  mapa.enquadrar({ animar: false });
+  oferecerLocalizacao({ discreto: true }); // se já autorizado, só marca onde o usuário está
+} else {
+  oferecerLocalizacao();
+  desenharNoticias();
+}

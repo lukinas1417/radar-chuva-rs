@@ -49,19 +49,25 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
   pluviômetro, mostra os vizinhos com dado.
 - O link guarda o município e a janela de tempo (`#m=4314902&j=24h`), então dá para compartilhar uma cidade.
 - Vista de cima por padrão; o botão de relevo liga a vista 3D.
+- **Zoom com limites** (nem tão longe que mostre "dois RS", nem tão perto que mostre as arestas da malha), com um
+  controle deslizante e o botão "Ver o RS todo". Recarregar a página não aproxima do município.
+- **Notícias** logo abaixo do cartão da cidade (no celular, pela pílula "Notícias"): as recentes que citam o
+  município; sem nenhuma, o painel avisa e mostra os destaques do estado. Fontes: G1 RS e Agência Brasil (RSS
+  público); só título, fonte e link, e a seleção é automática por palavras-chave.
 
 ## Como rodar
 
 Requer Node 22+. Sem dependências.
 
 ```sh
-node --test   # 40 testes do núcleo (geometria, normalização das fontes e regras de dados)
+node --test   # 61 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
 ```
 
 ```sh
 node scripts/fetch-municipios.mjs   # malha municipal do IBGE (uma vez)
 node scripts/fetch-chuva.mjs        # estações de chuva do CEMADEN (repetir para atualizar)
 node scripts/fetch-rios.mjs         # estações de rio e chuva da Defesa Civil RS (opcional)
+node scripts/fetch-noticias.mjs     # notícias recentes (opcional)
 node scripts/serve.mjs              # http://localhost:8080
 ```
 

@@ -35,12 +35,16 @@ jobs:
       - name: Buscar nível dos rios (Defesa Civil RS)
         run: node scripts/fetch-rios.mjs
         continue-on-error: true
+      # Notícias são opcionais, como os rios: se as fontes falharem, o site mostra as últimas coletadas.
+      - name: Buscar notícias (G1 RS e Agência Brasil)
+        run: node scripts/fetch-noticias.mjs
+        continue-on-error: true
       - name: Reaproveitar último dado publicado se a coleta falhou
         env:
           BASE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data
         run: |
           mkdir -p data
-          for arq in chuva-rs.json rios-rs.json; do
+          for arq in chuva-rs.json rios-rs.json noticias-rs.json; do
             if [ ! -f "data/$arq" ]; then
               echo "coleta de $arq falhou; tentando reaproveitar o publicado"
               curl -fsS --retry 3 "$BASE/$arq" -o "data/$arq" || rm -f "data/$arq"

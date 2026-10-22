@@ -191,14 +191,25 @@ button { font: inherit; color: inherit; }
 #status b { color: var(--texto); font-family: var(--mono); font-weight: 500; }
 
 /* ---------- cartão do município ---------- */
-#cartao {
+/* coluna da direita: o cartão do município com as notícias logo abaixo dele */
+#coluna {
   position: fixed;
+  z-index: 4;
   top: 72px;
   right: 16px;
-  z-index: 4;
   width: 360px;
-  max-height: calc(100dvh - 72px - 100px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100dvh - 72px - 228px); /* para acima dos controles de zoom */
+  overflow: hidden;
+  pointer-events: none; /* o espaço vazio da coluna não bloqueia o mapa */
+}
+/* O cartão tem prioridade e mantém o tamanho; as notícias cedem espaço e rolam por dentro (barra visível). */
+#coluna > * { pointer-events: auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
+#cartao { flex: 0 0 auto; max-height: calc(100dvh - 72px - 228px); }
+#noticias { flex: 0 1 auto; min-height: 120px; }
+#cartao {
   padding: 18px 18px 16px;
   animation: entra 0.28s ease-out;
 }
@@ -259,8 +270,29 @@ button { font: inherit; color: inherit; }
 .cartao-pe { margin: 16px 0 0; color: var(--suave); font-size: 12px; }
 
 /* ---------- botão flutuante: voltar ao enquadramento do estado ---------- */
-#recentrar { position: fixed; z-index: 4; right: 16px; bottom: 30px; display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 13px; border-radius: 999px; color: var(--texto); font-size: 14px; cursor: pointer; animation: entra 0.25s ease-out; }
+/* controles de zoom: o controle deslizante fica sempre visível; o botão só quando o mapa saiu do enquadramento */
+#controles-zoom { position: fixed; z-index: 4; right: 16px; bottom: 30px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.zoom-trilho { position: relative; width: 44px; height: 124px; border-radius: 999px; }
+.zoom-trilho input { position: absolute; left: 50%; top: 50%; width: 94px; margin: 0; transform: translate(-50%, -50%) rotate(-90deg); accent-color: var(--acento); background: transparent; cursor: pointer; }
+#recentrar { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 13px; border-radius: 999px; color: var(--texto); font-size: 14px; cursor: pointer; transition: opacity 0.2s, visibility 0.2s; }
 #recentrar:hover { border-color: rgba(125, 211, 252, 0.5); color: var(--acento); }
+#recentrar.oculto { visibility: hidden; opacity: 0; } /* some sem mexer no lugar do controle deslizante */
+
+/* ---------- notícias ---------- */
+#noticias { padding: 14px 16px 12px; animation: entra 0.28s ease-out; }
+.noticias-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.noticias-topo h2 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--suave); }
+.noticias-topo h2 b { color: var(--texto); font-weight: 600; }
+.noticias-nota { margin: 8px 0 0; font-size: 12.5px; line-height: 1.4; color: var(--suave); }
+.lista-noticias { list-style: none; margin: 6px 0 0; padding: 0; }
+.lista-noticias li + li { border-top: 1px solid var(--linha); }
+.lista-noticias a { display: block; padding: 10px 0; text-decoration: none; }
+.lista-noticias .titulo { font-size: 14px; line-height: 1.35; color: var(--texto); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.lista-noticias a:hover .titulo { color: var(--acento); }
+.lista-noticias .fonte { display: block; margin-top: 4px; font: 12px var(--mono); color: var(--suave); }
+.noticias-rodape { margin: 2px 0 0; font-size: 11px; line-height: 1.4; color: var(--suave); }
+.pilulas { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (min-width: 760px) { #noticias-botao { display: none !important; } }
 
 /* ---------- convite de localização ---------- */
 #convite { background: var(--vidro-forte); position: fixed; z-index: 6; left: 50%; bottom: 100px; transform: translateX(-50%); width: min(440px, calc(100vw - 32px)); padding: 14px 16px; animation: entra 0.3s ease-out; }
@@ -325,8 +357,14 @@ button { font: inherit; color: inherit; }
   #status { top: max(10px, env(safe-area-inset-top)); right: 10px; }
   #status .palavra { display: none; }
   body.dado-velho .marca span { display: none; }
-  #recentrar { top: 162px; right: 10px; bottom: auto; height: 40px; padding: 0 14px 0 11px; font-size: 13px; }
-  #cartao { top: auto; left: 8px; right: 8px; bottom: 92px; width: auto; max-height: calc(100dvh - 92px - 150px); padding: 16px; }
+  #controles-zoom { top: 162px; right: 10px; bottom: auto; gap: 8px; }
+  .zoom-trilho { height: 120px; width: 40px; }
+  .zoom-trilho input { width: 96px; }
+  #recentrar { height: 40px; padding: 0 14px 0 11px; font-size: 13px; }
+  /* no celular a coluna some e o cartão vira uma folha na base; as notícias abrem pela pílula "Notícias" */
+  #coluna { display: contents; }
+  #cartao { position: fixed; z-index: 4; top: auto; left: 8px; right: 8px; bottom: 92px; width: auto; max-height: calc(100dvh - 92px - 150px); overflow-y: auto; padding: 16px; }
+  #noticias { position: fixed; z-index: 6; top: 166px; left: 8px; right: 8px; max-height: min(52dvh, 420px); overflow-y: auto; background: var(--vidro-forte); }
   /* com o cartão aberto a legenda sai da frente; volta ao fechar */
   body.cartao-aberto #legenda { display: none; }
   .grande .num { font-size: 40px; }

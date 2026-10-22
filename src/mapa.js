@@ -3,6 +3,11 @@ import { SITUACOES, faixaDe, riscoDoMunicipio, valorDoMunicipio } from './dados.
 
 const TILES_RELEVO = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const LIMITES_RS = [[-57.7, -33.8], [-49.6, -27.0]];
+// Até onde dá para arrastar o mapa. É só uma rede de segurança para não se perder no oceano ou em outro país;
+// quem impede de ver "dois RS" é o zoom mínimo, e esta área precisa ser larga para não encolher a folga dele.
+const LIMITES_PAN = [[-68, -40], [-39, -20]];
+// Mais que isso só mostra as arestas da malha simplificada; o nível de cidade já é o útil.
+const ZOOM_MAXIMO = 10.5;
 const COR_SEM_DADO = '#101c29';
 const INCLINACAO = 36;
 const REDUZIR_MOVIMENTO = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -16,12 +21,14 @@ function margens(comCartao = false) {
   return { top: 56, bottom: 84, left: 340, right: comCartao ? 400 : 30 };
 }
 
-export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar }) {
+export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar, aoZoom }) {
   const mapa = new maplibregl.Map({
     container,
     style: { version: 8, sources: {}, layers: [{ id: 'fundo', type: 'background', paint: { 'background-color': '#070d14' } }] },
     bounds: LIMITES_RS,
     fitBoundsOptions: { padding: margens() },
+    maxBounds: LIMITES_PAN,
+    maxZoom: ZOOM_MAXIMO,
     maxPitch: 70,
     attributionControl: false,
   });
@@ -33,6 +40,20 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar 
   let cartaoAberto = false;
   let codSelecionado = null;
   let codEu = null; // município do usuário, destacado com um brilho suave
+
+  // O zoom mínimo é o do enquadramento do estado (com ou sem cartão) menos uma folga curta: dá para se
+  // afastar um pouco, mas não a ponto de ver o estado pequeno com espaço vazio em volta. Depende do tamanho da tela.
+  function emitirZoom() {
+    aoZoom?.(mapa.getZoom(), mapa.getMinZoom(), mapa.getMaxZoom());
+  }
+  function ajustarLimites() {
+    const zooms = [false, true].map((comCartao) => mapa.cameraForBounds(LIMITES_RS, { padding: margens(comCartao) })?.zoom).filter(Number.isFinite);
+    if (zooms.length) mapa.setMinZoom(Math.min(...zooms) - 0.25);
+    emitirZoom();
+  }
+  ajustarLimites();
+  addEventListener('resize', ajustarLimites);
+  mapa.on('zoom', emitirZoom);
 
   // Enquadramento padrão (o estado todo), para saber quando o usuário se afastou dele.
   // O enquadramento muda um pouco com o cartão aberto (ele ocupa parte da tela), então compara com os dois.
@@ -203,12 +224,14 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar 
         bearing: relevoLigado ? -8 : 0,
       });
     },
-    enquadrar() {
+    faixaZoom: () => ({ min: mapa.getMinZoom(), max: mapa.getMaxZoom() }),
+    definirZoom: (z) => mapa.jumpTo({ zoom: z }),
+    enquadrar({ animar = true } = {}) {
       const cam = mapa.cameraForBounds(LIMITES_RS, { padding: margens(cartaoAberto) });
       mapa.easeTo({
         center: cam.center,
         zoom: cam.zoom,
-        duration: REDUZIR_MOVIMENTO ? 0 : 1000,
+        duration: REDUZIR_MOVIMENTO || !animar ? 0 : 1000,
         pitch: relevoLigado ? INCLINACAO : 0,
         bearing: relevoLigado ? -8 : 0,
       });
