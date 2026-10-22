@@ -53,6 +53,9 @@ Em https://github.com/lukinas1417/radar-chuva-rs/actions, as execuções passam 
 
 - **O token expira.** Anote a data e crie um novo antes de vencer; basta atualizar o cabeçalho do job. Se o token
   vencer, a única consequência é o dado voltar a envelhecer, e o site avisa na tela quando isso acontece.
+- **Versão da API.** A resposta do GitHub traz os cabeçalhos `Deprecation` e `Sunset`: a versão `2022-11-28` da API
+  será descontinuada em 10/03/2028. Antes disso, troque o valor de `X-GitHub-Api-Version` no job por uma versão mais
+  nova (a lista está em https://docs.github.com/en/rest/about-the-rest-api/api-versions).
 - Se o serviço sair do ar, o `schedule` do GitHub continua como reserva, ainda que irregular.
 
 ## Alternativas gratuitas
