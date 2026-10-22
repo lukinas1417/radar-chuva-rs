@@ -24,6 +24,9 @@ significa ausência de chuva.
 
 ## Decisões técnicas
 
+O que o sistema precisa ter para ser confiável, os modos de falha tratados e os limites conhecidos estão em
+[docs/arquitetura.md](docs/arquitetura.md). Um resumo:
+
 - **Fontes instáveis são o caso normal.** O endpoint público do CEMADEN recusa conexões de forma intermitente, e o da
   Defesa Civil chegou a ficar com certificado vencido. O workflow tenta de novo, reaproveita o último dado publicado
   se a coleta falhar e o site avisa em âmbar quando o dado passa de 1 hora.

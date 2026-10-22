@@ -1,0 +1,106 @@
+# Arquitetura e decisões
+
+Este documento explica **o que o sistema precisa ter para ser confiável** e por que o Radar de Chuva RS foi
+desenhado assim. O código é pequeno; o difícil estava em decidir o que fazer quando o dado falta, chega velho ou é
+ambíguo, porque a tela mostra chuva e rios e alguém pode agir com base nela.
+
+## Contexto
+
+O Radar junta duas fontes oficiais, sem acordo formal com nenhuma delas:
+
+- **CEMADEN**: pluviômetros do país. Usa-se o endpoint público do Mapa Interativo, que não é um serviço documentado.
+- **Defesa Civil do RS**: API GraphQL com o nível de 125 estações de rio e a chuva de seus pluviômetros.
+
+Mais a malha municipal do IBGE. O resultado é um site estático que mostra, por município, a chuva acumulada e a
+situação dos rios.
+
+## Visão geral
+
+```mermaid
+flowchart LR
+    CEM["CEMADEN<br/>endpoint público"] --> COL
+    DCRS["Defesa Civil RS<br/>API GraphQL"] --> COL
+    IBGE["IBGE<br/>malha municipal<br/>(versionada no repositório)"] --> COL
+    COL["Coleta agendada<br/>GitHub Actions"] -->|JSON normalizado| SITE["GitHub Pages<br/>site estático"]
+    COL -. coleta falhou .-> ULT["último dado publicado"]
+    ULT -.-> SITE
+    SITE --> NAV["Navegador<br/>MapLibre GL"]
+```
+
+A coleta normaliza os dados e publica arquivos JSON ao lado do site. Não há servidor nem banco: o navegador lê os
+JSON e desenha o mapa.
+
+## Requisitos que guiaram o desenho
+
+| Requisito | Por quê |
+|---|---|
+| **Não mentir** | Quem olha o mapa pode tomar uma decisão. Um dado ausente ou velho não pode parecer um dado normal. |
+| **Continuar de pé com fontes instáveis** | As duas fontes falharam de verdade durante o desenvolvimento. Falha é o caso normal, não a exceção. |
+| **Operação mínima** | Projeto de uma pessoa, sem orçamento: sem servidor para manter, sem custo fixo. |
+| **Respeitar as fontes** | Limites de requisição, citação obrigatória e termos de uso diferentes em cada fonte. |
+| **Privacidade** | A localização do usuário é sensível e não precisa sair do aparelho. |
+
+## Modos de falha e resposta
+
+| O que falha | Como é tratado | O que o usuário vê |
+|---|---|---|
+| Endpoint do CEMADEN recusa conexão (observado várias vezes) | 5 tentativas com espera crescente; se todas falharem, reaproveita o último dado publicado | Dado anterior; aviso quando passa de 1 hora |
+| API da Defesa Civil fora do ar ou com certificado vencido (observado) | A verificação de TLS **não é desativada**; o dado anterior é mantido | O resumo de rios passa a dizer "Rios de 21/10 17:47: ..." e o status fica âmbar |
+| Estação sem leitura recente | Chuva: leitura de mais de 3 h vira `null`. Rios: mais de 30 min antes da coleta é descartada | "Sem dado" ou "sem leitura recente", nunca zero |
+| Agendador do GitHub atrasa ou descarta execuções (observado: 4 execuções em ~15 h) | Horários fora dos minutos de pico. **Não resolvido**: precisa de gatilho externo | O dado envelhece e o aviso de 1 hora aparece |
+| Significado do `status` de rio é ambíguo na documentação | Rotulado como "situação informada pela Defesa Civil", com nota de que as cotas não são divulgadas | O sistema não afirma o que não sabe |
+| API oficial do CEMADEN (PED): token expira em 4 h e o login tem captcha | Testada e descartada para coleta agendada. O captcha **não é contornado** | Nada: continua no endpoint público |
+| Estação perto de uma divisa cai no município vizinho (malha simplificada) | Limitação documentada; o painel mostra o nome da estação | O usuário pode conferir |
+
+## Decisões e trade-offs
+
+**Site estático com coleta agendada, em vez de backend.** Custo zero, nada para manter, nenhuma superfície de
+ataque no servidor. O preço é a latência (o dado tem alguns minutos) e a dependência do agendador, que se mostrou
+o ponto frágil.
+
+**`null` em vez de `0`.** O CEMADEN só preenche o acumulado quando choveu, então `"-"` em uma estação ativa
+significa 0 mm, mas em uma estação parada significa que não sabemos. As duas situações têm tratamentos diferentes e
+o mapa mostra onde **não há** pluviômetro, em vez de pintar tudo de "sem chuva".
+
+**"Recente" medido contra o momento da coleta, não contra o relógio.** Esta decisão veio de um erro real: a
+primeira versão comparava a idade da leitura com a hora atual. Quando a coleta de rios parou, todas as estações
+passaram a ser descartadas como "sem leitura", e o painel passou a dizer "Nenhum rio fora da normalidade" com um
+ponto verde, enquanto 5 municípios estavam em atenção ou alerta. O defeito só apareceu no site publicado, não no
+teste local. A regra que ficou: **um estado desconhecido nunca vira um estado normal**.
+
+**Maior acumulado entre as estações do município.** Regra simples e conservadora: não subestima. O custo é
+poder superestimar localmente se uma estação estiver muito perto de um ponto de chuva forte.
+
+**Consulta GraphQL fixa e versionada.** A API da Defesa Civil só aceita o texto exato da consulta documentada, então
+ela fica em um arquivo (`scripts/consultas/tags_data.graphql`) e não é montada em código.
+
+**Geometria compartilhada.** O ponto-em-polígono é o mesmo no script de coleta (para atribuir estações a
+municípios) e no navegador (para achar a cidade do usuário), em um único módulo (`src/geo.js`).
+
+**Localização só no cliente.** A posição vira um município dentro do navegador e nunca é enviada nem guardada.
+Também não há analytics, e as fontes de texto ficam no repositório.
+
+**Proteções não são contornadas.** O captcha do login da PED e a verificação de certificado da API da Defesa Civil
+são tratados como limites do sistema, não como obstáculos. Desativar a verificação de TLS faria o site aceitar dado
+de um servidor falso, o que num site de alertas é inaceitável.
+
+## Limites e riscos conhecidos
+
+- **Não há testes automatizados.** A validação foi manual, em navegador (desktop e celular), incluindo cenários de
+  falha forçados. É a maior lacuna técnica.
+- **Não há monitoramento próprio da coleta.** A única sinalização de falha é o aviso de dado velho na tela.
+- **Dependência do agendador do GitHub**, que já se mostrou irregular.
+- **Fontes sem garantia:** o endpoint do CEMADEN não é documentado e pode mudar; a API da Defesa Civil não declara
+  licença de uso.
+- **Cobertura parcial:** 222 dos 497 municípios têm pluviômetro ativo nas duas redes. O mapa mostra a lacuna.
+- **A situação dos rios depende de cotas que a API não divulga.** O sistema mostra o nível e a classificação, mas
+  não a distância até a cota.
+
+## O que eu faria a seguir
+
+1. Um gatilho externo para o agendamento, para o dado não depender da regularidade do GitHub.
+2. Testes automatizados do núcleo: ponto-em-polígono, semântica de `null`, cálculo de frescor e regra de
+   "nunca normal sem leitura".
+3. Um alerta próprio quando a coleta falha por mais de um período, além do aviso na tela.
+4. Guardar histórico para mostrar tendência, em vez de só o instante atual.
+5. Uma camada de risco de inundação, condicionada à licença das cartas do Serviço Geológico do Brasil.
