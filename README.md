@@ -3,7 +3,8 @@
 **[Ver ao vivo](https://lukinas1417.github.io/radar-chuva-rs/)**
 
 Mapa web, em tela cheia, da chuva acumulada (1 h, 6 h e 24 h) e da previsão (próximas 6 h e 24 h) em cada município do Rio Grande do Sul, com
-a situação dos rios. Os dados vêm quase em tempo real dos pluviômetros do CEMADEN e da Defesa Civil do RS. O
+a situação dos rios. Os dados vêm quase em tempo real dos pluviômetros do CEMADEN e da Defesa Civil do RS, e uma
+estimativa e previsão por modelo (Open-Meteo) cobre os municípios sem pluviômetro. O
 contorno dos municípios com rio em atenção, alerta ou inundação pulsa suavemente, e o relevo 3D é opcional.
 
 > Projeto de portfólio. **Não substitui os alertas oficiais da Defesa Civil** (SMS 40199 com o CEP, ou 199).
@@ -33,6 +34,10 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 - **"Sem dado" nunca vira "sem problema".** Estação sem leitura recente é `null`, não zero, e a pílula de rios
   nunca indica normalidade quando não há leitura. A situação do rio é rotulada como informada pela Defesa Civil,
   porque a API não expõe as cotas e a própria documentação é ambígua sobre o que o status representa.
+- **Medição, estimativa e previsão nunca se misturam.** Onde há pluviômetro em dia, vale a medição. Onde não há, o
+  mapa mostra a estimativa do modelo, e a previsão (+6 h, +24 h) vem sempre dele; as duas levam "~", selo e cor
+  transparente, e o cartão avisa que não é medição. Sem previsão o município fica "sem dado", nunca 0 mm. A coleta é
+  de 3 em 3 horas para respeitar o limite gratuito da API.
 - **Sem build, sem dependências e sem servidor.** O site é estático (MapLibre GL). Um workflow do GitHub Actions
   coleta os dados a cada 15 minutos e publica no Pages, sem gerar commits.
 - **Geometria compartilhada.** O mesmo ponto-em-polígono (`src/geo.js`) atribui cada estação ao seu município na
@@ -45,8 +50,9 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 
 - Mapa em tela cheia; tudo o mais flutua sobre ele em painéis de vidro fosco.
 - **Sua cidade:** o botão de localização (ou o convite na primeira visita) acha o município e abre o cartão dele.
-- O cartão abre **compacto** (chuva e situação do rio) e expande para barras, rios e estações. Em municípios sem
-  pluviômetro, mostra os vizinhos com dado.
+- **Janela de tempo:** 1 h, 6 h e 24 h mostram o que já choveu; +6 h e +24 h mostram a previsão para o estado todo.
+- O cartão abre **compacto** (chuva, previsão das próximas 24 h e situação do rio) e expande para barras, gráfico hora a
+  hora da previsão, rios e estações. Em municípios sem pluviômetro, mostra a estimativa do modelo e os vizinhos com medição.
 - O link guarda o município e a janela de tempo (`#m=4314902&j=24h`), então dá para compartilhar uma cidade.
 - Vista de cima por padrão; o botão de relevo liga a vista 3D.
 - **Zoom com limites** (nem tão longe que mostre "dois RS", nem tão perto que mostre as arestas da malha), com um
