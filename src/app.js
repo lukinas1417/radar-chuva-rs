@@ -77,7 +77,9 @@ const mapa = criarMapa({
   dados,
   aoSelecionar: (cod) => selecionar(cod, { voar: false }),
   aoPassar: mostrarDica,
+  aoAfastar: (afastado) => ($('recentrar').hidden = !afastado),
 });
+$('recentrar').addEventListener('click', () => mapa.enquadrar());
 mapa.pintar(janela);
 
 function mostrarDica(cod, ponto) {
@@ -118,6 +120,7 @@ function desenharStatus() {
   const fontes = [dados.chuva.geradoEm, ...(dados.rios ? [dados.rios.geradoEm] : [])];
   const maisAntiga = fontes.reduce((a, b) => (Date.parse(a) < Date.parse(b) ? a : b));
   const velho = chuvaVelha || riosVelhos;
+  document.body.classList.toggle('dado-velho', velho); // a hora com data é mais larga: no celular a marca cede espaço
   const semRios = !dados.rios;
   const ponto = $('status-ponto');
   ponto.style.setProperty('--c', velho || semRios ? COR_ALERTA : '#69d38a');
@@ -379,9 +382,13 @@ function localizar() {
       // A posição só é usada aqui, no navegador, para achar o município. Nada é enviado nem guardado.
       const municipio = municipioDe(dados.indice, coords.longitude, coords.latitude);
       if (!municipio) return mostrarAviso('Você parece estar fora do Rio Grande do Sul. Use a busca para escolher um município gaúcho.', true);
+      // Sem zoom: a cidade do usuário pisca de leve no mapa e o cartão abre com os dados dela.
       euEstouEm = municipio.codIbge;
       mapa.marcarLocal([coords.longitude, coords.latitude]);
-      selecionar(municipio.codIbge);
+      mapa.destacarEu(municipio.codIbge);
+      selecionar(municipio.codIbge, { voar: false });
+      // Reenquadra o estado inteiro (sem aproximar) para o cartão não cobrir a cidade destacada.
+      mapa.enquadrar();
     },
     (erro) => {
       botao.disabled = false;

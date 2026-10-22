@@ -16,7 +16,7 @@ function margens(comCartao = false) {
   return { top: 56, bottom: 84, left: 340, right: comCartao ? 400 : 30 };
 }
 
-export function criarMapa({ container, dados, aoSelecionar, aoPassar }) {
+export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar }) {
   const mapa = new maplibregl.Map({
     container,
     style: { version: 8, sources: {}, layers: [{ id: 'fundo', type: 'background', paint: { 'background-color': '#070d14' } }] },
@@ -32,6 +32,17 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar }) {
   let marcadorLocal = null;
   let cartaoAberto = false;
   let codSelecionado = null;
+  let codEu = null; // município do usuário, destacado com um brilho suave
+
+  // Enquadramento padrão (o estado todo), para saber quando o usuário se afastou dele.
+  // O enquadramento muda um pouco com o cartão aberto (ele ocupa parte da tela), então compara com os dois.
+  function conferirAfastamento() {
+    const c = mapa.getCenter();
+    const padroes = [false, true].map((comCartao) => mapa.cameraForBounds(LIMITES_RS, { padding: margens(comCartao) }));
+    const zoomAlto = Math.max(...padroes.map((p) => p.zoom));
+    const longe = padroes.every((p) => Math.hypot(c.lng - p.center.lng, c.lat - p.center.lat) > 1.5);
+    aoAfastar?.(mapa.getZoom() > zoomAlto + 0.4 || longe);
+  }
 
   function pintar(janela) {
     janelaAtual = janela;
@@ -101,14 +112,34 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar }) {
       paint: { 'line-color': ['get', 'corRisco'], 'line-width': 1.8, 'line-opacity': 0.95 },
     });
     const nenhum = ['==', ['get', 'codIbge'], -1];
+    // Brilho suave no município do usuário (cor de destaque da interface, diferente das cores de risco).
+    mapa.addLayer({
+      id: 'eu-brilho',
+      type: 'line',
+      source: 'municipios',
+      filter: nenhum,
+      layout: { 'line-join': 'round' },
+      paint: { 'line-color': '#7dd3fc', 'line-width': 9, 'line-blur': 8, 'line-opacity': 0.6 },
+    });
+    mapa.addLayer({
+      id: 'eu-linha',
+      type: 'line',
+      source: 'municipios',
+      filter: nenhum,
+      layout: { 'line-join': 'round' },
+      paint: { 'line-color': '#7dd3fc', 'line-width': 2, 'line-opacity': 0.95 },
+    });
     mapa.addLayer({ id: 'hover', type: 'line', source: 'municipios', filter: nenhum, paint: { 'line-color': '#ffffff', 'line-width': 1.2, 'line-opacity': 0.7 } });
     mapa.addLayer({ id: 'selecionado', type: 'line', source: 'municipios', filter: nenhum, layout: { 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 2.6 } });
 
     pronto = true;
     pintar(janelaAtual);
     if (codSelecionado !== null) mapa.setFilter('selecionado', ['==', ['get', 'codIbge'], codSelecionado]);
+    if (codEu !== null) aplicarEu();
     if (relevoLigado) inclinar(true);
     pulsar();
+    mapa.on('moveend', conferirAfastamento);
+    conferirAfastamento();
 
     mapa.on('click', (ev) => {
       const [f] = mapa.queryRenderedFeatures(ev.point, { layers: ['preenchimento'] });
@@ -135,10 +166,22 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar }) {
         const k = (Math.sin(t / 650) + 1) / 2;
         mapa.setPaintProperty('risco-brilho', 'line-opacity', 0.25 + 0.6 * k);
         mapa.setPaintProperty('risco-brilho', 'line-width', 6 + 6 * k);
+        if (codEu !== null) {
+          // mais lento que o dos rios, para os dois não parecerem o mesmo alerta
+          const e = (Math.sin(t / 900) + 1) / 2;
+          mapa.setPaintProperty('eu-brilho', 'line-opacity', 0.2 + 0.65 * e);
+          mapa.setPaintProperty('eu-brilho', 'line-width', 6 + 7 * e);
+        }
       }
       requestAnimationFrame(quadro);
     };
     requestAnimationFrame(quadro);
+  }
+
+  function aplicarEu() {
+    const filtro = ['==', ['get', 'codIbge'], codEu ?? -1];
+    mapa.setFilter('eu-brilho', filtro);
+    mapa.setFilter('eu-linha', filtro);
   }
 
   const limites = (m) => [[m.caixa[0], m.caixa[1]], [m.caixa[2], m.caixa[3]]];
@@ -169,6 +212,10 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar }) {
         pitch: relevoLigado ? INCLINACAO : 0,
         bearing: relevoLigado ? -8 : 0,
       });
+    },
+    destacarEu(cod) {
+      codEu = cod;
+      if (pronto) aplicarEu();
     },
     marcarLocal([lon, lat]) {
       marcadorLocal?.remove();
