@@ -1,11 +1,11 @@
-// Estimativa de chuva por modelo (Open-Meteo) no centro de cada município, gravada em data/estimativa-rs.json.
+// Estimativa (últimas horas) e previsão (próximas horas) de chuva por modelo (Open-Meteo) no centro de cada município, gravada em data/estimativa-rs.json.
 // Não é medição: complementa os pluviômetros onde eles não existem ou estão sem dado.
 // API gratuita para uso não comercial (CC BY 4.0), com limite de chamadas: cada município conta como uma.
 // Por isso a coleta é de 3 em 3 horas, mesmo com o workflow rodando a cada 15 minutos: se o arquivo
 // já publicado (variável PUBLICADO) é recente, ele é reaproveitado sem consultar a API.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { indexarMunicipios } from '../src/geo.js';
-import { estimativaPrecisaRenovar, normalizarEstimativa } from '../src/normalizar.js';
+import { VERSAO_ESTIMATIVA, estimativaPrecisaRenovar, normalizarEstimativa } from '../src/normalizar.js';
 
 const ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
 const SAIDA = new URL('../data/estimativa-rs.json', import.meta.url);
@@ -25,7 +25,7 @@ async function reaproveitar() {
     const res = await fetch(process.env.PUBLICADO, { signal: AbortSignal.timeout(20_000) });
     if (!res.ok) return false;
     const anterior = await res.json();
-    if (estimativaPrecisaRenovar(anterior.geradoEm, Date.now())) return false;
+    if (anterior.versao !== VERSAO_ESTIMATIVA || estimativaPrecisaRenovar(anterior.geradoEm, Date.now())) return false;
     await gravar(anterior);
     console.log(`estimativa de ${anterior.geradoEm} ainda é recente; reaproveitada sem consultar a API`);
     return true;
@@ -40,7 +40,7 @@ async function buscarLote(pontos) {
   url.searchParams.set('longitude', pontos.map((p) => p.lon).join(','));
   url.searchParams.set('hourly', 'precipitation');
   url.searchParams.set('past_days', '2');
-  url.searchParams.set('forecast_days', '1');
+  url.searchParams.set('forecast_days', '3');
   url.searchParams.set('timezone', 'UTC');
   url.searchParams.set('timeformat', 'unixtime');
   for (let i = 1; i <= TENTATIVAS; i++) {
@@ -73,6 +73,6 @@ if (!(await reaproveitar())) {
   if (municipios.length < indice.length * MINIMO_COBERTURA) {
     throw new Error(`só ${municipios.length} de ${indice.length} municípios com estimativa completa; dado descartado`);
   }
-  await gravar({ geradoEm: new Date(agora).toISOString(), fonte: 'Open-Meteo', municipios });
+  await gravar({ versao: VERSAO_ESTIMATIVA, geradoEm: new Date(agora).toISOString(), fonte: 'Open-Meteo', municipios });
   console.log(`${municipios.length} de ${indice.length} municípios -> data/estimativa-rs.json`);
 }

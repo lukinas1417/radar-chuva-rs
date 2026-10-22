@@ -2,7 +2,7 @@
 // Aqui ficam os testes do erro real de "falsa normalidade" e da regra "estado desconhecido nunca vira normal".
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { carregarDados, chuvaDoMunicipio, faixaDe, municipiosEmRisco, riscoDoMunicipio, semAcento, valorDoMunicipio, vizinhosComDado } from '../src/dados.js';
+import { carregarDados, chuvaDoMunicipio, ehPrevisao, previsaoDoMunicipio, faixaDe, municipiosEmRisco, riscoDoMunicipio, semAcento, valorDoMunicipio, vizinhosComDado } from '../src/dados.js';
 
 const quadrado = (x, y) => [[[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1], [x, y]]];
 const malha = {
@@ -185,16 +185,23 @@ test('a busca ignora acentos e maiúsculas', () => {
   assert.equal(semAcento('ÁGATA'), 'agata');
 });
 
-// ---------- estimativa por modelo ----------
+// ---------- estimativa e previsão por modelo ----------
 
 const AGORA = Date.parse(COLETA) + 10 * 60_000;
 const horasAntes = (h) => new Date(AGORA - h * 3_600_000).toISOString();
+// Série horária em torno de AGORA: `passado` mm/h até ele e `futuro` mm/h depois (a hora em ponto seguinte é a 1ª prevista).
+function serieEm(passado, futuro) {
+  const primeira = Math.floor(AGORA / 3_600_000) * 3_600_000 - 29 * 3_600_000;
+  const mm = Array.from({ length: 66 }, (_, i) => (primeira + i * 3_600_000 <= AGORA ? passado : futuro));
+  return { inicio: primeira / 1000, mm };
+}
 const estimativaPadrao = (geradoEm = horasAntes(1)) => ({
+  versao: 2,
   geradoEm,
   fonte: 'Open-Meteo',
   municipios: [
-    { codIbge: 1, acumuladoMm: { '1h': 9, '6h': 9, '24h': 9, '48h': 9 } },
-    { codIbge: 3, acumuladoMm: { '1h': 0.4, '6h': 3, '24h': 12, '48h': 20 } },
+    { codIbge: 1, serie: serieEm(0.375, 1) }, // 24h = 9 mm
+    { codIbge: 3, serie: serieEm(0.5, 2) }, // 24h = 12 mm; +6h = 12; +24h = 48
   ],
 });
 
@@ -234,11 +241,40 @@ test('estimativa com mais de 6 h não é usada', async () => {
   fontes({ chuva: chuvaPadrao, rios: null, estimativa: estimativaPadrao(horasAntes(7)) });
   const dados = await carregarDados(AGORA);
   assert.equal(chuvaDoMunicipio(dados, 3, '24h'), null);
+  assert.equal(chuvaDoMunicipio(dados, 3, '+6h'), null);
   assert.equal(dados.estimativaGeradoEm, null);
 });
 
-test('estimativa com data inválida é descartada, não tratada como recente', async () => {
+test('estimativa com data inválida ou de outra versão do formato é descartada', async () => {
   fontes({ chuva: chuvaPadrao, rios: null, estimativa: estimativaPadrao('ontem') });
+  assert.equal(chuvaDoMunicipio(await carregarDados(AGORA), 3, '24h'), null);
+  fontes({ chuva: chuvaPadrao, rios: null, estimativa: { ...estimativaPadrao(), versao: 1 } });
+  assert.equal(chuvaDoMunicipio(await carregarDados(AGORA), 3, '24h'), null);
+});
+
+test('previsão: vem só do modelo, é marcada como prevista e vale mesmo onde há pluviômetro', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null, estimativa: estimativaPadrao() });
   const dados = await carregarDados(AGORA);
-  assert.equal(chuvaDoMunicipio(dados, 3, '24h'), null);
+  assert.deepEqual(chuvaDoMunicipio(dados, 3, '+6h'), { mm: 12, tipo: 'previsto' });
+  assert.deepEqual(chuvaDoMunicipio(dados, 3, '+24h'), { mm: 48, tipo: 'previsto' });
+  assert.equal(chuvaDoMunicipio(dados, 1, '+6h').tipo, 'previsto'); // o município 1 tem pluviômetro
+});
+
+test('sem estimativa não existe previsão: nunca vira 0 mm', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null });
+  const dados = await carregarDados(AGORA);
+  assert.equal(chuvaDoMunicipio(dados, 1, '+6h'), null);
+  assert.equal(previsaoDoMunicipio(dados, 1), null);
+});
+
+test('a previsão horária tem 24 horas, todas depois de agora', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null, estimativa: estimativaPadrao() });
+  const horas = previsaoDoMunicipio(await carregarDados(AGORA), 3);
+  assert.equal(horas.length, 24);
+  assert.ok(horas.every((h) => h.t > AGORA && h.mm === 2));
+});
+
+test('só as janelas com "+" são previsão', () => {
+  assert.equal(ehPrevisao('+6h'), true);
+  assert.equal(ehPrevisao('24h'), false);
 });

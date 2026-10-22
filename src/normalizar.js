@@ -106,35 +106,66 @@ export function normalizarDefesaCivil(bruto, agoraMs, indice) {
   return { estacoes, pluviometros };
 }
 
-// ---------- Open-Meteo (estimativa por modelo) ----------
-// Janelas em horas; as mesmas que o mapa mostra para as medições.
-export const JANELAS_ESTIMATIVA = { '1h': 1, '6h': 6, '24h': 24, '48h': 48 };
+// ---------- Open-Meteo (estimativa e previsão por modelo) ----------
+// Formato do arquivo gravado. Mudou quando entrou a previsão: arquivo de outra versão não é usado.
+export const VERSAO_ESTIMATIVA = 2;
+// Passado: acumulado das últimas N horas. Futuro ("+N h"): previsão das próximas N horas.
+export const JANELAS_PASSADO = { '1h': 1, '6h': 6, '24h': 24 };
+export const JANELAS_FUTURO = { '+6h': 6, '+24h': 24 };
+export const HORAS_PREVISTAS = 24;
+// A série guardada vai além do necessário: o navegador recalcula as janelas a partir do "agora" dele,
+// e o arquivo pode ter até ESTIMATIVA_VALIDA_MS de idade.
+const SERIE_ANTES_H = 30;
+const SERIE_DEPOIS_H = 36;
 // A estimativa é coletada a cada 3 h; passou do dobro disso, deixa de ser usada.
 export const ESTIMATIVA_RENOVAR_MS = 3 * 60 * 60 * 1000;
 export const ESTIMATIVA_VALIDA_MS = 6 * 60 * 60 * 1000;
 
+const HORA_S = 3600;
+const arredondar = (v) => (typeof v === 'number' && Number.isFinite(v) ? Math.round(v * 10) / 10 : null);
+
 // Resposta horária de um ponto (`time` em segundos Unix, `precipitation` em mm da hora que TERMINA em `time`)
-// -> acumulado por janela. Horas futuras (a previsão que vem junto) são ignoradas. Janela sem todas as horas
-// ou com buraco vira null: soma parcial subestimaria a chuva.
-export function acumularEstimativa({ time, precipitation }, agoraMs) {
-  const horas = [];
-  for (let i = 0; i < time.length; i++) {
-    if (time[i] * 1000 <= agoraMs) horas.push(precipitation[i]);
-  }
-  const acumulado = {};
-  for (const [janela, n] of Object.entries(JANELAS_ESTIMATIVA)) {
-    const ultimas = horas.slice(-n);
-    const completa = ultimas.length === n && ultimas.every((v) => typeof v === 'number' && Number.isFinite(v));
-    acumulado[janela] = completa ? Math.round(ultimas.reduce((a, b) => a + b, 0) * 10) / 10 : null;
-  }
-  return acumulado;
+// -> série compacta { inicio, mm } em torno do "agora": SERIE_ANTES_H atrás e SERIE_DEPOIS_H à frente.
+export function serieEstimativa({ time, precipitation }, agoraMs) {
+  const de = agoraMs / 1000 - SERIE_ANTES_H * HORA_S;
+  const ate = agoraMs / 1000 + SERIE_DEPOIS_H * HORA_S;
+  const indices = time.map((t, i) => i).filter((i) => time[i] >= de && time[i] <= ate);
+  if (!indices.length) return null;
+  return { inicio: time[indices[0]], mm: indices.map((i) => arredondar(precipitation[i])) };
 }
+
+// Horas (fim de cada hora) da série como { t, mm }.
+const horasDa = ({ inicio, mm }) => mm.map((v, i) => ({ t: (inicio + i * HORA_S) * 1000, mm: v }));
+const completa = (horas, n) => horas.length === n && horas.every((h) => h.mm !== null);
+const soma = (horas) => Math.round(horas.reduce((a, h) => a + h.mm, 0) * 10) / 10;
+
+// Série -> acumulado por janela, relativo ao `agoraMs`. Janela sem todas as horas ou com buraco vira null:
+// soma parcial subestimaria a chuva. Passado: horas que já terminaram. Futuro: as próximas horas cheias.
+export function acumuladosEstimativa(serie, agoraMs) {
+  const horas = horasDa(serie);
+  const passadas = horas.filter((h) => h.t <= agoraMs);
+  const futuras = horas.filter((h) => h.t > agoraMs);
+  const r = {};
+  for (const [janela, n] of Object.entries(JANELAS_PASSADO)) {
+    const ultimas = passadas.slice(-n);
+    r[janela] = completa(ultimas, n) ? soma(ultimas) : null;
+  }
+  for (const [janela, n] of Object.entries(JANELAS_FUTURO)) {
+    const proximas = futuras.slice(0, n);
+    r[janela] = completa(proximas, n) ? soma(proximas) : null;
+  }
+  return r;
+}
+
+// Próximas horas previstas, uma a uma (para o gráfico do cartão). Hora sem valor vem com mm null.
+export const previsaoHoraria = (serie, agoraMs, n = HORAS_PREVISTAS) =>
+  horasDa(serie).filter((h) => h.t > agoraMs).slice(0, n);
 
 // `pontos[i]` é a resposta do município `codigos[i]`. Município com qualquer janela sem valor fica de fora.
 export function normalizarEstimativa(pontos, codigos, agoraMs) {
   return codigos
-    .map((codIbge, i) => ({ codIbge, acumuladoMm: pontos[i]?.hourly ? acumularEstimativa(pontos[i].hourly, agoraMs) : null }))
-    .filter((m) => m.acumuladoMm && Object.values(m.acumuladoMm).every((v) => v !== null));
+    .map((codIbge, i) => ({ codIbge, serie: pontos[i]?.hourly ? serieEstimativa(pontos[i].hourly, agoraMs) : null }))
+    .filter((m) => m.serie && Object.values(acumuladosEstimativa(m.serie, agoraMs)).every((v) => v !== null));
 }
 
 export const estimativaPrecisaRenovar = (geradoEm, agoraMs) =>

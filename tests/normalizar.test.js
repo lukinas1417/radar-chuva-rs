@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { indexarMunicipios } from '../src/geo.js';
-import { acumularEstimativa, estimativaPrecisaRenovar, normalizarChuvaCemaden, normalizarEstimativa, normalizarDefesaCivil, paraIsoCemaden, paraIsoDefesaCivil } from '../src/normalizar.js';
+import { acumuladosEstimativa, estimativaPrecisaRenovar, normalizarChuvaCemaden, normalizarDefesaCivil, normalizarEstimativa, paraIsoCemaden, paraIsoDefesaCivil, previsaoHoraria, serieEstimativa } from '../src/normalizar.js';
 
 // ---------- CEMADEN ----------
 
@@ -160,41 +160,78 @@ test('estação fora da malha municipal fica com codIbge null (e não no municí
   assert.equal(normalizarDC(estacaoDC()).pluviometros[0].codIbge, 1);
 });
 
-// ---------- Open-Meteo (estimativa) ----------
+// ---------- Open-Meteo (estimativa e previsão) ----------
 
 const AGORA_EST = Date.parse('2026-10-22T14:40:00Z');
-// 72 horas em ponto, de 20/10 00:00Z a 22/10 23:00Z (a previsão do dia vem junto). Cada hora válida marca 1 mm.
+// 120 horas em ponto, de 20/10 00:00Z a 24/10 23:00Z (como a resposta da API: passado + previsão). Padrão: 1 mm/h.
 function horario(valorDe = () => 1) {
   const inicio = Date.parse('2026-10-20T00:00:00Z') / 1000;
-  const time = Array.from({ length: 72 }, (_, i) => inicio + i * 3600);
+  const time = Array.from({ length: 120 }, (_, i) => inicio + i * 3600);
   return { time, precipitation: time.map((t) => valorDe(t)) };
 }
+const aposAgora = (t) => t * 1000 > AGORA_EST;
+const serie = (valorDe) => serieEstimativa(horario(valorDe), AGORA_EST);
 
-test('estimativa soma só as horas já terminadas; a previsão que vem junto é ignorada', () => {
-  // até 22/10 14:00Z há 62 horas passadas; as de 15:00Z em diante são futuras e valem 100 mm cada
-  const h = horario((t) => (t * 1000 <= AGORA_EST ? 1 : 100));
-  assert.deepEqual(acumularEstimativa(h, AGORA_EST), { '1h': 1, '6h': 6, '24h': 24, '48h': 48 });
+test('acumulado soma só as horas já terminadas; a previsão que vem junto não entra', () => {
+  const s = serie((t) => (aposAgora(t) ? 100 : 1));
+  const r = acumuladosEstimativa(s, AGORA_EST);
+  assert.deepEqual([r['1h'], r['6h'], r['24h']], [1, 6, 24]);
 });
 
-test('estimativa: janela com buraco (null) vira null, não uma soma parcial', () => {
-  const h = horario();
-  h.precipitation[h.time.findIndex((t) => t * 1000 === Date.parse('2026-10-22T10:00:00Z'))] = null;
-  const r = acumularEstimativa(h, AGORA_EST);
+test('previsão soma as próximas horas cheias; o passado não entra', () => {
+  const s = serie((t) => (aposAgora(t) ? 2 : 50));
+  const r = acumuladosEstimativa(s, AGORA_EST);
+  assert.equal(r['+6h'], 12);
+  assert.equal(r['+24h'], 48);
+});
+
+test('a previsão é recalculada a partir do "agora" do navegador, não da hora da coleta', () => {
+  const s = serie((t) => (t * 1000 <= AGORA_EST + 3 * 3600_000 ? 0 : 5)); // chove só depois de 3 h
+  assert.equal(acumuladosEstimativa(s, AGORA_EST)['+6h'], 15); // coleta: 3 h secas + 3 h de 5 mm
+  assert.equal(acumuladosEstimativa(s, AGORA_EST + 3 * 3600_000)['+6h'], 30); // 3 h depois: as 6 h seguintes chovem
+});
+
+test('janela com buraco (null) vira null, não uma soma parcial', () => {
+  const buraco = Date.parse('2026-10-22T10:00:00Z');
+  const s = serie((t) => (t * 1000 === buraco ? null : 1));
+  const r = acumuladosEstimativa(s, AGORA_EST);
   assert.equal(r['1h'], 1);
   assert.equal(r['6h'], null);
   assert.equal(r['24h'], null);
 });
 
-test('estimativa: poucas horas disponíveis não completam a janela de 48 h', () => {
-  const h = { time: horario().time.slice(30, 72), precipitation: Array(42).fill(1) };
-  const r = acumularEstimativa(h, AGORA_EST);
-  assert.equal(r['24h'], 24);
-  assert.equal(r['48h'], null);
+test('previsão com buraco vira null', () => {
+  const buraco = Date.parse('2026-10-22T20:00:00Z');
+  const s = serie((t) => (t * 1000 === buraco ? null : 1));
+  const r = acumuladosEstimativa(s, AGORA_EST);
+  assert.equal(r['+6h'], null);
+  assert.equal(r['6h'], 6);
 });
 
-test('estimativa arredonda a 0,1 mm', () => {
-  const h = horario(() => 0.1);
-  assert.equal(acumularEstimativa(h, AGORA_EST)['6h'], 0.6);
+test('poucas horas à frente não completam a janela de +24 h', () => {
+  const h = horario();
+  const curta = { time: h.time.slice(0, 73), precipitation: h.precipitation.slice(0, 73) }; // só 10 h à frente
+  const r = acumuladosEstimativa(serieEstimativa(curta, AGORA_EST), AGORA_EST);
+  assert.equal(r['+6h'], 6);
+  assert.equal(r['+24h'], null);
+});
+
+test('arredonda a 0,1 mm', () => {
+  assert.equal(acumuladosEstimativa(serie(() => 0.1), AGORA_EST)['6h'], 0.6);
+});
+
+test('previsaoHoraria devolve as próximas 24 horas, em ordem e depois do agora', () => {
+  const horas = previsaoHoraria(serie(), AGORA_EST);
+  assert.equal(horas.length, 24);
+  assert.ok(horas.every((h) => h.t > AGORA_EST));
+  assert.deepEqual(horas.map((h) => h.t), [...horas.map((h) => h.t)].sort((a, b) => a - b));
+  assert.equal(horas[0].t, Date.parse('2026-10-22T15:00:00Z'));
+});
+
+test('a série guardada cobre o atraso permitido: 6 h depois ainda completa 24 h e +24 h', () => {
+  const depois = acumuladosEstimativa(serie(), AGORA_EST + 6 * 3600_000);
+  assert.equal(depois['24h'], 24);
+  assert.equal(depois['+24h'], 24);
 });
 
 test('normalizarEstimativa descarta município sem resposta completa', () => {

@@ -73,7 +73,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
       const risco = riscoDoMunicipio(dados, cod) ?? 0;
       Object.assign(f.properties, {
         cor: chuva === null ? COR_SEM_DADO : faixaDe(chuva.mm).cor,
-        op: chuva === null ? 0.62 : chuva.tipo === 'estimado' ? 0.5 : 0.84, // estimado fica mais transparente que o medido
+        op: chuva === null ? 0.62 : chuva.tipo === 'medido' ? 0.84 : 0.5, // estimado e previsto ficam mais transparentes que o medido
         risco,
         corRisco: SITUACOES.find((s) => s.valor === risco)?.cor ?? '#ffffff',
       });

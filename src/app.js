@@ -3,11 +3,14 @@ import {
   DADO_VELHO_MS,
   FAIXAS,
   JANELAS,
+  JANELAS_PREVISAO,
   SITUACOES,
   carregarDados,
   chuvaDoMunicipio,
+  ehPrevisao,
   faixaDe,
   municipiosEmRisco,
+  previsaoDoMunicipio,
   semAcento,
   valorDoMunicipio,
   vizinhosComDado,
@@ -22,7 +25,8 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ESCAPES[c]);
 
 const fmtMm = (v) => (v === 0 ? '0' : v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
 // Estimativa por modelo leva "~" e "(est.)": nunca se confunde com medição.
-const textoMm = (c) => (c === null ? 'sem dado' : `${c.tipo === 'estimado' ? '~' : ''}${fmtMm(c.mm)} mm${c.tipo === 'estimado' ? ' (est.)' : ''}`);
+const SELO = { estimado: ' (est.)', previsto: ' (prev.)' };
+const textoMm = (c) => (c === null ? 'sem dado' : `${c.tipo === 'medido' ? '' : '~'}${fmtMm(c.mm)} mm${SELO[c.tipo] ?? ''}`);
 const fmtM = (v) => `${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
 const mesmoDia = (a, b) => a.toDateString() === b.toDateString();
 function fmtHora(iso) {
@@ -35,7 +39,8 @@ const TEXTO_JANELA = {
   '1h': 'na última hora',
   '6h': 'nas últimas 6 horas',
   '24h': 'nas últimas 24 horas',
-  '48h': 'nas últimas 48 horas',
+  '+6h': 'previstos para as próximas 6 horas',
+  '+24h': 'previstos para as próximas 24 horas',
 };
 const GRAVIDADE = ['normalidade', 'atenção', 'alerta', 'inundação'];
 const COR_ALERTA = '#ffd23f';
@@ -64,7 +69,7 @@ try {
 
 // ---------- estado ----------
 const parametros = new URLSearchParams(location.hash.slice(1));
-let janela = JANELAS.includes(parametros.get('j')) ? parametros.get('j') : '24h';
+let janela = [...JANELAS, ...JANELAS_PREVISAO].includes(parametros.get('j')) ? parametros.get('j') : '24h';
 let selecionado = null;
 
 function gravarEstado() {
@@ -114,7 +119,7 @@ function mostrarDica(cod, ponto) {
 function desenharLegenda() {
   const marcas = ['0', '10', '30', '60', '100', '100+'];
   $('legenda').innerHTML = `
-    <div class="titulo"><span>Chuva acumulada (mm)</span><b>${janela.replace('h', ' h')}</b></div>
+    <div class="titulo"><span>${ehPrevisao(janela) ? 'Previsão de chuva (mm)' : 'Chuva acumulada (mm)'}</span><b>${ehPrevisao(janela) ? `próximas ${janela.slice(1).replace('h', ' h')}` : janela.replace('h', ' h')}</b></div>
     <div class="escala">${FAIXAS.map((f) => `<i style="--c:${f.cor}"></i>`).join('')}</div>
     <div class="marcas">${marcas.map((m) => `<span>${m}</span>`).join('')}</div>
     <div class="linha2">
@@ -208,13 +213,33 @@ $('lista-atencao').addEventListener('click', (ev) => {
 // O cartão abre compacto (nome, chuva e rio) e expande os detalhes sob demanda; a escolha vale na sessão.
 let cartaoExpandido = false;
 
+// Gráfico das próximas horas previstas. Uma cor só, para não parecer a escala de risco.
+function htmlPrevisao(horas) {
+  const validas = horas.filter((h) => h.mm !== null);
+  const total = validas.reduce((a, h) => a + h.mm, 0);
+  const pico = validas.reduce((a, h) => (h.mm > a.mm ? h : a), validas[0]);
+  const escala = Math.max(2, pico.mm); // 2 mm/h como piso, para garoa não virar barra cheia
+  const hora = (t) => new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const barras = horas
+    .map((h) => `<i title="até ${hora(h.t)} · ${h.mm === null ? 'sem dado' : `${fmtMm(h.mm)} mm`}" style="height:${h.mm === null ? 0 : Math.max(3, (h.mm / escala) * 100)}%"></i>`)
+    .join('');
+  const resumo = pico.mm > 0 ? `Total ~${fmtMm(total)} mm · pico ~${fmtMm(pico.mm)} mm/h perto de ${hora(pico.t)}` : 'Sem chuva prevista nas próximas 24 h';
+  return `<h3>Previsão · próximas 24 h</h3>
+    <div class="previsao"><div class="horas">${barras}</div>
+    <div class="eixo"><span>agora</span><span>+6 h</span><span>+12 h</span><span>+18 h</span><span>+24 h</span></div>
+    <p class="cartao-pe">${resumo}</p></div>`;
+}
+
 function htmlCartao(cod, euEstou) {
   const m = dados.porCodigo.get(cod);
   const estacoes = dados.pluviometros.get(cod) ?? [];
   const rios = [...(dados.estacoesRio.get(cod) ?? [])].sort((a, b) => (b.situacao ?? -1) - (a.situacao ?? -1));
   const chuva = chuvaDoMunicipio(dados, cod, janela);
   const estimado = chuva?.tipo === 'estimado';
-  const vizinhos = chuva?.tipo === 'medido' ? [] : vizinhosComDado(dados, cod, janela);
+  const previsto = chuva?.tipo === 'previsto';
+  // Vizinhos são só de medição; na previsão o modelo cobre o estado todo, então não se aplicam.
+  const vizinhos = chuva?.tipo === 'medido' || ehPrevisao(janela) ? [] : vizinhosComDado(dados, cod, janela);
+  const previsao = previsaoDoMunicipio(dados, cod);
 
   // ----- resumo (sempre visível) -----
   let html = `
@@ -229,14 +254,21 @@ function htmlCartao(cod, euEstou) {
     </div>`;
 
   if (chuva) {
-    const origem = estimado
+    const origem = previsto
+      ? 'previsão do modelo'
+      : estimado
       ? 'estimativa do modelo, não é medição'
       : `${estacoes.length} ${estacoes.length === 1 ? 'estação' : 'estações'}`;
     html += `
-      <p class="grande"><span class="num">${estimado ? '~' : ''}${fmtMm(chuva.mm)}</span><span class="un">mm</span>${estimado ? '<span class="selo-estimado">estimado</span>' : ''}</p>
+      <p class="grande"><span class="num">${estimado || previsto ? '~' : ''}${fmtMm(chuva.mm)}</span><span class="un">mm</span>${estimado || previsto ? `<span class="selo-estimado">${previsto ? 'previsto' : 'estimado'}</span>` : ''}</p>
       <p class="sub">${TEXTO_JANELA[janela]} · ${origem}</p>`;
   } else {
-    html += '<p class="sub" style="margin-top:12px">Sem pluviômetro ativo neste município. Isso não significa que não está chovendo.</p>';
+    html += `<p class="sub" style="margin-top:12px">${ehPrevisao(janela) ? 'Sem previsão disponível no momento.' : 'Sem pluviômetro ativo neste município. Isso não significa que não está chovendo.'}</p>`;
+  }
+  // Quem olha o passado também precisa saber o que vem: a previsão das próximas 24 h fica sempre à vista.
+  const prox = chuvaDoMunicipio(dados, cod, '+24h');
+  if (prox && !ehPrevisao(janela)) {
+    html += `<p class="resumo-previsao">Próximas 24 h: <b>~${fmtMm(prox.mm)} mm</b> <span>previstos</span></p>`;
   }
 
   const principal = rios.find((e) => e.recente && e.situacao !== null);
@@ -253,13 +285,16 @@ function htmlCartao(cod, euEstou) {
 
   // ----- detalhes (expansíveis) -----
   html += '<div class="detalhes">';
-  if (chuva) {
-    html += `<div class="barras">${JANELAS.map((j) => {
-      const x = chuvaDoMunicipio(dados, cod, j).mm;
+  const passado = JANELAS.map((j) => [j, chuvaDoMunicipio(dados, cod, j)]).filter(([, c]) => c);
+  if (passado.length) {
+    html += `<div class="barras">${passado.map(([j, c]) => {
+      const x = c.mm;
+      const estimadoBarra = c.tipo === 'estimado';
       return `<div class="barra${j === janela ? ' ativa' : ''}" style="--c:${faixaDe(x).cor}">
-        <span class="rot">${j}</span><span class="trilho"><i style="width:${Math.min(100, x)}%"></i></span><span class="val">${estimado ? '~' : ''}${fmtMm(x)} mm</span></div>`;
+        <span class="rot">${j}</span><span class="trilho"><i style="width:${Math.min(100, x)}%"></i></span><span class="val">${estimadoBarra ? '~' : ''}${fmtMm(x)} mm</span></div>`;
     }).join('')}</div>`;
   }
+  if (previsao?.length) html += htmlPrevisao(previsao);
   if (vizinhos.length) {
     html += `<h3>Medição mais próxima</h3>${vizinhos
       .map(({ municipio, km }) => {
@@ -296,8 +331,8 @@ function htmlCartao(cod, euEstou) {
     const ultima = estacoes.map((e) => e.ultimaLeitura).sort().at(-1);
     html += `<p class="cartao-pe">Leitura mais recente: ${fmtHora(ultima)}</p>`;
   }
-  if (estimado) {
-    html += `<p class="cartao-pe">Estimativa do modelo <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> (CC BY 4.0) para o centro do município, calculada às ${fmtHora(dados.estimativaGeradoEm)}. Pode diferir do que choveu de fato, principalmente em temporais localizados.</p>`;
+  if (estimado || previsto || previsao) {
+    html += `<p class="cartao-pe">${previsto || previsao ? 'Previsão e estimativa' : 'Estimativa'} do modelo <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> (CC BY 4.0) para o centro do município, calculada às ${fmtHora(dados.estimativaGeradoEm)}. Pode diferir do que choveu de fato, principalmente em temporais localizados.</p>`;
   }
   return html + '</div>';
 }

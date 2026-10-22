@@ -1,8 +1,11 @@
 // Carrega as fontes e responde perguntas sobre cada município.
 import { distanciaKm, indexarMunicipios, municipioDe } from './geo.js';
-import { ESTIMATIVA_VALIDA_MS } from './normalizar.js';
+import { ESTIMATIVA_VALIDA_MS, VERSAO_ESTIMATIVA, acumuladosEstimativa, previsaoHoraria } from './normalizar.js';
 
-export const JANELAS = ['1h', '6h', '24h', '48h'];
+// Janelas de chuva acumulada (medida ou estimada) e de previsão ("+6h": próximas 6 horas, só do modelo).
+export const JANELAS = ['1h', '6h', '24h'];
+export const JANELAS_PREVISAO = ['+6h', '+24h'];
+export const ehPrevisao = (janela) => janela.startsWith('+');
 
 // Chuva: rampa fria, para nunca se confundir com as cores de risco dos rios (amarelo/laranja/vermelho).
 export const FAIXAS = [
@@ -69,8 +72,10 @@ export async function carregarDados(agoraMs = Date.now()) {
   const riosComLeitura = [...estacoesRio.values()].flat().filter((e) => e.recente && e.situacao !== null).length;
 
   // Estimativa por modelo (Open-Meteo), por município. Velha demais, ou sem data válida, não é usada.
-  const estimativaValida = estimativaBruta && agoraMs - Date.parse(estimativaBruta.geradoEm) <= ESTIMATIVA_VALIDA_MS;
-  const estimativa = new Map(estimativaValida ? estimativaBruta.municipios.map((m) => [m.codIbge, m.acumuladoMm]) : []);
+  const estimativaValida = estimativaBruta?.versao === VERSAO_ESTIMATIVA && agoraMs - Date.parse(estimativaBruta.geradoEm) <= ESTIMATIVA_VALIDA_MS;
+  const estimativa = new Map(
+    estimativaValida ? estimativaBruta.municipios.map((m) => [m.codIbge, { acumulado: acumuladosEstimativa(m.serie, agoraMs), serie: m.serie }]) : [],
+  );
 
   // Uma fonte de medição só vale como "medida" enquanto a coleta dela é recente.
   const fontesFrescas = {
@@ -80,7 +85,7 @@ export async function carregarDados(agoraMs = Date.now()) {
 
   return {
     chuva, rios, noticias, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura,
-    estimativa, estimativaGeradoEm: estimativaValida ? estimativaBruta.geradoEm : null, fontesFrescas,
+    estimativa, estimativaGeradoEm: estimativaValida ? estimativaBruta.geradoEm : null, fontesFrescas, agoraMs,
   };
 }
 
@@ -95,12 +100,23 @@ export function valorDoMunicipio(dados, codIbge, janela) {
 // a estimativa do modelo, sempre marcada como tal; se não houver nenhuma, a última medição (a coleta antiga é
 // avisada na interface) ou null. Medição velha nunca é apresentada como atual quando há estimativa.
 export function chuvaDoMunicipio(dados, codIbge, janela) {
+  // Previsão só existe como modelo: nunca é "medida", e sem ela o município fica sem dado.
+  if (ehPrevisao(janela)) {
+    const previsto = dados.estimativa.get(codIbge)?.acumulado[janela];
+    return typeof previsto === 'number' ? { mm: previsto, tipo: 'previsto' } : null;
+  }
   const frescas = (dados.pluviometros.get(codIbge) ?? []).filter((e) => dados.fontesFrescas[e.fonte]);
   if (frescas.length) return { mm: Math.max(...frescas.map((e) => e.acumuladoMm[janela] ?? 0)), tipo: 'medido' };
-  const estimado = dados.estimativa.get(codIbge)?.[janela];
+  const estimado = dados.estimativa.get(codIbge)?.acumulado[janela];
   if (typeof estimado === 'number') return { mm: estimado, tipo: 'estimado' };
   const ultima = valorDoMunicipio(dados, codIbge, janela);
   return ultima === null ? null : { mm: ultima, tipo: 'medido' };
+}
+
+// Próximas horas previstas do município ({ t, mm } por hora), ou null sem previsão.
+export function previsaoDoMunicipio(dados, codIbge) {
+  const e = dados.estimativa.get(codIbge);
+  return e ? previsaoHoraria(e.serie, dados.agoraMs) : null;
 }
 
 // Pior situação de rio entre as estações recentes do município; null se não houver dado.

@@ -2,7 +2,7 @@
 
 **[Ver ao vivo](https://lukinas1417.github.io/radar-chuva-rs/)**
 
-Mapa web, em tela cheia, da chuva acumulada (1 h, 6 h, 24 h e 48 h) em cada município do Rio Grande do Sul, com
+Mapa web, em tela cheia, da chuva acumulada (1 h, 6 h e 24 h) e da previsão (próximas 6 h e 24 h) em cada município do Rio Grande do Sul, com
 a situação dos rios. Os dados vêm quase em tempo real dos pluviômetros do CEMADEN e da Defesa Civil do RS. O
 contorno dos municípios com rio em atenção, alerta ou inundação pulsa suavemente, e o relevo 3D é opcional.
 
@@ -60,7 +60,7 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 Requer Node 22+. Sem dependências.
 
 ```sh
-node --test   # 74 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
+node --test   # 83 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
 ```
 
 ```sh
@@ -81,8 +81,8 @@ node scripts/serve.mjs              # http://localhost:8080
   (GraphQL, dados a cada 5 minutos). A API só aceita o texto exato da consulta documentada, guardado em
   `scripts/consultas/tags_data.graphql`. Ela traz o nível dos rios e a chuva dos pluviômetros da Defesa Civil.
 - `scripts/fetch-estimativa.mjs` pede ao [Open-Meteo](https://open-meteo.com/) (gratuito para uso não comercial, CC BY 4.0)
-  a precipitação horária das últimas 48 h no centro de cada município e grava `data/estimativa-rs.json`. É um modelo, não uma
-  medição: o mapa só a usa onde não há medição em dia, sempre rotulada ("~", "estimado", cor mais transparente). A coleta é de
+  a precipitação horária (últimas 30 h e próximas 36 h) no centro de cada município e grava `data/estimativa-rs.json`. É um modelo, não uma
+  medição: o acumulado estimado só aparece onde não há medição em dia, e a previsão (+6 h, +24 h) vem sempre dele; ambos rotulados ("~", "estimado", cor mais transparente). A coleta é de
   3 em 3 h para respeitar o limite de chamadas; nas outras execuções o arquivo publicado é reaproveitado.
 - O valor de cada município é o maior acumulado entre as estações ativas dele, das duas fontes.
 - O contorno luminoso usa a pior situação de rio informada pela Defesa Civil entre as estações do município.
