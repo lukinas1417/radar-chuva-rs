@@ -120,7 +120,8 @@ normalidade) e confirmei que a suíte falha em cada um. Essa verificação foi m
 
 ## O que eu faria a seguir
 
-1. Um gatilho externo para o agendamento, para o dado não depender da regularidade do GitHub.
+1. Um gatilho externo para o agendamento, para o dado não depender da regularidade do GitHub. O passo a passo
+   gratuito está em [agendamento.md](agendamento.md).
 2. Testes de contrato contra as fontes reais, para detectar quando o formato de uma resposta mudar, e testes de
    interface automatizados.
 3. Um alerta próprio quando a coleta falha por mais de um período, além do aviso na tela.
