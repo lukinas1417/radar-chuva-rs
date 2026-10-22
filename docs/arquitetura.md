@@ -44,8 +44,8 @@ JSON e desenha o mapa.
 
 | O que falha | Como é tratado | O que o usuário vê |
 |---|---|---|
-| Endpoint do CEMADEN recusa conexão (observado várias vezes) | 5 tentativas com espera crescente; se todas falharem, reaproveita o último dado publicado | Dado anterior; aviso quando passa de 1 hora |
-| API da Defesa Civil fora do ar ou com certificado vencido (observado) | A verificação de TLS **não é desativada**; o dado anterior é mantido | O resumo de rios passa a dizer "Rios de 21/10 17:47: ..." e o status fica âmbar |
+| Endpoint do CEMADEN recusa conexão (observado várias vezes) | 5 tentativas com espera crescente; se todas falharem, reaproveita o último dado publicado | Dado anterior; a estimativa do modelo cobre a chuva e a página só é marcada como desatualizada se todas as fontes de chuva caírem |
+| API da Defesa Civil fora do ar ou com certificado vencido (observado) | A verificação de TLS **não é desativada**; o dado anterior é mantido | O resumo de rios passa a dizer "Rios de 21/10 17:47: ..." (âmbar); a chuva segue em dia pela estimativa |
 | Open-Meteo (estimativa) recusa por limite de chamadas (HTTP 429) ou cai | A coleta é de 3 em 3 h (cerca de 4 mil chamadas/dia, abaixo do limite gratuito de 10 mil); 4 tentativas com espera crescente; sem cobertura de 90% dos municípios o dado é descartado; senão, reaproveita o último publicado | Estimativa com mais de 6 h deixa de ser usada e o município volta a "sem dado" |
 | Medição desatualizada (coleta com mais de 1 h) | Para o município, a medição velha cede lugar à estimativa, que é sempre rotulada ("~", "estimado", mais transparente no mapa); sem estimativa, mostra a última medição com o aviso de dado desatualizado | Nunca um número de modelo apresentado como medição |
 | Previsão de chuva (+6 h, +24 h) | Vem só do modelo e é recalculada no navegador a partir do horário dele, não do da coleta (o arquivo guarda a série horária, não os totais); arquivo de outra versão do formato ou com mais de 6 h é ignorado, e sem previsão o município fica "sem dado", nunca 0 mm | Rótulo "previsto", "~" e cor transparente; gráfico das próximas 24 h no cartão |

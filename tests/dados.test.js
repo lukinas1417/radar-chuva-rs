@@ -2,7 +2,7 @@
 // Aqui ficam os testes do erro real de "falsa normalidade" e da regra "estado desconhecido nunca vira normal".
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { carregarDados, chuvaDoMunicipio, ehPrevisao, previsaoDoMunicipio, faixaDe, municipiosEmRisco, riscoDoMunicipio, semAcento, valorDoMunicipio, vizinhosComDado } from '../src/dados.js';
+import { carregarDados, chuvaDoMunicipio, temChuvaEmDia, ehPrevisao, previsaoDoMunicipio, faixaDe, municipiosEmRisco, riscoDoMunicipio, semAcento, valorDoMunicipio, vizinhosComDado } from '../src/dados.js';
 
 const quadrado = (x, y) => [[[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1], [x, y]]];
 const malha = {
@@ -277,4 +277,25 @@ test('a previsão horária tem 24 horas, todas depois de agora', async () => {
 test('só as janelas com "+" são previsão', () => {
   assert.equal(ehPrevisao('+6h'), true);
   assert.equal(ehPrevisao('24h'), false);
+});
+
+// ---------- quando a página inteira conta como desatualizada ----------
+
+test('com CEMADEN e Defesa Civil velhos, a estimativa em dia mantém a página como atualizada', async () => {
+  const velha = { ...chuvaPadrao, geradoEm: horasAntes(5) };
+  fontes({ chuva: velha, rios: null, estimativa: estimativaPadrao() });
+  assert.equal(temChuvaEmDia(await carregarDados(AGORA)), true);
+});
+
+test('com a estimativa fora e só o CEMADEN em dia, continua atualizada', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null });
+  assert.equal(temChuvaEmDia(await carregarDados(AGORA)), true);
+});
+
+test('só é desatualizada quando TODAS as fontes de chuva caem', async () => {
+  const velha = { ...chuvaPadrao, geradoEm: horasAntes(5) };
+  fontes({ chuva: velha, rios: null });
+  assert.equal(temChuvaEmDia(await carregarDados(AGORA)), false);
+  fontes({ chuva: velha, rios: null, estimativa: estimativaPadrao(horasAntes(7)) }); // estimativa velha demais não conta
+  assert.equal(temChuvaEmDia(await carregarDados(AGORA)), false);
 });

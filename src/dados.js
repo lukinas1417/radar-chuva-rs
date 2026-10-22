@@ -113,6 +113,11 @@ export function chuvaDoMunicipio(dados, codIbge, janela) {
   return ultima === null ? null : { mm: ultima, tipo: 'medido' };
 }
 
+// O mapa tem chuva em dia enquanto QUALQUER fonte de chuva estiver em dia: pluviômetros do CEMADEN, da Defesa Civil
+// ou a estimativa do modelo (sempre rotulada). Só quando todas caem é que a página inteira conta como desatualizada.
+export const temChuvaEmDia = (dados) =>
+  dados.fontesFrescas.CEMADEN || dados.fontesFrescas['Defesa Civil RS'] || dados.estimativaGeradoEm !== null;
+
 // Próximas horas previstas do município ({ t, mm } por hora), ou null sem previsão.
 export function previsaoDoMunicipio(dados, codIbge) {
   const e = dados.estimativa.get(codIbge);

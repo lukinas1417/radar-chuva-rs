@@ -12,6 +12,7 @@ import {
   municipiosEmRisco,
   previsaoDoMunicipio,
   semAcento,
+  temChuvaEmDia,
   valorDoMunicipio,
   vizinhosComDado,
 } from './dados.js';
@@ -136,29 +137,32 @@ const dadoVelho = (iso) => Date.now() - Date.parse(iso) > DADO_VELHO_MS;
 const chuvaVelha = dadoVelho(dados.chuva.geradoEm);
 const riosVelhos = dados.rios ? dadoVelho(dados.rios.geradoEm) : false;
 
+// A página só é "desatualizada" quando não resta nenhuma fonte de chuva em dia (a estimativa do modelo conta, por
+// estar rotulada como estimada). Rios têm aviso próprio na pílula de rios: sem a Defesa Civil não há substituto.
 function desenharStatus() {
-  const fontes = [dados.chuva.geradoEm, ...(dados.rios ? [dados.rios.geradoEm] : [])];
-  const maisAntiga = fontes.reduce((a, b) => (Date.parse(a) < Date.parse(b) ? a : b));
-  const velho = chuvaVelha || riosVelhos;
-  document.body.classList.toggle('dado-velho', velho); // a hora com data é mais larga: no celular a marca cede espaço
-  const semRios = !dados.rios;
+  const velho = !temChuvaEmDia(dados);
+  const coletas = [dados.chuva.geradoEm, ...(dados.rios ? [dados.rios.geradoEm] : []), ...(dados.estimativaGeradoEm ? [dados.estimativaGeradoEm] : [])];
+  const emDia = [
+    !chuvaVelha && dados.chuva.geradoEm,
+    dados.rios && !riosVelhos && dados.rios.geradoEm,
+    dados.estimativaGeradoEm,
+  ].filter(Boolean);
+  const mostrada = velho
+    ? coletas.reduce((a, b) => (Date.parse(a) < Date.parse(b) ? a : b)) // tudo caiu: a data mais antiga é a conservadora
+    : emDia.reduce((a, b) => (Date.parse(a) > Date.parse(b) ? a : b));
+  document.body.classList.toggle('dado-velho', !mesmoDia(new Date(mostrada), new Date())); // a hora com data é mais larga: no celular a marca cede espaço
   const ponto = $('status-ponto');
-  ponto.style.setProperty('--c', velho || semRios ? COR_ALERTA : '#69d38a');
-  ponto.classList.toggle('pulsa', velho || semRios);
-  $('status-texto').innerHTML = `<span class="palavra">${velho ? 'Desatualizado ' : 'Atualizado '}</span><b>${fmtHora(maisAntiga)}</b>`;
+  ponto.style.setProperty('--c', velho ? COR_ALERTA : '#69d38a');
+  ponto.classList.toggle('pulsa', velho);
+  $('status-texto').innerHTML = `<span class="palavra">${velho ? 'Desatualizado ' : 'Atualizado '}</span><b>${fmtHora(mostrada)}</b>`;
   $('status').title = [
-    `Chuva do CEMADEN: ${fmtHora(dados.chuva.geradoEm)}`,
-    dados.rios ? `Defesa Civil RS (chuva e rios): ${fmtHora(dados.rios.geradoEm)}` : 'Defesa Civil RS: indisponível',
+    `Chuva do CEMADEN: ${fmtHora(dados.chuva.geradoEm)}${chuvaVelha ? ' (desatualizada)' : ''}`,
+    dados.rios ? `Defesa Civil RS (chuva e rios): ${fmtHora(dados.rios.geradoEm)}${riosVelhos ? ' (desatualizada)' : ''}` : 'Defesa Civil RS: indisponível',
     dados.estimativaGeradoEm ? `Estimativa Open-Meteo (modelo): ${fmtHora(dados.estimativaGeradoEm)}` : 'Estimativa Open-Meteo: indisponível',
   ].join('\n');
   if (velho) {
-    const quais = [
-      chuvaVelha && `chuva do CEMADEN (desde ${fmtHora(dados.chuva.geradoEm)})`,
-      riosVelhos && `rios e parte da chuva da Defesa Civil RS (desde ${fmtHora(dados.rios.geradoEm)})`,
-    ].filter(Boolean);
-    mostrarAviso(`Dados desatualizados: ${quais.join(' e ')}. A fonte está instável e o que aparece pode não refletir a situação atual.${dados.estimativaGeradoEm ? ' Onde não há medição recente, o mapa mostra uma estimativa do modelo Open-Meteo (transparente).' : ''} Consulte a Defesa Civil.`, true, 15000);
+    mostrarAviso(`Dados de chuva desatualizados (desde ${fmtHora(mostrada)}): as fontes estão instáveis e o que aparece pode não refletir a situação atual. Consulte a Defesa Civil.`, true, 15000);
   }
-  else if (semRios) mostrarAviso('Os dados da Defesa Civil RS (rios e parte da chuva) estão indisponíveis no momento.', true, 9000);
 }
 
 const emRisco = municipiosEmRisco(dados);

@@ -30,7 +30,7 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 
 - **Fontes instáveis são o caso normal.** O endpoint público do CEMADEN recusa conexões de forma intermitente, e o da
   Defesa Civil chegou a ficar com certificado vencido. O workflow tenta de novo, reaproveita o último dado publicado
-  se a coleta falhar e o site avisa em âmbar quando o dado passa de 1 hora.
+  se a coleta falhar e o site só avisa em âmbar quando nenhuma fonte de chuva (pluviômetros ou estimativa do modelo) está em dia. Os rios, que não têm substituto, têm aviso próprio.
 - **"Sem dado" nunca vira "sem problema".** Estação sem leitura recente é `null`, não zero, e a pílula de rios
   nunca indica normalidade quando não há leitura. A situação do rio é rotulada como informada pela Defesa Civil,
   porque a API não expõe as cotas e a própria documentação é ambígua sobre o que o status representa.
