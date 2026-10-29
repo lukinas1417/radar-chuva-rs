@@ -1,7 +1,7 @@
 // A camada do SGB só vale onde existe carta: dizer "sem risco" num município sem carta seria o erro grave.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TIPOS, caixaDoTile, hachurar, temCarta, urlWms } from '../src/suscetibilidade.js';
+import { TIPOS, caixaDoTile, hachurar, somarAreas, temCarta, urlWms } from '../src/suscetibilidade.js';
 
 test('reconhece município com carta, ignorando acento e caixa', () => {
   assert.equal(temCarta('inundacao', 'Gravataí'), true);
@@ -54,4 +54,20 @@ test('hachura: pixel transparente continua transparente e a cor sai na do tipo',
   hachurar(rgba, 2, 1, 'inundacao');
   assert.equal(rgba[3], 0);
   assert.deepEqual([...rgba.slice(4, 7)], TIPOS.inundacao.cor);
+});
+
+test('soma a área por classe e junta os anos do levantamento', () => {
+  const csv = 'FID,classe,area_km2,ano\nf.1,Alta,3.5,2017\nf.2,Média,10,2017\nf.3,Baixa,1.25,2023\nf.4,Alta,0.5,2017\n';
+  const r = somarAreas(csv);
+  assert.equal(r.alta, 4);
+  assert.equal(r.media, 10);
+  assert.equal(r.baixa, 1.25);
+  assert.equal(r.total, 15.25);
+  assert.deepEqual(r.anos, [2017, 2023]);
+});
+
+test('soma de áreas ignora linhas sem classe conhecida ou sem área, em vez de quebrar', () => {
+  const r = somarAreas('FID,classe,area_km2,ano\nf.1,Desconhecida,5,2017\nf.2,Alta,abc,2017\nf.3,Baixa,2,2017\n');
+  assert.equal(r.total, 2);
+  assert.equal(somarAreas('FID,classe,area_km2,ano\n').total, 0);
 });

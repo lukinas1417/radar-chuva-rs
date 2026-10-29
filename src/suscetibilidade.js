@@ -3,8 +3,6 @@
 import { semAcento } from './dados.js';
 
 const WMS = 'https://geoservicos.sgb.gov.br/geoserver/gestao-territorial/wms';
-// Zoom a partir do qual a camada aparece: a carta é de escala municipal e, no estado todo, viraria só mancha.
-export const ZOOM_MINIMO_CARTA = 7;
 
 // Municípios do RS com carta publicada (consulta ao WFS do SGB em 29/10/2026; a página oficial do SGB é a referência).
 const MUNICIPIOS_INUNDACAO = [
@@ -86,3 +84,68 @@ export function urlWms(tipo, caixa, px = 1024) {
 }
 
 export const temCarta = (tipo, nomeMunicipio) => TIPOS[tipo].municipios.has(semAcento(nomeMunicipio));
+
+// ---------- consultas ao WFS (sem geometria: só classe, área e ano) ----------
+const WFS = WMS.replace('/wms', '/ows');
+
+function urlWfs(tipo, filtro, propriedades, formato) {
+  const p = new URLSearchParams({
+    service: 'WFS',
+    version: '2.0.0',
+    request: 'GetFeature',
+    typeNames: TIPOS[tipo].camada,
+    outputFormat: formato,
+    propertyName: propriedades,
+    cql_filter: filtro,
+  });
+  return WFS + '?' + p;
+}
+
+const CLASSES = { alta: 'alta', media: 'media', baixa: 'baixa' };
+const classeDe = (texto) => CLASSES[semAcento(texto.trim())] ?? null;
+
+// Soma a área (km²) de cada classe a partir do CSV do WFS (colunas FID, classe, area_km2, ano).
+export function somarAreas(csv) {
+  const [cabecalho, ...linhas] = csv.trim().split(/\r?\n/);
+  const col = cabecalho.split(',');
+  const [iClasse, iArea, iAno] = ['classe', 'area_km2', 'ano'].map((c) => col.indexOf(c));
+  const areas = { alta: 0, media: 0, baixa: 0 };
+  const anos = new Set();
+  for (const linha of linhas) {
+    const c = linha.split(',');
+    const classe = classeDe(c[iClasse] ?? '');
+    const area = Number(c[iArea]);
+    if (!classe || !Number.isFinite(area)) continue;
+    areas[classe] += area;
+    if (c[iAno]) anos.add(Number(c[iAno]));
+  }
+  return { ...areas, total: areas.alta + areas.media + areas.baixa, anos: [...anos].sort() };
+}
+
+const escapar = (texto) => texto.replace(/'/g, "''");
+const memoria = new Map();
+
+// Área por classe de um município. Fica em memória: o mesmo município não é consultado duas vezes.
+export function areasDoMunicipio(tipo, nome) {
+  const chave = tipo + '|' + nome;
+  if (!memoria.has(chave)) {
+    const filtro = "uf='RS' AND municipio='" + escapar(nome.toUpperCase()) + "'";
+    const pedido = fetch(urlWfs(tipo, filtro, 'classe,area_km2,ano', 'csv')).then(async (res) => {
+      if (!res.ok) throw new Error('SGB respondeu ' + res.status);
+      return somarAreas(await res.text());
+    });
+    pedido.catch(() => memoria.delete(chave)); // falha não fica guardada: tenta de novo na próxima vez
+    memoria.set(chave, pedido);
+  }
+  return memoria.get(chave);
+}
+
+// Classe e ano da carta no ponto clicado, ou null se o ponto está fora da área mapeada. No WFS 2.0 a ordem é latitude, longitude.
+export async function classeNoPonto(tipo, lon, lat) {
+  const filtro = 'INTERSECTS(geom,POINT(' + lat + ' ' + lon + '))';
+  const res = await fetch(urlWfs(tipo, filtro, 'classe,ano', 'application/json'));
+  if (!res.ok) throw new Error('SGB respondeu ' + res.status);
+  const p = (await res.json()).features?.[0]?.properties;
+  const classe = p ? classeDe(p.classe) : null;
+  return classe ? { classe, ano: p.ano } : null;
+}

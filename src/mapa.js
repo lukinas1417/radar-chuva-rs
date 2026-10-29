@@ -1,6 +1,6 @@
 // Mapa em tela cheia: relevo 3D, municípios coloridos pela chuva e brilho pulsante nos rios em risco.
 import { SITUACOES, chuvaDoMunicipio, faixaDe, riscoDoMunicipio } from './dados.js';
-import { TIPOS, ZOOM_MINIMO_CARTA, caixaDoTile, hachurar, urlWms } from './suscetibilidade.js';
+import { TIPOS, caixaDoTile, hachurar, urlWms } from './suscetibilidade.js';
 
 const TILES_RELEVO = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const LIMITES_RS = [[-57.7, -33.8], [-49.6, -27.0]];
@@ -82,7 +82,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     if (pronto) mapa.getSource('municipios').setData(dados.malha);
   }
 
-  // Cartas do SGB sempre visíveis, em hachura, por cima da chuva e sob o relevo e os contornos. Só aparecem de perto.
+  // Cartas do SGB sempre visíveis, em qualquer zoom, em hachura, por cima da chuva e sob o relevo e os contornos.
   // O tile vem do WMS do SGB e é redesenhado aqui (protocolo "carta"): nada é copiado nem guardado.
   maplibregl.addProtocol('carta', async (params, abortController) => {
     const [tipo, z, x, y] = params.url.slice('carta://'.length).split('/');
@@ -101,7 +101,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     for (const tipo of Object.keys(TIPOS)) {
       mapa.addSource('carta-' + tipo, { type: 'raster', tiles: ['carta://' + tipo + '/{z}/{x}/{y}'], tileSize: 512, maxzoom: 14 });
       mapa.addLayer(
-        { id: 'carta-' + tipo, type: 'raster', source: 'carta-' + tipo, minzoom: ZOOM_MINIMO_CARTA, paint: { 'raster-fade-duration': 150 } },
+        { id: 'carta-' + tipo, type: 'raster', source: 'carta-' + tipo, paint: { 'raster-fade-duration': 150 } },
         'sombra',
       );
     }
@@ -203,7 +203,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
 
     mapa.on('click', (ev) => {
       const [f] = mapa.queryRenderedFeatures(ev.point, { layers: ['preenchimento'] });
-      aoSelecionar(f ? f.properties.codIbge : null);
+      aoSelecionar(f ? f.properties.codIbge : null, ev.lngLat);
     });
     if (TEM_HOVER) {
       mapa.on('mousemove', (ev) => {

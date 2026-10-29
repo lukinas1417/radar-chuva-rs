@@ -18,7 +18,7 @@ import {
 } from './dados.js';
 import { municipioDe } from './geo.js';
 import { criarMapa } from './mapa.js';
-import { TIPOS, ZOOM_MINIMO_CARTA, temCarta } from './suscetibilidade.js';
+import { TIPOS, areasDoMunicipio, classeNoPonto, temCarta } from './suscetibilidade.js';
 import { noticiasPara } from './noticias.js';
 
 const $ = (id) => document.getElementById(id);
@@ -92,7 +92,7 @@ function atualizarSlider(zoom, minimo, maximo) {
 const mapa = criarMapa({
   container: 'mapa',
   dados,
-  aoSelecionar: (cod) => selecionar(cod, { voar: false }),
+  aoSelecionar: (cod, ponto) => selecionar(cod, { voar: false, ponto }),
   aoPassar: mostrarDica,
   aoAfastar: (afastado) => $('recentrar').classList.toggle('oculto', !afastado),
   aoZoom: atualizarSlider,
@@ -136,7 +136,7 @@ function desenharLegenda() {
     <div class="linha2 carta">
       <span class="carta-nome"><i class="hachura" style="--c:${TIPOS.inundacao.cor_css}"></i><b>Inundação</b></span>
       <span class="carta-nome"><i class="hachura mov" style="--c:${TIPOS.movimento.cor_css}"></i><b>Movimento de massa</b></span>
-      <span>cartas do SGB: onde o terreno tende a inundar ou deslizar (linha mais grossa = classe mais alta). De perto, só em alguns municípios. Não mostram o que acontece agora.</span>
+      <span>cartas do SGB: onde o terreno tende a inundar ou deslizar (linha mais grossa = classe mais alta). Só em alguns municípios; toque num deles para ver as classes. Não mostram o que acontece agora.</span>
     </div>`;
 }
 
@@ -244,9 +244,47 @@ function htmlPrevisao(horas) {
 
 // Dizer "sem carta" é importante: o município sem carta não é um município sem risco.
 function htmlCarta(nome) {
-  const com = Object.keys(TIPOS).filter((t) => temCarta(t, nome)).map((t) => TIPOS[t].rotulo.toLowerCase());
+  const com = Object.keys(TIPOS).filter((t) => temCarta(t, nome));
   if (!com.length) return '<p class="resumo-carta sem">Sem carta de suscetibilidade (inundação ou movimento de massa) publicada pelo SGB. Isso <b>não</b> significa ausência de risco.</p>';
-  return `<p class="resumo-carta">Carta do SGB de ${com.join(' e ')} publicada para este município. Aproxime o mapa para ver as áreas.</p>`;
+  return '<div class="resumo-carta" data-carta-info><p>Carta do SGB de ' + com.map((t) => TIPOS[t].rotulo.toLowerCase()).join(' e ') + ': consultando as classes…</p></div>';
+}
+
+const fmtKm = (km) => (km <= 0 ? '0 km²' : km < 0.05 ? '<0,1 km²' : (km >= 10 ? Math.round(km) : km.toFixed(1).replace('.', ',')).toLocaleString('pt-BR') + ' km²');
+const NOME_CLASSE = { alta: 'alta', media: 'média', baixa: 'baixa' };
+
+// Quanto de cada classe há no município e, se o usuário tocou no mapa, qual é a classe naquele ponto.
+async function preencherCartaInfo(cod) {
+  const m = dados.porCodigo.get(cod);
+  const tipos = Object.keys(TIPOS).filter((t) => temCarta(t, m.nome));
+  if (!tipos.length) return;
+  const ponto = pontoClicado;
+  const [areas, naPonto] = await Promise.all([
+    Promise.allSettled(tipos.map((t) => areasDoMunicipio(t, m.nome))),
+    Promise.allSettled(tipos.map((t) => (ponto ? classeNoPonto(t, ponto.lng, ponto.lat) : Promise.resolve(undefined)))),
+  ]);
+  const el = selecionado === cod ? $('cartao').querySelector('[data-carta-info]') : null;
+  if (!el) return; // o usuário já fechou ou trocou de município
+  const anos = new Set();
+  let html = '';
+  tipos.forEach((t, i) => {
+    const tipo = TIPOS[t];
+    html += '<div class="carta-tipo"><i class="hachura' + (t === 'movimento' ? ' mov' : '') + '" style="--c:' + tipo.cor_css + '"></i><b>' + tipo.rotulo + '</b></div>';
+    if (areas[i].status === 'fulfilled' && areas[i].value.total > 0) {
+      const r = areas[i].value;
+      r.anos.forEach((x) => anos.add(x));
+      html += '<div class="carta-barra" style="--c:' + tipo.cor_css + '" role="img" aria-label="' + tipo.rotulo + ': ' + ['alta', 'media', 'baixa'].map((c) => NOME_CLASSE[c] + ' ' + fmtKm(r[c])).join(', ') + '">'
+        + ['alta', 'media', 'baixa'].map((c) => '<i class="' + c + '" style="flex:' + r[c] + '"></i>').join('') + '</div>'
+        + '<p class="carta-classes">' + ['alta', 'media', 'baixa'].map((c) => '<span><b>' + NOME_CLASSE[c] + '</b> ' + fmtKm(r[c]) + '</span>').join('') + '</p>';
+    } else {
+      html += '<p class="carta-classes">Não foi possível consultar o SGB agora.</p>';
+    }
+    if (ponto && naPonto[i].status === 'fulfilled') {
+      const p = naPonto[i].value;
+      html += '<p class="carta-ponto">Onde você tocou: ' + (p ? 'classe <b>' + NOME_CLASSE[p.classe] + '</b>' : 'fora da área mapeada nesta carta') + '</p>';
+    }
+  });
+  const quando = anos.size ? 'Levantamento de ' + [...anos].join(', ') + '. ' : '';
+  el.innerHTML = html + '<p class="carta-pe">' + quando + 'Fonte: Serviço Geológico do Brasil (SGB). Escala regional: serve para planejamento, não para dizer se a sua rua alaga ou desliza.</p>';
 }
 
 function htmlCartao(cod, euEstou) {
@@ -359,8 +397,11 @@ function htmlCartao(cod, euEstou) {
 }
 
 let euEstouEm = null;
-function selecionar(cod, { voar = true } = {}) {
+// Ponto em que o usuário tocou no mapa (para dizer a classe da carta ali); null quando a escolha veio da busca ou da lista.
+let pontoClicado = null;
+function selecionar(cod, { voar = true, ponto = null } = {}) {
   selecionado = cod;
+  pontoClicado = ponto;
   mapa.selecionar(cod);
   const cartao = $('cartao');
   document.body.classList.toggle('cartao-aberto', cod !== null);
@@ -368,6 +409,7 @@ function selecionar(cod, { voar = true } = {}) {
     cartao.hidden = true;
   } else {
     cartao.innerHTML = htmlCartao(cod, cod === euEstouEm);
+    preencherCartaInfo(cod);
     cartao.classList.toggle('expandido', cartaoExpandido);
     cartao.scrollTop = 0;
     cartao.hidden = false;
@@ -515,7 +557,10 @@ $('janelas').addEventListener('click', (ev) => {
   marcarJanela();
   mapa.pintar(janela);
   desenharLegenda();
-  if (selecionado !== null) $('cartao').innerHTML = htmlCartao(selecionado, selecionado === euEstouEm);
+  if (selecionado !== null) {
+    $('cartao').innerHTML = htmlCartao(selecionado, selecionado === euEstouEm);
+    preencherCartaInfo(selecionado);
+  }
   gravarEstado();
 });
 $('relevo').addEventListener('click', () => $('relevo').setAttribute('aria-pressed', String(mapa.alternarRelevo())));
