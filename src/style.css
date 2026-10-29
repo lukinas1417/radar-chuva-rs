@@ -394,3 +394,19 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- suscetibilidade (SGB) ---------- */
+#carta-menu { position: fixed; z-index: 6; top: 68px; right: 16px; width: 230px; padding: 10px; display: grid; gap: 4px; font-size: 13px; }
+#carta-menu[hidden] { display: none; }
+#carta-menu .carta-titulo { margin: 2px 6px 4px; color: var(--texto); font-weight: 500; }
+#carta-menu .carta-titulo span { margin-left: 4px; color: var(--suave); font: 11px var(--mono); }
+#carta-menu button { display: flex; align-items: center; gap: 9px; padding: 8px 8px; border: 0; border-radius: 9px; background: none; text-align: left; cursor: pointer; color: var(--suave); }
+#carta-menu button:hover { background: rgba(255, 255, 255, 0.07); }
+#carta-menu button[aria-pressed='true'] { color: var(--texto); background: rgba(255, 255, 255, 0.1); }
+#carta-menu button i { width: 14px; height: 10px; border-radius: 3px; background: var(--c); opacity: 0.85; }
+#carta-menu .carta-nota { margin: 4px 6px 2px; font-size: 11.500px; color: var(--suave); }
+#legenda .carta { flex-direction: column; gap: 4px; }
+#legenda .carta-nome b { color: var(--texto); font-weight: 500; }
+.resumo-carta { margin: 12px 0 0; padding: 8px 10px; border-radius: 9px; background: rgba(255, 184, 77, 0.1); border-left: 2px solid #ffb84d; font-size: 12.500px; color: var(--suave); }
+.resumo-carta.sem { background: rgba(255, 255, 255, 0.05); border-left-color: var(--suave); }
+@media (max-width: 759px) { #carta-menu { top: 62px; right: 10px; } }

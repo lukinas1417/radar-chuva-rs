@@ -1,5 +1,6 @@
 // Mapa em tela cheia: relevo 3D, municípios coloridos pela chuva e brilho pulsante nos rios em risco.
 import { SITUACOES, chuvaDoMunicipio, faixaDe, riscoDoMunicipio } from './dados.js';
+import { TIPOS, ZOOM_MINIMO_CARTA, urlTiles } from './suscetibilidade.js';
 
 const TILES_RELEVO = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const LIMITES_RS = [[-57.7, -33.8], [-49.6, -27.0]];
@@ -21,7 +22,7 @@ function margens(comCartao = false) {
   return { top: 56, bottom: 84, left: 340, right: comCartao ? 400 : 30 };
 }
 
-export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar, aoZoom }) {
+export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar, aoZoom, aoFalharCarta }) {
   const mapa = new maplibregl.Map({
     container,
     style: { version: 8, sources: {}, layers: [{ id: 'fundo', type: 'background', paint: { 'background-color': '#070d14' } }] },
@@ -40,6 +41,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
   let cartaoAberto = false;
   let codSelecionado = null;
   let codEu = null; // município do usuário, destacado com um brilho suave
+  let tipoCarta = null; // carta de suscetibilidade do SGB ligada (ou null)
 
   // O zoom mínimo é o do enquadramento do estado (com ou sem cartão) menos uma folga curta: dá para se
   // afastar um pouco, mas não a ponto de ver o estado pequeno com espaço vazio em volta. Depende do tamanho da tela.
@@ -80,6 +82,32 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     }
     if (pronto) mapa.getSource('municipios').setData(dados.malha);
   }
+
+  // Carta do SGB por cima da chuva e sob o relevo e os contornos. Só aparece de perto (ZOOM_MINIMO_CARTA).
+  function aplicarCarta() {
+    if (!pronto) return;
+    for (const id of ['carta']) if (mapa.getLayer(id)) mapa.removeLayer(id);
+    if (mapa.getSource('carta')) mapa.removeSource('carta');
+    if (!tipoCarta) return;
+    mapa.addSource('carta', { type: 'raster', tiles: [urlTiles(tipoCarta)], tileSize: 256, maxzoom: 14 });
+    mapa.addLayer(
+      {
+        id: 'carta',
+        type: 'raster',
+        source: 'carta',
+        minzoom: ZOOM_MINIMO_CARTA,
+        paint: { 'raster-hue-rotate': TIPOS[tipoCarta].giro, 'raster-opacity': 0.5, 'raster-fade-duration': 150 },
+      },
+      'sombra',
+    );
+  }
+
+  // Falha do serviço do SGB (fora do ar, lento, bloqueado): o mapa segue funcionando e a interface é avisada uma vez.
+  let falhasCarta = 0;
+  mapa.on('error', (ev) => {
+    if (ev.sourceId !== 'carta') return;
+    if (++falhasCarta === 3) aoFalharCarta?.();
+  });
 
   function inclinar(ligado) {
     mapa.setTerrain(ligado ? { source: 'relevo', exaggeration: 1.6 } : null);
@@ -155,6 +183,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
 
     pronto = true;
     pintar(janelaAtual);
+    aplicarCarta();
     if (codSelecionado !== null) mapa.setFilter('selecionado', ['==', ['get', 'codIbge'], codSelecionado]);
     if (codEu !== null) aplicarEu();
     if (relevoLigado) inclinar(true);
@@ -246,6 +275,11 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
       el.className = 'eu';
       el.title = 'Você está aqui';
       marcadorLocal = new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(mapa);
+    },
+    definirCarta(tipo) {
+      tipoCarta = tipo;
+      falhasCarta = 0;
+      aplicarCarta();
     },
     alternarRelevo() {
       relevoLigado = !relevoLigado;

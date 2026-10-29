@@ -45,12 +45,22 @@
   <div id="status" class="vidro">
     <i class="ponto" id="status-ponto"></i>
     <span id="status-texto">Carregando…</span>
+    <button id="carta-botao" class="icone" type="button" aria-expanded="false" aria-controls="carta-menu" aria-label="Camada de suscetibilidade a inundação e deslizamento (SGB)" title="Suscetibilidade (SGB)">
+      <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M4 8h16M4 12h16M4 16h16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 2.500"/><rect x="3.500" y="4.500" width="17" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
     <button id="relevo" class="icone" type="button" aria-pressed="false" aria-label="Alternar relevo 3D" title="Relevo 3D">
       <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="m3 17 5.500-9 4 6 2.500-3.500L21 17Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
     </button>
     <button id="sobre-botao" class="icone" type="button" aria-expanded="false" aria-controls="sobre" aria-label="Sobre os dados" title="Sobre os dados">
       <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5.500M12 7.800v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
+  </div>
+
+  <div id="carta-menu" class="vidro" role="group" aria-label="Suscetibilidade (SGB)" hidden>
+    <p class="carta-titulo">Suscetibilidade <span>SGB</span></p>
+    <button type="button" data-carta="inundacao" aria-pressed="false"><i style="--c:#ffb84d"></i>Inundação</button>
+    <button type="button" data-carta="movimento" aria-pressed="false"><i style="--c:#ff6b9a"></i>Movimento de massa</button>
+    <p class="carta-nota">Só em alguns municípios, e de perto no mapa.</p>
   </div>
 
   <div id="controles-zoom">
@@ -95,6 +105,7 @@
     <p><b>Estimativa e previsão.</b> A previsão vem sempre do modelo. Onde não há medição recente, o mapa mostra (transparente, com “~”) a chuva estimada pelo modelo <a href="https://open-meteo.com/">Open-Meteo</a> (CC BY 4.0) no centro do município. É um modelo, não um pluviômetro: pode errar, principalmente em temporais localizados.</p>
     <p><b>Rios.</b> Rede Hidrometeorológica da Defesa Civil do RS. O contorno luminoso indica a situação informada por ela (atenção, alerta ou inundação) e pode refletir o maior nível recente, não só o atual.</p>
     <p><b>Notícias.</b> Títulos e links do G1 RS e da Agência Brasil (feeds RSS públicos), escolhidos automaticamente por palavras-chave, o que pode errar. O conteúdo é dos veículos: os links levam até eles.</p>
+    <p><b>Suscetibilidade.</b> Cartas de Suscetibilidade a Movimentos Gravitacionais de Massa e Inundações do <a href="https://www.sgb.gov.br/pt/web/guest/rio-grande-do-sul-cartografia-de-suscetibilidade">Serviço Geológico do Brasil (SGB/CPRM)</a>, exibidas com citação da fonte, conforme orientação da Ouvidoria do SGB. Mostram onde o terreno tende a inundar ou deslizar, em escala e com finalidade próprias (planejamento territorial): <b>não indicam o que está acontecendo agora</b> nem a chuva do dia. Existem só para alguns municípios; onde não há carta, isso <b>não</b> quer dizer que não há risco. As cores originais do SGB foram trocadas para não se confundir com a chuva.</p>
     <p><b>Mapa.</b> Malha municipal do IBGE. Relevo: Mapzen/AWS Terrain Tiles.</p>
     <p><b>Município em cinza escuro</b> está sem medição e sem estimativa no momento, o que não significa ausência de chuva.</p>
     <p class="aviso"><b>Este projeto não substitui os alertas oficiais.</b> Em emergência, siga a Defesa Civil: SMS 40199 com seu CEP, ou 199.</p>
@@ -103,7 +114,7 @@
 
   <footer id="creditos">
     <span>Não substitui os alertas oficiais · SMS 40199</span>
-    <span class="fontes">Dados: CEMADEN/MCTIC, Defesa Civil RS, Open-Meteo, IBGE</span>
+    <span class="fontes">Dados: CEMADEN/MCTIC, Defesa Civil RS, Open-Meteo, IBGE, SGB</span>
   </footer>
 
   <div id="dica" role="tooltip" hidden></div>
