@@ -45,8 +45,15 @@ test('hachura: classe mais alta cobre mais área que a baixa', () => {
   for (const tipo of Object.keys(TIPOS)) {
     const { alta, media, baixa } = TIPOS[tipo].classes;
     const [a, m, b] = [alta, media, baixa].map((c) => cobertura(tipo, c));
-    assert.ok(a > m && m > b && b > 0, tipo + ': ' + a + ' ' + m + ' ' + b);
+    const oculta = TIPOS[tipo].ocultar?.includes('baixa');
+    assert.ok(a > m && m > b && (oculta ? b === 0 : b > 0), tipo + ': ' + a + ' ' + m + ' ' + b);
   }
+});
+
+test('hachura: movimento de massa não hachura a classe baixa (marcaria o município inteiro)', () => {
+  assert.equal(cobertura('movimento', TIPOS.movimento.classes.baixa), 0);
+  assert.ok(cobertura('movimento', TIPOS.movimento.classes.media) > 0);
+  assert.ok(cobertura('inundacao', TIPOS.inundacao.classes.baixa) > 0);
 });
 
 test('hachura: pixel transparente continua transparente e a cor sai na do tipo', () => {

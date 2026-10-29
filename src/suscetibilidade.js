@@ -37,6 +37,8 @@ export const TIPOS = {
     cor: [255, 107, 154], // rosa
     cor_css: '#ff6b9a',
     diagonal: -1, // linhas "\"
+    // O SGB marca quase o município todo como classe baixa: hachurar isso viraria um filtro sobre a cidade, sem apontar lugar.
+    ocultar: ['baixa'],
     classes: { alta: [196, 109, 27], media: [247, 195, 72], baixa: [255, 255, 128] },
     municipios: new Set(MUNICIPIOS_MOVIMENTO.map(semAcento)),
   },
@@ -46,7 +48,7 @@ const TRACO = { alta: [9, 240], media: [5, 225], baixa: [3, 205] };
 
 // Troca, no próprio vetor de pixels RGBA, a cor chapada do SGB pela hachura. Pixel quase transparente fica transparente.
 export function hachurar(rgba, largura, altura, tipo) {
-  const { classes, cor, diagonal } = TIPOS[tipo];
+  const { classes, cor, diagonal, ocultar = [] } = TIPOS[tipo];
   const nomes = Object.keys(classes);
   for (let y = 0; y < altura; y++) {
     for (let x = 0; x < largura; x++) {
@@ -62,7 +64,7 @@ export function hachurar(rgba, largura, altura, tipo) {
       const [espessura, opacidade] = TRACO[melhor];
       const fase = (((x + diagonal * y) % PERIODO) + PERIODO) % PERIODO;
       rgba[i] = cor[0]; rgba[i + 1] = cor[1]; rgba[i + 2] = cor[2];
-      rgba[i + 3] = fase < espessura ? opacidade : 0;
+      rgba[i + 3] = !ocultar.includes(melhor) && fase < espessura ? opacidade : 0;
     }
   }
   return rgba;
