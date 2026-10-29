@@ -134,9 +134,9 @@ function desenharLegenda() {
         .join('')}
     </div>
     <div class="linha2 carta">
-      <span class="carta-nome"><i class="brilho" style="--c:${TIPOS.inundacao.cor}"></i><b>Inundação</b></span>
-      <span class="carta-nome"><i class="brilho" style="--c:${TIPOS.movimento.cor}"></i><b>Movimento de massa</b></span>
-      <span>cartas do SGB: onde o terreno tende a inundar ou deslizar (mais forte = mais alta). De perto, só em alguns municípios. Não mostram o que acontece agora.</span>
+      <span class="carta-nome"><i class="hachura" style="--c:${TIPOS.inundacao.cor_css}"></i><b>Inundação</b></span>
+      <span class="carta-nome"><i class="hachura mov" style="--c:${TIPOS.movimento.cor_css}"></i><b>Movimento de massa</b></span>
+      <span>cartas do SGB: onde o terreno tende a inundar ou deslizar (linha mais grossa = classe mais alta). De perto, só em alguns municípios. Não mostram o que acontece agora.</span>
     </div>`;
 }
 

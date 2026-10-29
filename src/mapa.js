@@ -1,6 +1,6 @@
 // Mapa em tela cheia: relevo 3D, municípios coloridos pela chuva e brilho pulsante nos rios em risco.
 import { SITUACOES, chuvaDoMunicipio, faixaDe, riscoDoMunicipio } from './dados.js';
-import { TIPOS, ZOOM_MINIMO_CARTA, urlTiles } from './suscetibilidade.js';
+import { TIPOS, ZOOM_MINIMO_CARTA, caixaDoTile, hachurar, urlWms } from './suscetibilidade.js';
 
 const TILES_RELEVO = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const LIMITES_RS = [[-57.7, -33.8], [-49.6, -27.0]];
@@ -82,18 +82,26 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     if (pronto) mapa.getSource('municipios').setData(dados.malha);
   }
 
-  // Cartas do SGB sempre visíveis, por cima da chuva e sob o relevo e os contornos. Só aparecem de perto (ZOOM_MINIMO_CARTA).
+  // Cartas do SGB sempre visíveis, em hachura, por cima da chuva e sob o relevo e os contornos. Só aparecem de perto.
+  // O tile vem do WMS do SGB e é redesenhado aqui (protocolo "carta"): nada é copiado nem guardado.
+  maplibregl.addProtocol('carta', async (params, abortController) => {
+    const [tipo, z, x, y] = params.url.slice('carta://'.length).split('/');
+    const res = await fetch(urlWms(tipo, caixaDoTile(+z, +x, +y)), { signal: abortController?.signal });
+    if (!res.ok || !res.headers.get('content-type')?.startsWith('image/')) throw new Error('SGB respondeu ' + res.status);
+    const img = await createImageBitmap(await res.blob());
+    const tela = new OffscreenCanvas(img.width, img.height);
+    const ctx = tela.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0);
+    const px = ctx.getImageData(0, 0, img.width, img.height);
+    hachurar(px.data, img.width, img.height, tipo);
+    ctx.putImageData(px, 0, 0);
+    return { data: await (await tela.convertToBlob({ type: 'image/png' })).arrayBuffer() };
+  });
   function adicionarCartas() {
-    for (const [tipo, t] of Object.entries(TIPOS)) {
-      mapa.addSource(`carta-${tipo}`, { type: 'raster', tiles: [urlTiles(tipo)], tileSize: 256, maxzoom: 14 });
+    for (const tipo of Object.keys(TIPOS)) {
+      mapa.addSource('carta-' + tipo, { type: 'raster', tiles: ['carta://' + tipo + '/{z}/{x}/{y}'], tileSize: 512, maxzoom: 14 });
       mapa.addLayer(
-        {
-          id: `carta-${tipo}`,
-          type: 'raster',
-          source: `carta-${tipo}`,
-          minzoom: ZOOM_MINIMO_CARTA,
-          paint: { 'raster-hue-rotate': t.giro, 'raster-opacity': 0.5, 'raster-fade-duration': 150 },
-        },
+        { id: 'carta-' + tipo, type: 'raster', source: 'carta-' + tipo, minzoom: ZOOM_MINIMO_CARTA, paint: { 'raster-fade-duration': 150 } },
         'sombra',
       );
     }
