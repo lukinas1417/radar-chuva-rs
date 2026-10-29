@@ -1,7 +1,7 @@
 // Geometria: atribuir um ponto ao município certo. Um erro aqui põe a chuva de uma estação na cidade errada.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { distanciaKm, indexarMunicipios, municipioDe } from '../src/geo.js';
+import { areaKm2, distanciaKm, indexarMunicipios, municipioDe } from '../src/geo.js';
 
 const quadrado = (x, y, lado = 1) => [[[x, y], [x + lado, y], [x + lado, y + lado], [x, y + lado], [x, y]]];
 
@@ -58,4 +58,18 @@ test('distância entre Porto Alegre e Caxias do Sul fica perto dos ~96 km reais'
 
 test('a distância de um ponto a ele mesmo é zero', () => {
   assert.equal(distanciaKm([-51, -30], [-51, -30]), 0);
+});
+
+test('área: um quadrado de 1 grau na linha do equador tem ~12.300 km², e o buraco é descontado', () => {
+  const quadradoEq = { type: 'Polygon', coordinates: quadrado(0, 0) };
+  assert.ok(Math.abs(areaKm2(quadradoEq) - 111.32 * 110.57) < 5);
+  const comBuraco = { type: 'Polygon', coordinates: [...quadrado(0, 0, 4), [[1, 1], [3, 1], [3, 3], [1, 3], [1, 1]]] };
+  const cheio = areaKm2({ type: 'Polygon', coordinates: quadrado(0, 0, 4) });
+  assert.ok(Math.abs(areaKm2(comBuraco) - cheio * 0.75) < 5);
+});
+
+test('área: MultiPolygon soma as partes', () => {
+  const duas = { type: 'MultiPolygon', coordinates: [quadrado(20, 20), quadrado(30, 30)] };
+  const partes = [quadrado(20, 20), quadrado(30, 30)].map((c) => areaKm2({ type: 'Polygon', coordinates: c }));
+  assert.ok(Math.abs(areaKm2(duas) - (partes[0] + partes[1])) < 1e-6);
 });

@@ -203,7 +203,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
 
     mapa.on('click', (ev) => {
       const [f] = mapa.queryRenderedFeatures(ev.point, { layers: ['preenchimento'] });
-      aoSelecionar(f ? f.properties.codIbge : null, ev.lngLat);
+      aoSelecionar(f ? f.properties.codIbge : null);
     });
     if (TEM_HOVER) {
       mapa.on('mousemove', (ev) => {

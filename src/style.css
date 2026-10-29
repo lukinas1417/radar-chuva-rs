@@ -398,7 +398,7 @@ button { font: inherit; color: inherit; }
 /* ---------- suscetibilidade (SGB) ---------- */
 #legenda .carta { flex-direction: column; gap: 4px; }
 #legenda .carta-nome b { color: var(--texto); font-weight: 500; }
-.resumo-carta { margin: 12px 0 0; padding: 8px 10px; border-radius: 9px; background: rgba(255, 184, 77, 0.1); border-left: 2px solid #ffb84d; font-size: 12.500px; color: var(--suave); }
+.resumo-carta { margin: 10px 0 0; padding: 6px 10px; border-radius: 9px; background: rgba(255, 184, 77, 0.1); border-left: 2px solid #ffb84d; font-size: 12.500px; color: var(--suave); }
 .resumo-carta.sem { background: rgba(255, 255, 255, 0.05); border-left-color: var(--suave); }
 #legenda .hachura { display: inline-block; flex: none; width: 16px; height: 10px; border-radius: 3px; background: repeating-linear-gradient(135deg, var(--c) 0 2px, transparent 2px 5px); border: 1px solid var(--c); }
 #legenda .hachura.mov { background: repeating-linear-gradient(45deg, var(--c) 0 2px, transparent 2px 5px); }
@@ -414,5 +414,3 @@ button { font: inherit; color: inherit; }
 .carta-barra .baixa { opacity: 0.3; }
 .carta-classes { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 5px !important; font-size: 12px; }
 .carta-classes b { color: var(--texto); font-weight: 500; }
-.carta-ponto { margin-top: 5px !important; color: var(--texto); }
-.carta-pe { margin-top: 10px !important; font-size: 11.5px; line-height: 1.4; }

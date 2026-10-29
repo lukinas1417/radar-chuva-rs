@@ -139,13 +139,3 @@ export function areasDoMunicipio(tipo, nome) {
   }
   return memoria.get(chave);
 }
-
-// Classe e ano da carta no ponto clicado, ou null se o ponto está fora da área mapeada. No WFS 2.0 a ordem é latitude, longitude.
-export async function classeNoPonto(tipo, lon, lat) {
-  const filtro = 'INTERSECTS(geom,POINT(' + lat + ' ' + lon + '))';
-  const res = await fetch(urlWfs(tipo, filtro, 'classe,ano', 'application/json'));
-  if (!res.ok) throw new Error('SGB respondeu ' + res.status);
-  const p = (await res.json()).features?.[0]?.properties;
-  const classe = p ? classeDe(p.classe) : null;
-  return classe ? { classe, ano: p.ano } : null;
-}

@@ -60,3 +60,21 @@ export function distanciaKm([lon1, lat1], [lon2, lat2]) {
     Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(((lon2 - lon1) * rad) / 2) ** 2;
   return 12742 * Math.asin(Math.sqrt(a));
 }
+
+// Área aproximada (km²) de um Polygon ou MultiPolygon em graus. Projeção local simples (por parte): serve para proporção, não para cadastro.
+export function areaKm2(geometria) {
+  const areaDoPoligono = ([externo, ...buracos]) => {
+    const latMedia = externo.reduce((s, [, y]) => s + y, 0) / externo.length;
+    const kx = 111.32 * Math.cos((latMedia * Math.PI) / 180);
+    const ky = 110.57;
+    const anel = (pontos) => {
+      let soma = 0;
+      for (let i = 0, j = pontos.length - 1; i < pontos.length; j = i++) {
+        soma += pontos[j][0] * kx * (pontos[i][1] * ky) - pontos[i][0] * kx * (pontos[j][1] * ky);
+      }
+      return Math.abs(soma) / 2;
+    };
+    return anel(externo) - buracos.reduce((s, b) => s + anel(b), 0);
+  };
+  return poligonos(geometria).reduce((total, p) => total + areaDoPoligono(p), 0);
+}
