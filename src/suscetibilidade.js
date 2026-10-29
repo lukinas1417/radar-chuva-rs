@@ -4,7 +4,7 @@ import { semAcento } from './dados.js';
 
 const WMS = 'https://geoservicos.sgb.gov.br/geoserver/gestao-territorial/wms';
 // Zoom a partir do qual a camada aparece: a carta é de escala municipal e, no estado todo, viraria só mancha.
-export const ZOOM_MINIMO_CARTA = 8;
+export const ZOOM_MINIMO_CARTA = 7;
 
 // Municípios do RS com carta publicada (consulta ao WFS do SGB em 29/10/2026; a página oficial do SGB é a referência).
 const MUNICIPIOS_INUNDACAO = [

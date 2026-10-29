@@ -96,32 +96,9 @@ const mapa = criarMapa({
   aoPassar: mostrarDica,
   aoAfastar: (afastado) => $('recentrar').classList.toggle('oculto', !afastado),
   aoZoom: atualizarSlider,
-  aoFalharCarta: () => {
-    mostrarAviso('A camada de suscetibilidade do SGB está indisponível agora. O resto do mapa segue normal.', true);
-    escolherCarta(null);
-  },
+  aoFalharCarta: () => mostrarAviso('As cartas de suscetibilidade do SGB estão indisponíveis agora. O resto do mapa segue normal.', true),
 });
 
-// ---------- suscetibilidade (SGB) ----------
-let carta = null;
-function escolherCarta(tipo) {
-  carta = tipo === carta ? null : tipo;
-  mapa.definirCarta(carta);
-  document.querySelectorAll('#carta-menu button[data-carta]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.carta === carta)));
-  $('carta-botao').setAttribute('aria-pressed', String(carta !== null));
-  desenharLegenda();
-  if (selecionado !== null) $('cartao').innerHTML = htmlCartao(selecionado, selecionado === euEstouEm);
-  if (carta) mostrarAviso('Carta do SGB: escala e finalidade próprias, não mostra o que acontece agora. Não substitui a Defesa Civil.', false, 9000);
-}
-$('carta-botao').addEventListener('click', () => {
-  const abrir = $('carta-menu').hidden;
-  $('carta-menu').hidden = !abrir;
-  $('carta-botao').setAttribute('aria-expanded', String(abrir));
-});
-$('carta-menu').addEventListener('click', (ev) => {
-  const b = ev.target.closest('button[data-carta]');
-  if (b) escolherCarta(b.dataset.carta);
-});
 slider.addEventListener('input', () => {
   const { min, max } = mapa.faixaZoom();
   mapa.definirZoom(min + (Number(slider.value) / 100) * (max - min));
@@ -155,12 +132,12 @@ function desenharLegenda() {
       ${SITUACOES.slice(1)
         .map((s) => `<span><i class="brilho" style="--c:${s.cor}"></i><span class="prefixo">rio em </span>${s.texto}</span>`)
         .join('')}
-    </div>${carta ? `
+    </div>
     <div class="linha2 carta">
-      <span class="carta-nome"><i class="brilho" style="--c:${TIPOS[carta].cor}"></i><b>${TIPOS[carta].rotulo}</b> · carta do SGB (suscetibilidade)</span>
-      <span>mais forte = classe mais alta (baixa, média, alta)</span>
-      <span>aparece de perto (zoom ${ZOOM_MINIMO_CARTA}+) e só em municípios com carta</span>
-    </div>` : ''}`;
+      <span class="carta-nome"><i class="brilho" style="--c:${TIPOS.inundacao.cor}"></i><b>Inundação</b></span>
+      <span class="carta-nome"><i class="brilho" style="--c:${TIPOS.movimento.cor}"></i><b>Movimento de massa</b></span>
+      <span>cartas do SGB: onde o terreno tende a inundar ou deslizar (mais forte = mais alta). De perto, só em alguns municípios. Não mostram o que acontece agora.</span>
+    </div>`;
 }
 
 // ---------- status e resumo de risco ----------
@@ -265,6 +242,13 @@ function htmlPrevisao(horas) {
     <p class="cartao-pe">${resumo}</p></div>`;
 }
 
+// Dizer "sem carta" é importante: o município sem carta não é um município sem risco.
+function htmlCarta(nome) {
+  const com = Object.keys(TIPOS).filter((t) => temCarta(t, nome)).map((t) => TIPOS[t].rotulo.toLowerCase());
+  if (!com.length) return '<p class="resumo-carta sem">Sem carta de suscetibilidade (inundação ou movimento de massa) publicada pelo SGB. Isso <b>não</b> significa ausência de risco.</p>';
+  return `<p class="resumo-carta">Carta do SGB de ${com.join(' e ')} publicada para este município. Aproxime o mapa para ver as áreas.</p>`;
+}
+
 function htmlCartao(cod, euEstou) {
   const m = dados.porCodigo.get(cod);
   const estacoes = dados.pluviometros.get(cod) ?? [];
@@ -306,11 +290,7 @@ function htmlCartao(cod, euEstou) {
     html += `<p class="resumo-previsao">Próximas 24 h: <b>~${fmtMm(prox.mm)} mm</b> <span>previstos</span></p>`;
   }
 
-  if (carta) {
-    html += temCarta(carta, m.nome)
-      ? `<p class="resumo-carta">Carta do SGB (${TIPOS[carta].rotulo.toLowerCase()}): este município tem carta publicada. Veja a camada no mapa, de perto.</p>`
-      : `<p class="resumo-carta sem">Sem carta de ${TIPOS[carta].rotulo.toLowerCase()} publicada pelo SGB para este município. Isso <b>não</b> significa ausência de risco.</p>`;
-  }
+  html += htmlCarta(m.nome);
 
   const principal = rios.find((e) => e.recente && e.situacao !== null);
   if (principal) {
@@ -548,8 +528,6 @@ document.addEventListener('keydown', (ev) => {
   if (ev.key !== 'Escape' || ev.target === campo) return;
   $('sobre').hidden = true;
   $('sobre-botao').setAttribute('aria-expanded', 'false');
-  $('carta-menu').hidden = true;
-  $('carta-botao').setAttribute('aria-expanded', 'false');
   $('lista-atencao').hidden = true;
   $('atencao').setAttribute('aria-expanded', 'false');
   if (noticiasAbertas) {
