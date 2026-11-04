@@ -130,10 +130,44 @@ export function chuvaDoMunicipio(dados, codIbge, janela) {
 export const temChuvaEmDia = (dados) =>
   dados.fontesFrescas.CEMADEN || dados.fontesFrescas['Defesa Civil RS'] || dados.fontesFrescas.ANA || dados.estimativaGeradoEm !== null;
 
+// Hora que a página mostra em "Atualizado": a coleta mais recente entre as fontes de chuva EM DIA (CEMADEN, Defesa Civil,
+// ANA, estimativa). Se nenhuma está em dia a página é "desatualizada" e mostra a coleta mais ANTIGA, que é a conservadora.
+// Todas as fontes que contam em temChuvaEmDia precisam estar aqui: lista vazia derrubaria a tela inteira.
+export function horaDaPagina(dados, agoraMs = Date.now()) {
+  const velha = (iso) => agoraMs - Date.parse(iso) > DADO_VELHO_MS;
+  const coletas = [dados.chuva.geradoEm, dados.rios?.geradoEm, dados.chuvaAna?.geradoEm, dados.estimativaGeradoEm].filter(Boolean);
+  const emDia = [
+    dados.chuva.geradoEm,
+    dados.rios?.geradoEm,
+    dados.chuvaAna?.geradoEm,
+  ].filter((iso) => iso && !velha(iso));
+  if (dados.estimativaGeradoEm) emDia.push(dados.estimativaGeradoEm); // a estimativa vale por mais tempo (ver ESTIMATIVA_VALIDA_MS)
+  const velho = !temChuvaEmDia(dados);
+  const extremo = (lista, maior) => lista.reduce((a, b) => ((Date.parse(a) > Date.parse(b)) === maior ? a : b));
+  // Sem nenhuma em dia (velho) ou, por segurança, com lista vazia: cai na mais antiga em vez de falhar.
+  const mostrada = !velho && emDia.length ? extremo(emDia, true) : extremo(coletas, false);
+  return { velho, mostrada };
+}
+
 // Próximas horas previstas do município ({ t, mm } por hora), ou null sem previsão.
 export function previsaoDoMunicipio(dados, codIbge) {
   const e = dados.estimativa.get(codIbge);
   return e ? previsaoHoraria(e.serie, dados.agoraMs) : null;
+}
+
+// Pontos das estações da ANA para o mapa: rios com leitura recente e pluviômetros ativos, sem repetir a estação que é
+// as duas coisas (a maioria das de chuva é estação de rio com pluviômetro acoplado). Sem coordenada, fica de fora.
+export function pontosAna(dados) {
+  const pontos = new Map();
+  const somar = (e, tipo) => {
+    if (!Number.isFinite(e.lat) || !Number.isFinite(e.lon)) return;
+    const p = pontos.get(e.codigo) ?? { codigo: e.codigo, nome: e.nome, lon: e.lon, lat: e.lat, rio: false, chuva: false };
+    p[tipo] = true;
+    pontos.set(e.codigo, p);
+  };
+  for (const lista of dados.estacoesRio.values()) for (const e of lista) if (e.fonte === 'ANA' && e.recente) somar(e, 'rio');
+  for (const lista of dados.pluviometros.values()) for (const e of lista) if (e.fonte === 'ANA' && e.ativa) somar(e, 'chuva');
+  return [...pontos.values()];
 }
 
 // Pior situação de rio entre as estações recentes do município; null se não houver dado.

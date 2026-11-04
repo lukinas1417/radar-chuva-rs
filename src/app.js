@@ -8,11 +8,11 @@ import {
   carregarDados,
   chuvaDoMunicipio,
   ehPrevisao,
+  horaDaPagina,
   faixaDe,
   municipiosEmRisco,
   previsaoDoMunicipio,
   semAcento,
-  temChuvaEmDia,
   valorDoMunicipio,
   vizinhosComDado,
 } from './dados.js';
@@ -129,9 +129,15 @@ function desenharLegenda() {
     <div class="linha2">
       <span><i class="semdado"></i>sem dado</span>
       <span><i class="estimado"></i>transparente: estimado</span>
+    </div>
+    <div class="linha2 rios">
+      <span class="prefixo">rio em</span>
       ${SITUACOES.slice(1)
-        .map((s) => `<span><i class="brilho" style="--c:${s.cor}"></i><span class="prefixo">rio em </span>${s.texto}</span>`)
+        .map((s) => `<span><i class="brilho" style="--c:${s.cor}"></i>${s.texto}</span>`)
         .join('')}
+    </div>
+    <div class="linha2 ana">
+      <span><i class="ponto-ana"></i>estação da ANA (só leitura, sem alerta)</span>
     </div>
     <div class="linha2 carta">
       <span class="carta-nome"><i class="hachura" style="--c:${TIPOS.inundacao.cor_css}"></i><b>Inundação</b></span>
@@ -148,16 +154,7 @@ const riosVelhos = dados.rios ? dadoVelho(dados.rios.geradoEm) : false;
 // A página só é "desatualizada" quando não resta nenhuma fonte de chuva em dia (a estimativa do modelo conta, por
 // estar rotulada como estimada). Rios têm aviso próprio na pílula de rios: sem a Defesa Civil não há substituto.
 function desenharStatus() {
-  const velho = !temChuvaEmDia(dados);
-  const coletas = [dados.chuva.geradoEm, ...(dados.rios ? [dados.rios.geradoEm] : []), ...(dados.estimativaGeradoEm ? [dados.estimativaGeradoEm] : [])];
-  const emDia = [
-    !chuvaVelha && dados.chuva.geradoEm,
-    dados.rios && !riosVelhos && dados.rios.geradoEm,
-    dados.estimativaGeradoEm,
-  ].filter(Boolean);
-  const mostrada = velho
-    ? coletas.reduce((a, b) => (Date.parse(a) < Date.parse(b) ? a : b)) // tudo caiu: a data mais antiga é a conservadora
-    : emDia.reduce((a, b) => (Date.parse(a) > Date.parse(b) ? a : b));
+  const { velho, mostrada } = horaDaPagina(dados);
   document.body.classList.toggle('dado-velho', !mesmoDia(new Date(mostrada), new Date())); // a hora com data é mais larga: no celular a marca cede espaço
   const ponto = $('status-ponto');
   ponto.style.setProperty('--c', velho ? COR_ALERTA : '#69d38a');

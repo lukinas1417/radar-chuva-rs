@@ -265,6 +265,8 @@ export function normalizarAnaChuva(cadastro, linhas, agoraMs, indice) {
       codigo: `ANA-${c.codigo}`,
       nome: c.nome,
       operadora: c.operadora,
+      lat: c.lat,
+      lon: c.lon,
       codIbge: municipioDe(indice, c.lon, c.lat)?.codIbge ?? null,
       ultimaLeitura,
       ativa: agoraMs - fim <= ANA_CHUVA_ATIVA_MS && Object.values(acumuladoMm).every((v) => v !== null),

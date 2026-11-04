@@ -237,6 +237,7 @@ button { font: inherit; color: inherit; }
 .grande .un { color: var(--suave); font-family: var(--mono); }
 .sub { margin: 4px 0 0; color: var(--suave); font-size: 13.5px; }
 
+.resumo-rio > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 .resumo-rio { display: flex; align-items: center; gap: 10px; margin: 12px 0 0; font-size: 13.5px; color: var(--suave); }
 .expandir { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 14px; padding: 9px 12px; border: 1px solid var(--linha); border-radius: 10px; background: rgba(255, 255, 255, 0.04); color: var(--suave); font-size: 13.5px; cursor: pointer; }
 .expandir:hover { color: var(--texto); background: rgba(255, 255, 255, 0.08); }
@@ -257,7 +258,7 @@ button { font: inherit; color: inherit; }
 .rio { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 9px 0; border-top: 1px solid var(--linha); font-size: 14px; }
 .rio:first-of-type { border-top: 0; }
 .rio .detalhe { grid-column: 1 / -1; color: var(--suave); font-size: 12.5px; font-family: var(--mono); }
-.chip { align-self: center; padding: 1px 9px; border-radius: 999px; font-size: 12px; color: var(--c); border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
+.chip { align-self: center; flex: none; white-space: nowrap; padding: 1px 9px; border-radius: 999px; font-size: 12px; color: var(--c); border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
 
 #cartao details { margin-top: 14px; border-top: 1px solid var(--linha); padding-top: 10px; }
 #cartao summary { cursor: pointer; color: var(--suave); font-size: 13px; }
@@ -330,6 +331,10 @@ button { font: inherit; color: inherit; }
 #legenda .marcas { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: 4px; font-family: var(--mono); font-size: 10.5px; text-align: center; }
 #legenda .linha2 { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 11px; padding-top: 10px; border-top: 1px solid var(--linha); }
 #legenda .linha2 span { display: inline-flex; align-items: center; gap: 6px; }
+#legenda .linha2.rios span { white-space: nowrap; }
+#legenda .linha2.rios { margin-top: 8px; padding-top: 0; border-top: 0; }
+#legenda .linha2.ana { margin-top: 8px; padding-top: 0; border-top: 0; }
+#legenda .linha2 .ponto-ana { flex: none; width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; background: #0b1520; border: 1.5px solid #e8f3ff; }
 #legenda .estimado { width: 12px; height: 12px; border-radius: 3px; background: #27b6d9; opacity: 0.5; }
 #legenda .semdado { width: 12px; height: 12px; border-radius: 3px; background: #101c29; border: 1px dashed rgba(200, 220, 240, 0.4); }
 #legenda .brilho { width: 14px; height: 8px; border-radius: 4px; background: var(--c); box-shadow: 0 0 8px var(--c); }
@@ -384,7 +389,7 @@ button { font: inherit; color: inherit; }
   #legenda { left: 8px; right: 8px; bottom: 92px; width: auto; padding: 9px 12px; font-size: 11px; }
   #legenda .titulo { margin-bottom: 6px; }
   #legenda .linha2 { margin-top: 8px; padding-top: 8px; gap: 4px 11px; }
-  #legenda .linha2 .prefixo { display: none; }
+  #legenda .linha2.rios, #legenda .linha2.ana { margin-top: 6px; }
   #creditos { bottom: 5px; font-size: 9.5px; line-height: 1.3; }
   #creditos .fontes { display: block; }
   #creditos .fontes::before { content: none; }

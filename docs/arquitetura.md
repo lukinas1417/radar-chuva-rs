@@ -61,6 +61,7 @@ JSON e desenha o mapa.
 | Janela de chuva da ANA com intervalo faltando, nulo ou de status que não é medição | A janela fica `null`; sem as três janelas completas a estação é inativa. Nunca soma parcial, nunca 0 | A medição só aparece quando completa |
 | Sensor da ANA preso em zero durante chuva (visto: 0 mm onde outra rede marcou 102 mm) | O município mostra o MAIOR valor entre as estações, então uma estação presa em zero não esconde a chuva medida por outra. **Não resolvido** onde ela é a única | Possível 0 mm falso em município coberto só por ela |
 | Estação da ANA não tem limiar de alerta | `situacao` é sempre `null` (nunca 0, "normalidade"); não entra no contorno luminoso, no resumo de rios nem na lista de atenção; o cartão diz "sem classificação" e que as cotas não são comparáveis (nas usinas, é a altitude do reservatório) | Leitura e variação em N horas, sem cor de risco |
+| Só a ANA tem chuva em dia (CEMADEN e Defesa Civil fora) | A hora mostrada e o aviso de dado velho saem da mesma função (`horaDaPagina`), testada; antes, o cálculo da hora ignorava a ANA e a tela travava em "Carregando…" (erro real, pego numa captura da tela, corrigido) | "Atualizado" com a hora da ANA |
 | Estação perto de uma divisa cai no município vizinho (malha simplificada) | Limitação documentada; o painel mostra o nome da estação | O usuário pode conferir |
 | Feed de notícias fora do ar | Cada fonte falha sozinha; se nenhuma responde, o último arquivo publicado é reaproveitado. Notícias são opcionais | As últimas notícias, com o horário da coleta (e "Desatualizado" depois de 3 h); sem arquivo, o painel não aparece |
 | Notícia fora de contexto passa pelo filtro de palavras-chave (ex.: um texto sobre o "símbolo da enchente") | Só entra o que tem pontuação mínima e menos de 72 h; limitação **não resolvida**, por ser uma heurística | O "Sobre os dados" avisa que a seleção é automática e pode errar |
@@ -112,7 +113,7 @@ de um servidor falso, o que num site de alertas é inaceitável.
 
 ## Como o sistema é verificado
 
-Há 123 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
+Há 130 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
 coleta, para uma falha de teste nunca bloquear a atualização dos dados. Eles cobrem as regras que, se erradas,
 fazem o mapa afirmar algo falso:
 

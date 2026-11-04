@@ -458,3 +458,8 @@ test('ANA chuva: estação fora da malha fica com codIbge null (o mapa a ignora)
   const [e] = normalizarAnaChuva(fora, serieChuva(Array.from({ length: 24 }, () => 0)), AGORA_ANA, malhaAna);
   assert.equal(e.codIbge, null);
 });
+
+test('ANA chuva: a estação leva as próprias coordenadas, para aparecer como ponto no mapa', () => {
+  const e = chuvaAna(serieChuva(Array.from({ length: 24 }, () => 0)));
+  assert.deepEqual([e.lat, e.lon], [-29, -51]);
+});

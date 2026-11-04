@@ -1,5 +1,5 @@
 // Mapa em tela cheia: relevo 3D, municípios coloridos pela chuva e brilho pulsante nos rios em risco.
-import { SITUACOES, chuvaDoMunicipio, faixaDe, riscoDoMunicipio } from './dados.js';
+import { SITUACOES, chuvaDoMunicipio, faixaDe, pontosAna as listarPontosAna, riscoDoMunicipio } from './dados.js';
 import { TIPOS, caixaDoTile, hachurar, urlWms } from './suscetibilidade.js';
 
 const TILES_RELEVO = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
@@ -33,6 +33,11 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     maxPitch: 70,
     attributionControl: false,
   });
+
+  const pontosAna = {
+    type: 'FeatureCollection',
+    features: listarPontosAna(dados).map((p) => ({ type: 'Feature', properties: { codigo: p.codigo, nome: p.nome, rio: p.rio, chuva: p.chuva }, geometry: { type: 'Point', coordinates: [p.lon, p.lat] } })),
+  };
 
   let relevoLigado = false; // vista de cima por padrão; o relevo 3D é opcional
   let pronto = false;
@@ -187,6 +192,22 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
       filter: nenhum,
       layout: { 'line-join': 'round' },
       paint: { 'line-color': '#7dd3fc', 'line-width': 2, 'line-opacity': 0.95 },
+    });
+    // Estações da ANA: pontos pequenos, de contorno claro, para não se confundirem com a rampa de chuva nem com as
+    // cores de risco. Ficam sob o contorno de seleção e só mostram que ali existe uma estação.
+    mapa.addSource('estacoes-ana', { type: 'geojson', data: pontosAna });
+    mapa.addLayer({
+      id: 'estacoes-ana',
+      type: 'circle',
+      source: 'estacoes-ana',
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 2.2, 8, 3.6, 10.5, 5.5],
+        'circle-color': '#0b1520',
+        'circle-opacity': 0.9,
+        'circle-stroke-color': '#e8f3ff',
+        'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 9, 1.6],
+        'circle-stroke-opacity': 0.9,
+      },
     });
     mapa.addLayer({ id: 'hover', type: 'line', source: 'municipios', filter: nenhum, paint: { 'line-color': '#ffffff', 'line-width': 1.2, 'line-opacity': 0.7 } });
     mapa.addLayer({ id: 'selecionado', type: 'line', source: 'municipios', filter: nenhum, layout: { 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 2.6 } });

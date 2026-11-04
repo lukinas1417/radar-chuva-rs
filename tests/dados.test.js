@@ -2,7 +2,7 @@
 // Aqui ficam os testes do erro real de "falsa normalidade" e da regra "estado desconhecido nunca vira normal".
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { carregarDados, chuvaDoMunicipio, temChuvaEmDia, ehPrevisao, previsaoDoMunicipio, faixaDe, municipiosEmRisco, riscoDoMunicipio, semAcento, valorDoMunicipio, vizinhosComDado } from '../src/dados.js';
+import { carregarDados, chuvaDoMunicipio, temChuvaEmDia, ehPrevisao, horaDaPagina, pontosAna, previsaoDoMunicipio, faixaDe, municipiosEmRisco, riscoDoMunicipio, semAcento, valorDoMunicipio, vizinhosComDado } from '../src/dados.js';
 
 const quadrado = (x, y) => [[[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1], [x, y]]];
 const malha = {
@@ -359,4 +359,69 @@ test('ANA: leitura de rio da ANA com mais de 3 h da coleta não é recente', asy
   fontes({ chuva: chuvaPadrao, rios: null, riosAna });
   const dados = await carregarDados(Date.parse(COLETA) + 60_000);
   assert.equal(dados.estacoesRio.get(1)[0].recente, false);
+});
+
+// ---------- pontos da ANA no mapa ----------
+
+test('pontos da ANA: estação de rio com pluviômetro acoplado vira UM ponto, marcado como rio e chuva', async () => {
+  const riosAna = { geradoEm: COLETA, fonte: 'ANA', estacoes: [{ ...rio('ANA-7', 0.5, 0.5, null, 20), fonte: 'ANA' }] };
+  const chuvaAna = { geradoEm: COLETA, fonte: 'ANA', pluviometros: [{ ...pluvAna(1, true, { '1h': 0, '6h': 0, '24h': 0 }), codigo: 'ANA-7', nome: 'ANA-7', lon: 0.5, lat: 0.5 }] };
+  fontes({ chuva: chuvaPadrao, rios: null, riosAna, chuvaAna });
+  const pontos = pontosAna(await carregarDados(Date.parse(COLETA) + 60_000));
+  assert.equal(pontos.length, 1);
+  assert.deepEqual([pontos[0].rio, pontos[0].chuva], [true, true]);
+});
+
+test('pontos da ANA: estação sem leitura recente, pluviômetro inativo e dado sem coordenada ficam de fora', async () => {
+  const riosAna = {
+    geradoEm: COLETA,
+    fonte: 'ANA',
+    estacoes: [{ ...rio('ANA-velha', 0.5, 0.5, null, 5 * 60), fonte: 'ANA' }],
+  };
+  const chuvaAna = {
+    geradoEm: COLETA,
+    fonte: 'ANA',
+    pluviometros: [
+      { ...pluvAna(1, false, { '1h': 0, '6h': 0, '24h': null }), codigo: 'ANA-inativo', lon: 0.4, lat: 0.4 },
+      pluvAna(1, true, { '1h': 0, '6h': 0, '24h': 0 }), // arquivo antigo, sem lat/lon
+    ],
+  };
+  fontes({ chuva: chuvaPadrao, rios: null, riosAna, chuvaAna });
+  assert.deepEqual(pontosAna(await carregarDados(Date.parse(COLETA) + 60_000)), []);
+});
+
+// ---------- hora mostrada em "Atualizado" ----------
+// Regressão: com a ANA como única fonte de chuva em dia, o cálculo da hora usava uma lista vazia e travava a tela inteira.
+
+test('hora da página: com a ANA como única fonte em dia, não quebra e mostra a coleta da ANA', async () => {
+  const velha = { ...chuvaPadrao, geradoEm: horasAntes(5) };
+  const recente = new Date(AGORA - 600_000).toISOString();
+  fontes({ chuva: velha, rios: null, chuvaAna: chuvaAnaPadrao(recente) });
+  const dados = await carregarDados(AGORA);
+  assert.deepEqual(horaDaPagina(dados, AGORA), { velho: false, mostrada: recente });
+});
+
+test('hora da página: mostra a coleta mais recente entre as fontes em dia', async () => {
+  const cemaden = new Date(AGORA - 20 * 60_000).toISOString();
+  const ana = new Date(AGORA - 5 * 60_000).toISOString();
+  fontes({ chuva: { ...chuvaPadrao, geradoEm: cemaden }, rios: null, chuvaAna: chuvaAnaPadrao(ana) });
+  const dados = await carregarDados(AGORA);
+  assert.deepEqual(horaDaPagina(dados, AGORA), { velho: false, mostrada: ana });
+});
+
+test('hora da página: com todas as fontes velhas, é desatualizada e mostra a coleta mais ANTIGA', async () => {
+  const cemaden = horasAntes(5);
+  const ana = horasAntes(3);
+  fontes({ chuva: { ...chuvaPadrao, geradoEm: cemaden }, rios: null, chuvaAna: chuvaAnaPadrao(ana) });
+  const dados = await carregarDados(AGORA);
+  assert.deepEqual(horaDaPagina(dados, AGORA), { velho: true, mostrada: cemaden });
+});
+
+test('hora da página: a estimativa em dia mantém a página atualizada quando as medições caíram', async () => {
+  const velha = { ...chuvaPadrao, geradoEm: horasAntes(5) };
+  fontes({ chuva: velha, rios: null, estimativa: estimativaPadrao() });
+  const dados = await carregarDados(AGORA);
+  const r = horaDaPagina(dados, AGORA);
+  assert.equal(r.velho, false);
+  assert.equal(r.mostrada, dados.estimativaGeradoEm);
 });
