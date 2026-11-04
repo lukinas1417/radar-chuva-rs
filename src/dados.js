@@ -37,11 +37,12 @@ async function carregar(url) {
 
 export async function carregarDados(agoraMs = Date.now()) {
   // Defesa Civil, ANA, estimativa e notícias são opcionais: se a fonte falhar, o mapa de chuva do CEMADEN continua funcionando.
-  const [chuva, malha, rios, riosAna, noticias, estimativaBruta] = await Promise.all([
+  const [chuva, malha, rios, riosAna, chuvaAna, noticias, estimativaBruta] = await Promise.all([
     carregar('data/chuva-rs.json'),
     carregar('data/municipios-rs.geojson'),
     carregar('data/rios-rs.json').catch(() => null),
     carregar('data/rios-ana.json').catch(() => null),
+    carregar('data/chuva-ana.json').catch(() => null),
     carregar('data/noticias-rs.json').catch(() => null),
     carregar('data/estimativa-rs.json').catch(() => null),
   ]);
@@ -57,6 +58,7 @@ export async function carregarDados(agoraMs = Date.now()) {
   };
   chuva.estacoes.forEach((e) => adicionar(e, 'CEMADEN'));
   (rios?.pluviometros ?? []).forEach((e) => adicionar(e, 'Defesa Civil RS'));
+  (chuvaAna?.pluviometros ?? []).forEach((e) => adicionar(e, 'ANA'));
 
   // "Recente" é medido contra o momento da coleta, não contra agora: uma coleta antiga é tratada pelo
   // aviso de dados desatualizados, em vez de descartar as estações e passar a falsa ideia de normalidade.
@@ -90,10 +92,11 @@ export async function carregarDados(agoraMs = Date.now()) {
   const fontesFrescas = {
     CEMADEN: agoraMs - Date.parse(chuva.geradoEm) <= DADO_VELHO_MS,
     'Defesa Civil RS': rios ? agoraMs - Date.parse(rios.geradoEm) <= DADO_VELHO_MS : false,
+    ANA: chuvaAna ? agoraMs - Date.parse(chuvaAna.geradoEm) <= DADO_VELHO_MS : false,
   };
 
   return {
-    chuva, rios, riosAna, noticias, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura,
+    chuva, rios, riosAna, chuvaAna, noticias, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura,
     estimativa, estimativaGeradoEm: estimativaValida ? estimativaBruta.geradoEm : null, fontesFrescas, agoraMs,
   };
 }
@@ -123,9 +126,9 @@ export function chuvaDoMunicipio(dados, codIbge, janela) {
 }
 
 // O mapa tem chuva em dia enquanto QUALQUER fonte de chuva estiver em dia: pluviômetros do CEMADEN, da Defesa Civil
-// ou a estimativa do modelo (sempre rotulada). Só quando todas caem é que a página inteira conta como desatualizada.
+// da ANA ou a estimativa do modelo (sempre rotulada). Só quando todas caem é que a página inteira conta como desatualizada.
 export const temChuvaEmDia = (dados) =>
-  dados.fontesFrescas.CEMADEN || dados.fontesFrescas['Defesa Civil RS'] || dados.estimativaGeradoEm !== null;
+  dados.fontesFrescas.CEMADEN || dados.fontesFrescas['Defesa Civil RS'] || dados.fontesFrescas.ANA || dados.estimativaGeradoEm !== null;
 
 // Próximas horas previstas do município ({ t, mm } por hora), ou null sem previsão.
 export function previsaoDoMunicipio(dados, codIbge) {

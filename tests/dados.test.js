@@ -38,9 +38,9 @@ const rio = (nome, lon, lat, situacao, minAntesDaColeta = 5, extra = {}) => ({
 
 // Troca o fetch global por respostas fixas: nenhum teste usa a rede.
 const original = globalThis.fetch;
-function fontes({ chuva, rios, estimativa = null }) {
+function fontes({ chuva, rios, estimativa = null, riosAna = null, chuvaAna = null }) {
   globalThis.fetch = async (url) => {
-    const corpo = { 'data/municipios-rs.geojson': malha, 'data/chuva-rs.json': chuva, 'data/rios-rs.json': rios, 'data/estimativa-rs.json': estimativa }[url];
+    const corpo = { 'data/municipios-rs.geojson': malha, 'data/chuva-rs.json': chuva, 'data/rios-rs.json': rios, 'data/estimativa-rs.json': estimativa, 'data/rios-ana.json': riosAna, 'data/chuva-ana.json': chuvaAna }[url];
     if (!corpo) return { ok: false, status: 404, json: async () => ({}) };
     return { ok: true, status: 200, json: async () => corpo };
   };
@@ -298,4 +298,65 @@ test('só é desatualizada quando TODAS as fontes de chuva caem', async () => {
   assert.equal(temChuvaEmDia(await carregarDados(AGORA)), false);
   fontes({ chuva: velha, rios: null, estimativa: estimativaPadrao(horasAntes(7)) }); // estimativa velha demais não conta
   assert.equal(temChuvaEmDia(await carregarDados(AGORA)), false);
+});
+
+// ---------- ANA ----------
+
+const pluvAna = (codIbge, ativa, acumulados) => ({
+  codigo: `ANA-${codIbge}`,
+  nome: `ANA ${codIbge}`,
+  codIbge,
+  ultimaLeitura: '2026-10-22T11:00:00-03:00',
+  ativa,
+  acumuladoMm: { '1h': null, '6h': null, '24h': null, ...acumulados },
+});
+const chuvaAnaPadrao = (geradoEm = COLETA) => ({ geradoEm, fonte: 'ANA', pluviometros: [pluvAna(3, true, { '1h': 2, '6h': 5, '24h': 9 })] });
+
+test('ANA: pluviômetro da ANA dá medição a um município sem as outras redes, rotulada como ANA', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null, chuvaAna: chuvaAnaPadrao() });
+  const dados = await carregarDados(Date.parse(COLETA) + 60_000);
+  assert.deepEqual(chuvaDoMunicipio(dados, 3, '24h'), { mm: 9, tipo: 'medido' });
+  assert.equal(dados.pluviometros.get(3)[0].fonte, 'ANA');
+});
+
+test('ANA: coleta da ANA com mais de 1 h deixa de valer como medição e cede à estimativa', async () => {
+  fontes({ chuva: chuvaPadrao, rios: null, chuvaAna: chuvaAnaPadrao(), estimativa: estimativaPadrao() });
+  const dados = await carregarDados(Date.parse(COLETA) + 2 * 3600_000);
+  assert.equal(dados.fontesFrescas.ANA, false);
+  assert.notEqual(chuvaDoMunicipio(dados, 3, '24h')?.tipo, 'medido');
+});
+
+test('ANA: estação da ANA inativa (janela incompleta) não conta como medição', async () => {
+  const inativa = { geradoEm: COLETA, fonte: 'ANA', pluviometros: [pluvAna(3, false, { '1h': 2, '6h': 5, '24h': null })] };
+  fontes({ chuva: chuvaPadrao, rios: null, chuvaAna: inativa });
+  const dados = await carregarDados(Date.parse(COLETA) + 60_000);
+  assert.equal(valorDoMunicipio(dados, 3, '24h'), null);
+});
+
+test('ANA: sozinha em dia, a ANA mantém a página como atualizada', async () => {
+  const velha = { ...chuvaPadrao, geradoEm: horasAntes(5) };
+  fontes({ chuva: velha, rios: null, chuvaAna: chuvaAnaPadrao(new Date(AGORA - 600_000).toISOString()) });
+  assert.equal(temChuvaEmDia(await carregarDados(AGORA)), true);
+});
+
+test('ANA: estação de rio da ANA entra no município, mas não conta como leitura de risco nem coloca o município em risco', async () => {
+  const riosAna = {
+    geradoEm: COLETA,
+    fonte: 'ANA',
+    estacoes: [{ ...rio('ANA-1', 0.5, 0.5, null, 20), fonte: 'ANA', rio: 'Rio X', variacaoM: 0.4, variacaoH: 6 }],
+  };
+  fontes({ chuva: chuvaPadrao, rios: null, riosAna });
+  const dados = await carregarDados(Date.parse(COLETA) + 60_000);
+  assert.equal(dados.estacoesRio.get(1).length, 1);
+  assert.equal(dados.estacoesRio.get(1)[0].recente, true); // 20 min antes: dentro da janela de 3 h da ANA
+  assert.equal(dados.riosComLeitura, 0);
+  assert.equal(riscoDoMunicipio(dados, 1), null);
+  assert.deepEqual(municipiosEmRisco(dados), []);
+});
+
+test('ANA: leitura de rio da ANA com mais de 3 h da coleta não é recente', async () => {
+  const riosAna = { geradoEm: COLETA, fonte: 'ANA', estacoes: [{ ...rio('ANA-1', 0.5, 0.5, null, 4 * 60), fonte: 'ANA' }] };
+  fontes({ chuva: chuvaPadrao, rios: null, riosAna });
+  const dados = await carregarDados(Date.parse(COLETA) + 60_000);
+  assert.equal(dados.estacoesRio.get(1)[0].recente, false);
 });

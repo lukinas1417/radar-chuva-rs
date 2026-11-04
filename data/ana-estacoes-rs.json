@@ -1,5 +1,5 @@
 {
- "geradoEm": "2026-11-04T20:29:02.653Z",
+ "geradoEm": "2026-11-04T20:55:36.805Z",
  "fonte": "ANA HidroWebService",
  "estacoes": [
   {
@@ -3241,6 +3241,314 @@
    "operadora": "PELOTAS",
    "lat": -31.7822,
    "lon": -52.3333
+  }
+ ],
+ "pluviometros": [
+  {
+   "codigo": "2752032",
+   "nome": "UHE Foz do Chapecó Nonoai",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "FOZ DO CHAPECÓ",
+   "lat": -27.3325,
+   "lon": -52.7872
+  },
+  {
+   "codigo": "2752035",
+   "nome": "UHE Itá Erechim Plu",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "CONS.ITÁ",
+   "lat": -27.6575,
+   "lon": -52.3203
+  },
+  {
+   "codigo": "2753058",
+   "nome": "CGH Linha Granja Velha Barramento",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "CRELUZ G",
+   "lat": -27.4267,
+   "lon": -53.54
+  },
+  {
+   "codigo": "2850045",
+   "nome": "Vacaria",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -28.4897,
+   "lon": -50.9361
+  },
+  {
+   "codigo": "2851044",
+   "nome": "Guaporé",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -28.8444,
+   "lon": -51.8792
+  },
+  {
+   "codigo": "2851061",
+   "nome": "UHE Machadinho Lagoa Vermelha",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "CONS.MACHADINHO",
+   "lat": -28.2222,
+   "lon": -51.5125
+  },
+  {
+   "codigo": "2851072",
+   "nome": "Ibiraiaras",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -28.3811,
+   "lon": -51.6331
+  },
+  {
+   "codigo": "2851092",
+   "nome": "Csg Ipê - 1171",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CSG",
+   "lat": -28.6678,
+   "lon": -51.1731
+  },
+  {
+   "codigo": "2851093",
+   "nome": "Csg Antônio Prado - 1248",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CSG",
+   "lat": -28.9383,
+   "lon": -51.1881
+  },
+  {
+   "codigo": "2851156",
+   "nome": "Csg Capela de Santana - 1250",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CSG",
+   "lat": -29.6739,
+   "lon": -51.4169
+  },
+  {
+   "codigo": "2851157",
+   "nome": "Csg São Sebastião do Cai - 1257",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CSG",
+   "lat": -29.6397,
+   "lon": -51.2928
+  },
+  {
+   "codigo": "2852004",
+   "nome": "Auler",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -28.8039,
+   "lon": -52.3817
+  },
+  {
+   "codigo": "2852057",
+   "nome": "UHE Passo Fundo Plu",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "ENGIE",
+   "lat": -28.2267,
+   "lon": -52.4033
+  },
+  {
+   "codigo": "2852079",
+   "nome": "CGH Linha Curuçu Jusante",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "LINHA CURUÇÚ",
+   "lat": -28.8522,
+   "lon": -52.6867
+  },
+  {
+   "codigo": "2853056",
+   "nome": "CGH João do Passo Barramento",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "MFB",
+   "lat": -28.245,
+   "lon": -53.4156
+  },
+  {
+   "codigo": "2854039",
+   "nome": "CGH Coopermil Jusante",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "COOPERMIL",
+   "lat": -28.1389,
+   "lon": -54.5464
+  },
+  {
+   "codigo": "2950045",
+   "nome": "Capão dos Coxos",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.4083,
+   "lon": -50.5842
+  },
+  {
+   "codigo": "2950108",
+   "nome": "Fazenda Taipas - S.f. de Paula",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.4686,
+   "lon": -50.4519
+  },
+  {
+   "codigo": "2950118",
+   "nome": "Pz_parobé",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.6681,
+   "lon": -50.8231
+  },
+  {
+   "codigo": "2951142",
+   "nome": "Morro Reuter",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.5289,
+   "lon": -51.0369
+  },
+  {
+   "codigo": "2951146",
+   "nome": "CGH Boa Vista Barramento",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERTEL",
+   "lat": -29.4728,
+   "lon": -51.8681
+  },
+  {
+   "codigo": "2951154",
+   "nome": "Csg Carlos Barbosa - 1197",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CSG",
+   "lat": -29.3361,
+   "lon": -51.4156
+  },
+  {
+   "codigo": "2951155",
+   "nome": "Csg Farroupilha - 1215",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CSG",
+   "lat": -29.3228,
+   "lon": -51.3472
+  },
+  {
+   "codigo": "2953073",
+   "nome": "Rincão do Herval Cerro Branco",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.6292,
+   "lon": -53.0289
+  },
+  {
+   "codigo": "2954053",
+   "nome": "Pz_são Pedro do Sul",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.6353,
+   "lon": -54.2839
+  },
+  {
+   "codigo": "2955026",
+   "nome": "Pz_são Francisco de Assis",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.4708,
+   "lon": -55.2858
+  },
+  {
+   "codigo": "2956017",
+   "nome": "Pz_uruguaiana",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.4706,
+   "lon": -56.6678
+  },
+  {
+   "codigo": "3054030",
+   "nome": "Fazenda São Gabriel",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -30.4811,
+   "lon": -54.5533
+  },
+  {
+   "codigo": "3055003",
+   "nome": "Fazenda Encerra",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -30.6956,
+   "lon": -55.8414
+  },
+  {
+   "codigo": "3055019",
+   "nome": "Cerro do Combate",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -30.5469,
+   "lon": -55.3197
+  },
+  {
+   "codigo": "3055022",
+   "nome": "Pz_santana do Livramento",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -30.8975,
+   "lon": -55.5256
+  },
+  {
+   "codigo": "3056031",
+   "nome": "Pz_quaraí",
+   "rio": "N/a",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -30.475,
+   "lon": -56.3008
+  },
+  {
+   "codigo": "3153035",
+   "nome": "Usina Termoelétrica Piratini",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -31.2419,
+   "lon": -53.1808
+  },
+  {
+   "codigo": "3154011",
+   "nome": "Aduana Aceguá",
+   "rio": "N/a",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -31.8661,
+   "lon": -54.1672
   }
  ]
 }

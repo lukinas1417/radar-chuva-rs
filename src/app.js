@@ -167,6 +167,7 @@ function desenharStatus() {
     `Chuva do CEMADEN: ${fmtHora(dados.chuva.geradoEm)}${chuvaVelha ? ' (desatualizada)' : ''}`,
     dados.rios ? `Defesa Civil RS (chuva e rios): ${fmtHora(dados.rios.geradoEm)}${riosVelhos ? ' (desatualizada)' : ''}` : 'Defesa Civil RS: indisponível',
     dados.riosAna ? `ANA (rios): ${fmtHora(dados.riosAna.geradoEm)}${dadoVelho(dados.riosAna.geradoEm) ? ' (desatualizada)' : ''}` : 'ANA (rios): indisponível',
+    dados.chuvaAna ? `ANA (chuva): ${fmtHora(dados.chuvaAna.geradoEm)}${dadoVelho(dados.chuvaAna.geradoEm) ? ' (desatualizada)' : ''}` : 'ANA (chuva): indisponível',
     dados.estimativaGeradoEm ? `Estimativa Open-Meteo (modelo): ${fmtHora(dados.estimativaGeradoEm)}` : 'Estimativa Open-Meteo: indisponível',
   ].join('\n');
   if (velho) {

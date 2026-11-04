@@ -2,6 +2,7 @@
 data/chuva-rs.json
 data/rios-rs.json
 data/rios-ana.json
+data/chuva-ana.json
 _site/
 .env
 data/noticias-rs.json

@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { indexarMunicipios } from '../src/geo.js';
-import { acumuladosEstimativa, cadastroAna, capitalizar, estimativaPrecisaRenovar, normalizarAna, normalizarChuvaCemaden, normalizarDefesaCivil, normalizarEstimativa, paraIsoAna, paraIsoCemaden, paraIsoDefesaCivil, previsaoHoraria, serieEstimativa } from '../src/normalizar.js';
+import { acumuladosEstimativa, cadastroAna, cadastroAnaChuva, capitalizar, estimativaPrecisaRenovar, normalizarAna, normalizarAnaChuva, normalizarChuvaCemaden, normalizarDefesaCivil, normalizarEstimativa, paraIsoAna, paraIsoCemaden, paraIsoDefesaCivil, previsaoHoraria, serieEstimativa } from '../src/normalizar.js';
 
 // ---------- CEMADEN ----------
 
@@ -321,6 +321,14 @@ test('ANA: a variação diz em quantas horas foi medida; com menos de 3 h de his
   assert.equal(curta.variacaoH, null);
 });
 
+test('ANA: com série longa (48 h), a variação olha só as últimas 6 h', () => {
+  const horas = ['00', '06', '12', '13', '14', '15'];
+  const [e] = normalizarAna(cadAna, [linhaAna('00', '1000.00'), linhaAna('06', '500.00'), linhaAna('12', '118.00'), linhaAna('13', '127.00'), linhaAna('14', '140.00'), linhaAna('15', '150.00')]);
+  assert.equal(horas.length, 6);
+  assert.equal(e.variacaoM, 0.32); // 150 - 118, e não 150 - 1000
+  assert.equal(e.variacaoH, 3);
+});
+
 test('ANA: sem limiar de alerta, a situação é null — nunca 0 (normalidade)', () => {
   const [e] = normalizarAna(cadAna, [linhaAna('15', '150.00')]);
   assert.equal(e.situacao, null);
@@ -346,4 +354,107 @@ test('ANA: vazão com status que não é medição não é mostrada, mas a cota 
   const [e] = normalizarAna(cadAna, [linhaAna('15', '150.00', { Vazao_Adotada_Status: '3' })]);
   assert.equal(e.vazaoM3s, null);
   assert.equal(e.nivelM, 1.5);
+});
+
+// ---------- ANA: chuva ----------
+
+const malhaAna = indexarMunicipios({
+  type: 'FeatureCollection',
+  features: [{ type: 'Feature', properties: { codIbge: 4300001, nome: 'Teste' }, geometry: { type: 'Polygon', coordinates: [[[-52, -30], [-50, -30], [-50, -28], [-52, -28], [-52, -30]]] } }],
+});
+const pluvAna = (extra) => ({ Tipo_Estacao: 'Pluviometrica', codigoestacao: 2851061, Estacao_Nome: 'ITA', Operadora_Sigla: 'SGB-CPRM', Latitude: '-29', Longitude: '-51', Tipo_Estacao_Telemetrica: 1, Operando: 1, ...extra });
+
+test('cadastro de chuva: só pluviômetro telemétrico em operação, sem CEMADEN nem Defesa Civil (já são fontes do mapa)', () => {
+  const cad = cadastroAnaChuva([
+    pluvAna({}),
+    pluvAna({ codigoestacao: 2, Operadora_Sigla: 'CEMADEN' }),
+    pluvAna({ codigoestacao: 3, Operadora_Sigla: 'DCRS' }),
+    pluvAna({ codigoestacao: 4, Tipo_Estacao: 'Fluviometrica' }),
+    pluvAna({ codigoestacao: 5, Operando: 0 }),
+    pluvAna({ codigoestacao: 6, Longitude: null }),
+  ]);
+  assert.deepEqual(cad.map((c) => c.codigo), ['2851061']);
+});
+
+// Gera `n` leituras terminando em `fim` (hora de Brasília, "2026-11-04 17:00"), uma a cada `passoMin` minutos.
+const serieChuva = (valores, passoMin = 60, fim = '2026-11-04T17:00:00-03:00') =>
+  valores.map((mm, i) => {
+    const t = new Date(Date.parse(fim) - (valores.length - 1 - i) * passoMin * 60_000);
+    const local = new Date(t.getTime() - 3 * 3600_000).toISOString(); // relógio de Brasília
+    return { codigoestacao: '2851061', Data_Hora_Medicao: `${local.slice(0, 10)} ${local.slice(11, 19)}.0`, Chuva_Adotada: mm === null ? null : String(mm), Chuva_Adotada_Status: mm === null ? null : '0' };
+  });
+const cadChuva = cadastroAnaChuva([pluvAna({})]);
+const AGORA_ANA = Date.parse('2026-11-04T17:20:00-03:00');
+const chuvaAna = (linhas, agora = AGORA_ANA) => normalizarAnaChuva(cadChuva, linhas, agora, malhaAna)[0];
+
+test('ANA chuva: soma os intervalos de cada janela; estação horária com 24 leituras fecha 1 h, 6 h e 24 h', () => {
+  const horas = Array.from({ length: 24 }, (_, i) => (i === 23 ? 5 : i === 22 ? 2.5 : i === 10 ? 1 : 0));
+  const e = chuvaAna(serieChuva(horas));
+  assert.deepEqual(e.acumuladoMm, { '1h': 5, '6h': 7.5, '24h': 8.5 });
+  assert.equal(e.ativa, true);
+  assert.equal(e.codigo, 'ANA-2851061');
+  assert.equal(e.codIbge, 4300001);
+});
+
+test('ANA chuva: estação de 15 min soma quatro leituras por hora', () => {
+  const quartos = Array.from({ length: 96 }, (_, i) => (i >= 92 ? 0.5 : 0));
+  const e = chuvaAna(serieChuva(quartos, 15));
+  assert.equal(e.acumuladoMm['1h'], 2);
+  assert.equal(e.acumuladoMm['24h'], 2);
+  assert.equal(e.ativa, true);
+});
+
+test('ANA chuva: intervalo faltando torna a janela null — soma parcial subestimaria a chuva, e ausência nunca vira 0', () => {
+  const horas = Array.from({ length: 24 }, () => 1);
+  const comBuraco = serieChuva(horas).filter((_, i) => i !== 12); // uma hora sumiu
+  const e = chuvaAna(comBuraco);
+  assert.equal(e.acumuladoMm['1h'], 1);
+  assert.equal(e.acumuladoMm['6h'], 6);
+  assert.equal(e.acumuladoMm['24h'], null);
+  assert.equal(e.ativa, false); // sem todas as janelas medidas, não é estação ativa
+});
+
+test('ANA chuva: leitura sem valor dentro da janela invalida a janela, em vez de contar como 0 mm', () => {
+  const horas = Array.from({ length: 24 }, () => 1);
+  horas[20] = null;
+  const e = chuvaAna(serieChuva(horas));
+  assert.equal(e.acumuladoMm['1h'], 1);
+  assert.equal(e.acumuladoMm['6h'], null);
+  assert.equal(e.acumuladoMm['24h'], null);
+});
+
+test('ANA chuva: status que não é medição, valor negativo e texto inválido são tratados como sem valor', () => {
+  const base = Array.from({ length: 24 }, () => 1);
+  const linhas = serieChuva(base);
+  linhas[23] = { ...linhas[23], Chuva_Adotada_Status: '2' }; // estimado
+  assert.equal(chuvaAna(linhas).acumuladoMm['1h'], null);
+  const negativo = serieChuva(base);
+  negativo[23].Chuva_Adotada = '-3';
+  assert.equal(chuvaAna(negativo).acumuladoMm['1h'], null);
+  const lixo = serieChuva(base);
+  lixo[23].Chuva_Adotada = 'abc';
+  assert.equal(chuvaAna(lixo).acumuladoMm['1h'], null);
+});
+
+test('ANA chuva: chuva zero medida é 0, e é diferente de sem dado', () => {
+  const e = chuvaAna(serieChuva(Array.from({ length: 24 }, () => 0)));
+  assert.deepEqual(e.acumuladoMm, { '1h': 0, '6h': 0, '24h': 0 });
+});
+
+test('ANA chuva: última leitura com mais de 2 h da coleta deixa a estação inativa', () => {
+  const horas = Array.from({ length: 24 }, () => 0);
+  assert.equal(chuvaAna(serieChuva(horas), Date.parse('2026-11-04T19:30:00-03:00')).ativa, false);
+  assert.equal(chuvaAna(serieChuva(horas), Date.parse('2026-11-04T18:50:00-03:00')).ativa, true);
+});
+
+test('ANA chuva: sem leituras suficientes, ou nenhuma com valor, a estação fica de fora', () => {
+  assert.deepEqual(normalizarAnaChuva(cadChuva, [], AGORA_ANA, malhaAna), []);
+  assert.deepEqual(normalizarAnaChuva(cadChuva, serieChuva([1, 2]), AGORA_ANA, malhaAna), []);
+  assert.deepEqual(normalizarAnaChuva(cadChuva, serieChuva([null, null, null, null]), AGORA_ANA, malhaAna), []);
+});
+
+test('ANA chuva: estação fora da malha fica com codIbge null (o mapa a ignora)', () => {
+  const fora = cadastroAnaChuva([pluvAna({ Longitude: '-40' })]);
+  const [e] = normalizarAnaChuva(fora, serieChuva(Array.from({ length: 24 }, () => 0)), AGORA_ANA, malhaAna);
+  assert.equal(e.codIbge, null);
 });

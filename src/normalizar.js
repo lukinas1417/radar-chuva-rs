@@ -109,7 +109,9 @@ export function normalizarDefesaCivil(bruto, agoraMs, indice) {
 // ---------- ANA (HidroWebService) ----------
 // Estação telemétrica da ANA reporta de hora em hora (algumas a cada 15 min): leitura de até 3 h é "recente".
 export const ANA_RECENTE_MS = 3 * 60 * 60 * 1000;
-// Variação do nível: última leitura contra a mais antiga da janela, desde que haja pelo menos 3 h entre elas.
+// Variação do nível: última leitura contra a mais antiga das últimas ANA_JANELA_VARIACAO_H horas, desde que haja
+// pelo menos ANA_VARIACAO_MIN_H entre elas. A série recebida pode ser mais longa (a chuva usa 48 h): o excesso é ignorado.
+export const ANA_JANELA_VARIACAO_H = 6;
 export const ANA_VARIACAO_MIN_H = 3;
 // Estado da cota na série "adotada": só 0 e 1 são aceitos como medição. Qualquer outro código (ou ausência de
 // código) fica de fora, em vez de arriscar mostrar valor estimado ou duvidoso como se fosse medido.
@@ -140,16 +142,16 @@ const numeroAna = (v) => {
   return Number.isFinite(n) ? n : null;
 };
 
-// Inventário da ANA -> cadastro enxuto das estações de rio que o mapa usa: fluviométricas, telemétricas e em
-// operação. As operadas pela Defesa Civil RS ficam de fora porque já vêm, em tempo real, da fonte da própria Defesa Civil.
-export function cadastroAna(inventario) {
+// Inventário da ANA -> cadastro enxuto das estações do tipo pedido que o mapa usa: telemétricas e em operação,
+// fora as operadoras cujos dados o mapa já recebe direto da fonte delas.
+function cadastrar(inventario, tipo, operadorasExcluidas) {
   return inventario
     .filter(
       (e) =>
         String(e.Tipo_Estacao_Telemetrica) === '1' &&
         String(e.Operando) === '1' &&
-        e.Tipo_Estacao === 'Fluviometrica' &&
-        e.Operadora_Sigla !== 'DCRS' &&
+        e.Tipo_Estacao === tipo &&
+        !operadorasExcluidas.includes(e.Operadora_Sigla) &&
         numeroAna(e.Latitude) !== null &&
         numeroAna(e.Longitude) !== null,
     )
@@ -164,6 +166,11 @@ export function cadastroAna(inventario) {
     }))
     .sort((a, b) => a.codigo.localeCompare(b.codigo));
 }
+
+// Rios: as da Defesa Civil RS ficam de fora porque a API da própria Defesa Civil já as traz, em tempo real.
+export const cadastroAna = (inventario) => cadastrar(inventario, 'Fluviometrica', ['DCRS']);
+// Chuva: as do CEMADEN e da Defesa Civil RS ficam de fora pelo mesmo motivo (já são fontes do mapa).
+export const cadastroAnaChuva = (inventario) => cadastrar(inventario, 'Pluviometrica', ['CEMADEN', 'DCRS']);
 
 // Cadastro + linhas da série ("adotada") -> estações de rio no mesmo formato das da Defesa Civil.
 // A ANA não divulga limiares de alerta: `situacao` é sempre null (sem classificação), nunca 0 ("normalidade").
@@ -186,7 +193,7 @@ export function normalizarAna(cadastro, linhas) {
     const pts = (porEstacao.get(c.codigo) ?? []).sort((a, b) => a.t - b.t);
     if (!pts.length) continue;
     const ultimo = pts.at(-1);
-    const base = pts[0];
+    const base = pts.find((p) => p.t >= ultimo.t - ANA_JANELA_VARIACAO_H * 3_600_000);
     const horas = (ultimo.t - base.t) / 3_600_000;
     const comVariacao = horas >= ANA_VARIACAO_MIN_H;
     estacoes.push({
@@ -209,6 +216,62 @@ export function normalizarAna(cadastro, linhas) {
     });
   }
   return estacoes;
+}
+
+// Chuva da ANA: cada linha é o total do intervalo (60 min nas estações horárias, 15 nas do SGB), não um acumulado.
+// Estação "ativa" = última leitura de até 2 h antes da coleta.
+export const ANA_CHUVA_ATIVA_MS = 2 * 60 * 60 * 1000;
+export const JANELAS_ANA_CHUVA = { '1h': 1, '6h': 6, '24h': 24 };
+const MIN = 60_000;
+
+const mediana = (v) => {
+  const o = [...v].sort((a, b) => a - b);
+  return o.length ? o[o.length >> 1] : null;
+};
+
+// Cadastro + linhas da série -> pluviômetros no formato dos da Defesa Civil. `indice` é a malha indexada (geo.js).
+// Cada janela (1 h, 6 h, 24 h) termina na última leitura da estação e só vale com TODOS os intervalos medidos:
+// intervalo faltando ou inválido torna a janela null, porque somar só o que há subestimaria a chuva. Nunca vira 0.
+export function normalizarAnaChuva(cadastro, linhas, agoraMs, indice) {
+  const porEstacao = new Map();
+  for (const l of linhas) {
+    const t = Date.parse(paraIsoAna(l.Data_Hora_Medicao) ?? '');
+    if (!Number.isFinite(t)) continue;
+    const mm = ANA_STATUS_VALIDOS.has(l.Chuva_Adotada_Status) ? numeroAna(l.Chuva_Adotada) : null;
+    const cod = String(l.codigoestacao);
+    if (!porEstacao.has(cod)) porEstacao.set(cod, []);
+    porEstacao.get(cod).push({ t, mm: mm !== null && mm >= 0 ? mm : null });
+  }
+
+  const pluviometros = [];
+  for (const c of cadastro) {
+    const pts = (porEstacao.get(c.codigo) ?? []).sort((a, b) => a.t - b.t);
+    if (pts.length < 3) continue;
+    // O intervalo da estação vem das próprias leituras (mediana), não de um valor fixo por operadora.
+    const passoMin = mediana(pts.slice(1).map((p, i) => (p.t - pts[i].t) / MIN));
+    if (!passoMin || passoMin <= 0 || passoMin > 60) continue;
+    if (pts.every((p) => p.mm === null)) continue; // nada medido: fica de fora, não vira 0
+    const fim = pts.at(-1).t;
+    const acumuladoMm = {};
+    for (const [janela, horas] of Object.entries(JANELAS_ANA_CHUVA)) {
+      const esperados = Math.round((horas * 60) / passoMin);
+      // linhas cujo fim de intervalo cai dentro da janela (com folga de meio intervalo para o relógio da estação)
+      const dentro = pts.filter((p) => p.t > fim - horas * 60 * MIN + (passoMin * MIN) / 2 && p.t <= fim);
+      const completa = dentro.length === esperados && dentro.every((p) => p.mm !== null);
+      acumuladoMm[janela] = completa ? Math.round(dentro.reduce((a, p) => a + p.mm, 0) * 10) / 10 : null;
+    }
+    const ultimaLeitura = new Date(fim).toISOString();
+    pluviometros.push({
+      codigo: `ANA-${c.codigo}`,
+      nome: c.nome,
+      operadora: c.operadora,
+      codIbge: municipioDe(indice, c.lon, c.lat)?.codIbge ?? null,
+      ultimaLeitura,
+      ativa: agoraMs - fim <= ANA_CHUVA_ATIVA_MS && Object.values(acumuladoMm).every((v) => v !== null),
+      acumuladoMm,
+    });
+  }
+  return pluviometros;
 }
 
 // ---------- Open-Meteo (estimativa e previsão por modelo) ----------

@@ -3,7 +3,7 @@
 **[Ver ao vivo](https://lukinas1417.github.io/radar-chuva-rs/)**
 
 Mapa web, em tela cheia, da chuva acumulada (1 h, 6 h e 24 h) e da previsão (próximas 6 h e 24 h) em cada município do Rio Grande do Sul, com
-a situação dos rios. Os dados vêm quase em tempo real dos pluviômetros do CEMADEN e da Defesa Civil do RS, das estações de rio da Defesa Civil e da ANA, e uma
+a situação dos rios. Os dados vêm quase em tempo real dos pluviômetros do CEMADEN e da Defesa Civil do RS, das estações de rio e de chuva da Defesa Civil e da ANA, e uma
 estimativa e previsão por modelo (Open-Meteo) cobre os municípios sem pluviômetro. O
 contorno dos municípios com rio em atenção, alerta ou inundação pulsa suavemente, e o relevo 3D é opcional.
 
@@ -66,14 +66,14 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 Requer Node 22+. Sem dependências.
 
 ```sh
-node --test   # 106 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
+node --test   # 123 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
 ```
 
 ```sh
 node scripts/fetch-municipios.mjs   # malha municipal do IBGE (uma vez)
 node scripts/fetch-chuva.mjs        # estações de chuva do CEMADEN (repetir para atualizar)
 node scripts/fetch-rios.mjs         # estações de rio e chuva da Defesa Civil RS (opcional)
-node --env-file=.env scripts/fetch-ana.mjs   # rios da ANA (opcional; exige ANA_IDENTIFICADOR e ANA_SENHA no .env)
+node --env-file=.env scripts/fetch-ana.mjs   # rios e chuva da ANA (opcional; exige ANA_IDENTIFICADOR e ANA_SENHA no .env)
 node scripts/fetch-estimativa.mjs   # estimativa de chuva por modelo, Open-Meteo (opcional; ~20 s)
 node scripts/fetch-noticias.mjs     # notícias recentes (opcional)
 node scripts/serve.mjs              # http://localhost:8080
@@ -88,9 +88,14 @@ node scripts/serve.mjs              # http://localhost:8080
   (GraphQL, dados a cada 5 minutos). A API só aceita o texto exato da consulta documentada, guardado em
   `scripts/consultas/tags_data.graphql`. Ela traz o nível dos rios e a chuva dos pluviômetros da Defesa Civil.
 - `scripts/fetch-ana.mjs` autentica na [API HidroWebService da ANA](https://www.ana.gov.br/hidrowebservice/swagger-ui/index.html)
-  (credencial própria, lida só do ambiente: segredos do GitHub no workflow, `.env` local) e lê a cota e a vazão das
-  estações de rio telemétricas do RS, de hora em hora, em lotes de 10 (limite da API). O cadastro das estações é versionado
-  em `data/ana-estacoes-rs.json` (refaz com `--atualizar-cadastro`). A ANA não divulga limiares de alerta: essas
+  (credencial própria, lida só do ambiente: segredos do GitHub no workflow, `.env` local) e lê, em lotes de 10 (limite
+  da API), 48 h de leituras das estações telemétricas do RS, de hora em hora (ou de 15 em 15 min). Uma só rodada alimenta
+  `data/rios-ana.json` (cota e variação) e `data/chuva-ana.json` (chuva em 1 h, 6 h e 24 h, somando os intervalos
+  medidos; **janela com qualquer intervalo faltando fica sem dado**, nunca vira soma parcial nem 0 mm). A chuva
+  vem dos pluviômetros e das estações de rio que têm pluviômetro acoplado (a maioria, em usinas e barragens). O cadastro
+  das estações é versionado em `data/ana-estacoes-rs.json` (refaz com `--atualizar-cadastro`, que também sonda os
+  pluviômetros: o inventário marca ~480 como telemétricos, mas só 34 transmitem de fato). **A API devolve linhas de
+  estações que não foram pedidas quando nenhuma do lote tem dado**, então toda linha é cruzada com o cadastro. A ANA não divulga limiares de alerta: essas
   estações aparecem com a leitura e a variação, **sem classificação de risco**, e não afetam o contorno luminoso. As
   operadas pela Defesa Civil são excluídas, porque já vêm da fonte dela.
 - `scripts/fetch-estimativa.mjs` pede ao [Open-Meteo](https://open-meteo.com/) (gratuito para uso não comercial, CC BY 4.0)
@@ -104,7 +109,7 @@ node scripts/serve.mjs              # http://localhost:8080
 ## Cobertura e limitações
 
 - Com as duas fontes ativas: pluviômetros em 222 dos 497 municípios (187 pelo CEMADEN, mais 35 pela Defesa Civil) e
-  125 estações de rio da Defesa Civil, mais ~300 da ANA (leitura sem classificação de risco). Mais da metade dos municípios não tem pluviômetro nessas redes.
+  125 estações de rio da Defesa Civil, mais ~300 da ANA (leitura sem classificação de risco), e cerca de 195 estações de chuva da ANA em dia (usinas e barragens, sobretudo). Mais da metade dos municípios não tem pluviômetro nessas redes.
 - O endpoint de chuva do CEMADEN não é documentado oficialmente e pode mudar. O oficial (PED) usa token que expira em
   poucas horas e login com captcha, o que impede o uso em coleta agendada.
 - A API da Defesa Civil não declara licença de uso; a fonte é citada no site. A atribuição das estações aos

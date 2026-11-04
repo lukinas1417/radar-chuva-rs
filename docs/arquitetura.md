@@ -10,7 +10,7 @@ O Radar junta fontes oficiais, sem acordo formal com elas (a ANA é a exceção:
 
 - **CEMADEN**: pluviômetros do país. Usa-se o endpoint público do Mapa Interativo, que não é um serviço documentado.
 - **Defesa Civil do RS**: API GraphQL com o nível de 125 estações de rio e a chuva de seus pluviômetros.
-- **ANA (HidroWebService)**: API REST autenticada com a leitura (cota e vazão) de ~300 estações de rio telemétricas do estado, de hora em hora. Não há limiares de alerta, então essas estações **não têm classificação de risco**.
+- **ANA (HidroWebService)**: API REST autenticada com a leitura (cota, vazão e chuva) de ~300 estações telemétricas do estado, de hora em hora. Não há limiares de alerta, então as de rio **não têm classificação de risco**; a chuva (~200 estações em dia, a maioria em usinas e barragens) entra como mais uma medição de pluviômetro.
 
 Mais a malha municipal do IBGE. O resultado é um site estático que mostra, por município, a chuva acumulada e a
 situação dos rios.
@@ -57,6 +57,9 @@ JSON e desenha o mapa.
 | Significado do `status` de rio é ambíguo na documentação | Rotulado como "situação informada pela Defesa Civil", com nota de que as cotas não são divulgadas | O sistema não afirma o que não sabe |
 | API oficial do CEMADEN (PED): token expira em 4 h e o login tem captcha | Testada e descartada para coleta agendada. O captcha **não é contornado** | Nada: continua no endpoint público |
 | ANA fora do ar, lenta ou com credencial recusada (observado: login de 19 s e um 504) | Login e cada lote têm tempo limite e 3 tentativas; sessão expirada no meio da coleta refaz o login; se mais de 25% dos lotes falharem, a coleta falha e o último dado publicado é mantido; sem credenciais o passo é pulado | Rios da ANA com a hora da leitura visível; a Defesa Civil segue independente |
+| ANA devolve estações que não foram pedidas (observado: quando nenhuma do lote tem dado) | Toda linha é cruzada com o cadastro; as de fora são ignoradas | Nada: nunca se atribui chuva a estação errada |
+| Janela de chuva da ANA com intervalo faltando, nulo ou de status que não é medição | A janela fica `null`; sem as três janelas completas a estação é inativa. Nunca soma parcial, nunca 0 | A medição só aparece quando completa |
+| Sensor da ANA preso em zero durante chuva (visto: 0 mm onde outra rede marcou 102 mm) | O município mostra o MAIOR valor entre as estações, então uma estação presa em zero não esconde a chuva medida por outra. **Não resolvido** onde ela é a única | Possível 0 mm falso em município coberto só por ela |
 | Estação da ANA não tem limiar de alerta | `situacao` é sempre `null` (nunca 0, "normalidade"); não entra no contorno luminoso, no resumo de rios nem na lista de atenção; o cartão diz "sem classificação" e que as cotas não são comparáveis (nas usinas, é a altitude do reservatório) | Leitura e variação em N horas, sem cor de risco |
 | Estação perto de uma divisa cai no município vizinho (malha simplificada) | Limitação documentada; o painel mostra o nome da estação | O usuário pode conferir |
 | Feed de notícias fora do ar | Cada fonte falha sozinha; se nenhuma responde, o último arquivo publicado é reaproveitado. Notícias são opcionais | As últimas notícias, com o horário da coleta (e "Desatualizado" depois de 3 h); sem arquivo, o painel não aparece |
@@ -109,7 +112,7 @@ de um servidor falso, o que num site de alertas é inaceitável.
 
 ## Como o sistema é verificado
 
-Há 106 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
+Há 123 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
 coleta, para uma falha de teste nunca bloquear a atualização dos dados. Eles cobrem as regras que, se erradas,
 fazem o mapa afirmar algo falso:
 
@@ -119,7 +122,8 @@ fazem o mapa afirmar algo falso:
 - **Geometria** (`tests/geo.test.js`): ponto fora de qualquer município é `null`, e não o mais próximo; buracos em
   polígonos; municípios com várias partes.
 - **Normalização das fontes** (`tests/normalizar.test.js`): `"-"` vira 0 só em estação ativa; limites de 3 h e de
-  30 min; estação sem limiar cadastrado não vira "normal"; chuva não homologada é descartada. **ANA**: cota em cm
+  30 min; estação sem limiar cadastrado não vira "normal"; chuva não homologada é descartada. **ANA**: chuva só soma janela completa (intervalo
+  faltando, nulo, negativo ou estimado invalida a janela); cota em cm
   vira metros; status que não é medição (estimado, duvidoso, ausente) é descartado; `situacao` nunca é 0; variação
   só com pelo menos 3 h de histórico; estação sem leitura válida fica de fora; as operadas pela Defesa Civil não
   entram em duplicidade.
