@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { indexarMunicipios } from '../src/geo.js';
-import { acumuladosEstimativa, estimativaPrecisaRenovar, normalizarChuvaCemaden, normalizarDefesaCivil, normalizarEstimativa, paraIsoCemaden, paraIsoDefesaCivil, previsaoHoraria, serieEstimativa } from '../src/normalizar.js';
+import { acumuladosEstimativa, cadastroAna, capitalizar, estimativaPrecisaRenovar, normalizarAna, normalizarChuvaCemaden, normalizarDefesaCivil, normalizarEstimativa, paraIsoAna, paraIsoCemaden, paraIsoDefesaCivil, previsaoHoraria, serieEstimativa } from '../src/normalizar.js';
 
 // ---------- CEMADEN ----------
 
@@ -247,4 +247,103 @@ test('a estimativa só é renovada depois de 3 h; data inválida força renovaç
   assert.equal(estimativaPrecisaRenovar('2026-10-22T11:30:00Z', agora), true);
   assert.equal(estimativaPrecisaRenovar(undefined, agora), true);
   assert.equal(estimativaPrecisaRenovar('lixo', agora), true);
+});
+
+// ---------- ANA (HidroWebService) ----------
+
+test('data da ANA vira ISO com o fuso de Brasília; texto que não é data vira null', () => {
+  assert.equal(paraIsoAna('2026-11-04 12:00:00.0'), '2026-11-04T12:00:00-03:00');
+  assert.equal(paraIsoAna(null), null);
+  assert.equal(paraIsoAna('ontem'), null);
+});
+
+test('nomes em caixa alta ficam legíveis, mantendo siglas e partículas', () => {
+  assert.equal(capitalizar('UHE BARRA GRANDE PASSO DO HONORATO'), 'UHE Barra Grande Passo do Honorato');
+  assert.equal(capitalizar('RIO DAS ANTAS'), 'Rio das Antas');
+  assert.equal(capitalizar(null), '');
+});
+
+const invAna = (extra) => ({
+  codigoestacao: 70120000,
+  Estacao_Nome: 'UHE BARRA GRANDE FAXINAL PRETO',
+  Rio_Nome: 'RIO PELOTAS',
+  Bacia_Nome: 'RIO URUGUAI',
+  Operadora_Sigla: 'BAESA',
+  Latitude: '-28.5',
+  Longitude: '-51.1',
+  Tipo_Estacao: 'Fluviometrica',
+  Tipo_Estacao_Telemetrica: 1,
+  Operando: 1,
+  ...extra,
+});
+
+test('cadastro: só rio telemétrico em operação, e sem as estações da Defesa Civil (já vêm da fonte dela)', () => {
+  const cad = cadastroAna([
+    invAna({}),
+    invAna({ codigoestacao: 2, Operadora_Sigla: 'DCRS' }),
+    invAna({ codigoestacao: 3, Tipo_Estacao: 'Pluviometrica' }),
+    invAna({ codigoestacao: 4, Operando: 0 }),
+    invAna({ codigoestacao: 5, Tipo_Estacao_Telemetrica: 0 }),
+    invAna({ codigoestacao: 6, Latitude: null }),
+    invAna({ codigoestacao: 7, Latitude: 'x' }),
+  ]);
+  assert.deepEqual(cad.map((c) => c.codigo), ['70120000']);
+  assert.equal(cad[0].nome, 'UHE Barra Grande Faxinal Preto');
+  assert.equal(cad[0].lat, -28.5);
+});
+
+const cadAna = cadastroAna([invAna({})]);
+const linhaAna = (hora, cota, extra) => ({
+  codigoestacao: '70120000',
+  Data_Hora_Medicao: `2026-11-04 ${hora}:00:00.0`,
+  Cota_Adotada: cota,
+  Cota_Adotada_Status: '0',
+  Vazao_Adotada: '77.03',
+  Vazao_Adotada_Status: '0',
+  ...extra,
+});
+
+test('ANA: cota em cm vira metros, e a última leitura é a mais recente, não a última da lista', () => {
+  const [e] = normalizarAna(cadAna, [linhaAna('15', '150.00'), linhaAna('12', '118.00'), linhaAna('13', '127.00')]);
+  assert.equal(e.codigo, 'ANA-70120000');
+  assert.equal(e.nivelM, 1.5);
+  assert.equal(e.ultimaLeitura, '2026-11-04T18:00:00.000Z'); // 15:00 em Brasília
+  assert.equal(e.fonte, 'ANA');
+  assert.equal(e.vazaoM3s, 77.03);
+});
+
+test('ANA: a variação diz em quantas horas foi medida; com menos de 3 h de histórico não há variação', () => {
+  const [e] = normalizarAna(cadAna, [linhaAna('12', '118.00'), linhaAna('15', '150.00')]);
+  assert.equal(e.variacaoM, 0.32);
+  assert.equal(e.variacaoH, 3);
+  const [curta] = normalizarAna(cadAna, [linhaAna('14', '118.00'), linhaAna('15', '150.00')]);
+  assert.equal(curta.variacaoM, null);
+  assert.equal(curta.variacaoH, null);
+});
+
+test('ANA: sem limiar de alerta, a situação é null — nunca 0 (normalidade)', () => {
+  const [e] = normalizarAna(cadAna, [linhaAna('15', '150.00')]);
+  assert.equal(e.situacao, null);
+});
+
+test('ANA: leitura sem cota, com cota inválida ou com status que não é medição é descartada', () => {
+  const linhas = [
+    linhaAna('12', null),
+    linhaAna('13', ''),
+    linhaAna('14', 'abc'),
+    linhaAna('15', '100.00', { Cota_Adotada_Status: '2' }), // estimado
+    linhaAna('16', '100.00', { Cota_Adotada_Status: null }),
+  ];
+  assert.deepEqual(normalizarAna(cadAna, linhas), []);
+});
+
+test('ANA: estação sem nenhuma leitura válida fica de fora (não vira "sem alerta")', () => {
+  assert.deepEqual(normalizarAna(cadAna, []), []);
+  assert.deepEqual(normalizarAna(cadAna, [{ ...linhaAna('15', '100.00'), codigoestacao: '999' }]), []);
+});
+
+test('ANA: vazão com status que não é medição não é mostrada, mas a cota continua valendo', () => {
+  const [e] = normalizarAna(cadAna, [linhaAna('15', '150.00', { Vazao_Adotada_Status: '3' })]);
+  assert.equal(e.vazaoM3s, null);
+  assert.equal(e.nivelM, 1.5);
 });

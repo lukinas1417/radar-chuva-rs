@@ -166,6 +166,7 @@ function desenharStatus() {
   $('status').title = [
     `Chuva do CEMADEN: ${fmtHora(dados.chuva.geradoEm)}${chuvaVelha ? ' (desatualizada)' : ''}`,
     dados.rios ? `Defesa Civil RS (chuva e rios): ${fmtHora(dados.rios.geradoEm)}${riosVelhos ? ' (desatualizada)' : ''}` : 'Defesa Civil RS: indisponível',
+    dados.riosAna ? `ANA (rios): ${fmtHora(dados.riosAna.geradoEm)}${dadoVelho(dados.riosAna.geradoEm) ? ' (desatualizada)' : ''}` : 'ANA (rios): indisponível',
     dados.estimativaGeradoEm ? `Estimativa Open-Meteo (modelo): ${fmtHora(dados.estimativaGeradoEm)}` : 'Estimativa Open-Meteo: indisponível',
   ].join('\n');
   if (velho) {
@@ -384,11 +385,18 @@ function htmlCartao(cod, euEstou) {
         const sit = SITUACOES.find((x) => x.valor === e.situacao);
         const cor = e.recente && sit ? sit.cor : '#93a6b8';
         const texto = !e.recente ? 'sem leitura recente' : sit ? sit.texto : 'sem limiar';
-        const variacao = e.variacaoM === null ? '' : ` · variação ${e.variacaoM > 0 ? '+' : ''}${e.variacaoM.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
-        return `<div class="rio"><span>${esc(e.nome)}</span><span class="chip" style="--c:${cor}">${texto}</span>
-          <span class="detalhe">nível ${fmtM(e.nivelM)}${variacao}</span></div>`;
+        const ana = e.fonte === 'ANA';
+        // A ANA mede de hora em hora e a variação é de uma janela longa: o texto diz a janela e a hora da leitura.
+        const janelaVariacao = e.variacaoH ? ` em ${e.variacaoH} h` : '';
+        const variacao = e.variacaoM === null ? '' : ` · variação ${e.variacaoM > 0 ? '+' : ''}${e.variacaoM.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m${janelaVariacao}`;
+        const nome = ana && e.rio && !semAcento(e.nome).includes(semAcento(e.rio)) ? `${e.nome} · ${e.rio}` : e.nome;
+        return `<div class="rio"><span>${esc(nome)}</span><span class="chip" style="--c:${cor}">${ana && e.recente ? 'sem classificação' : texto}</span>
+          <span class="detalhe">${ana ? 'cota' : 'nível'} ${fmtM(e.nivelM)}${variacao}${ana ? ` · leitura ${fmtHora(e.ultimaLeitura)} · ANA` : ''}</span></div>`;
       })
       .join('')}`;
+    if (rios.some((e) => e.fonte === 'ANA')) {
+      html += '<p class="cartao-pe">Estações da ANA mostram só a leitura da régua (cota), sem classificação de risco: a ANA não divulga limiares de alerta. A cota de uma estação não é comparável à de outra, e nas de usinas hidrelétricas pode ser a altitude do reservatório.</p>';
+    }
     if (rios.some((e) => e.recente && e.situacao >= 1)) {
       html += '<p class="cartao-pe">A situação é a classificação da Defesa Civil, comparada às cotas de cada estação, e pode refletir o maior nível recente, não só o atual. As cotas não são divulgadas pela API.</p>';
     }

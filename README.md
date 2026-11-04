@@ -3,7 +3,7 @@
 **[Ver ao vivo](https://lukinas1417.github.io/radar-chuva-rs/)**
 
 Mapa web, em tela cheia, da chuva acumulada (1 h, 6 h e 24 h) e da previsão (próximas 6 h e 24 h) em cada município do Rio Grande do Sul, com
-a situação dos rios. Os dados vêm quase em tempo real dos pluviômetros do CEMADEN e da Defesa Civil do RS, e uma
+a situação dos rios. Os dados vêm quase em tempo real dos pluviômetros do CEMADEN e da Defesa Civil do RS, das estações de rio da Defesa Civil e da ANA, e uma
 estimativa e previsão por modelo (Open-Meteo) cobre os municípios sem pluviômetro. O
 contorno dos municípios com rio em atenção, alerta ou inundação pulsa suavemente, e o relevo 3D é opcional.
 
@@ -66,13 +66,14 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 Requer Node 22+. Sem dependências.
 
 ```sh
-node --test   # 83 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
+node --test   # 106 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
 ```
 
 ```sh
 node scripts/fetch-municipios.mjs   # malha municipal do IBGE (uma vez)
 node scripts/fetch-chuva.mjs        # estações de chuva do CEMADEN (repetir para atualizar)
 node scripts/fetch-rios.mjs         # estações de rio e chuva da Defesa Civil RS (opcional)
+node --env-file=.env scripts/fetch-ana.mjs   # rios da ANA (opcional; exige ANA_IDENTIFICADOR e ANA_SENHA no .env)
 node scripts/fetch-estimativa.mjs   # estimativa de chuva por modelo, Open-Meteo (opcional; ~20 s)
 node scripts/fetch-noticias.mjs     # notícias recentes (opcional)
 node scripts/serve.mjs              # http://localhost:8080
@@ -86,6 +87,12 @@ node scripts/serve.mjs              # http://localhost:8080
 - `scripts/fetch-rios.mjs` consulta a [API da Defesa Civil do RS](https://sistemas.defesacivil.rs.gov.br/api-redehidrometeorologica)
   (GraphQL, dados a cada 5 minutos). A API só aceita o texto exato da consulta documentada, guardado em
   `scripts/consultas/tags_data.graphql`. Ela traz o nível dos rios e a chuva dos pluviômetros da Defesa Civil.
+- `scripts/fetch-ana.mjs` autentica na [API HidroWebService da ANA](https://www.ana.gov.br/hidrowebservice/swagger-ui/index.html)
+  (credencial própria, lida só do ambiente: segredos do GitHub no workflow, `.env` local) e lê a cota e a vazão das
+  estações de rio telemétricas do RS, de hora em hora, em lotes de 10 (limite da API). O cadastro das estações é versionado
+  em `data/ana-estacoes-rs.json` (refaz com `--atualizar-cadastro`). A ANA não divulga limiares de alerta: essas
+  estações aparecem com a leitura e a variação, **sem classificação de risco**, e não afetam o contorno luminoso. As
+  operadas pela Defesa Civil são excluídas, porque já vêm da fonte dela.
 - `scripts/fetch-estimativa.mjs` pede ao [Open-Meteo](https://open-meteo.com/) (gratuito para uso não comercial, CC BY 4.0)
   a precipitação horária (últimas 30 h e próximas 36 h) no centro de cada município e grava `data/estimativa-rs.json`. É um modelo, não uma
   medição: o acumulado estimado só aparece onde não há medição em dia, e a previsão (+6 h, +24 h) vem sempre dele; ambos rotulados ("~", "estimado", cor mais transparente). A coleta é de
@@ -97,7 +104,7 @@ node scripts/serve.mjs              # http://localhost:8080
 ## Cobertura e limitações
 
 - Com as duas fontes ativas: pluviômetros em 222 dos 497 municípios (187 pelo CEMADEN, mais 35 pela Defesa Civil) e
-  125 estações de rio. Mais da metade dos municípios não tem pluviômetro nessas redes.
+  125 estações de rio da Defesa Civil, mais ~300 da ANA (leitura sem classificação de risco). Mais da metade dos municípios não tem pluviômetro nessas redes.
 - O endpoint de chuva do CEMADEN não é documentado oficialmente e pode mudar. O oficial (PED) usa token que expira em
   poucas horas e login com captcha, o que impede o uso em coleta agendada.
 - A API da Defesa Civil não declara licença de uso; a fonte é citada no site. A atribuição das estações aos
@@ -107,7 +114,7 @@ node scripts/serve.mjs              # http://localhost:8080
 ## Fontes
 
 DADOS DA REDE OBSERVACIONAL DO CEMADEN/MCTIC (citação exigida pelas regras de utilização da PED), Rede
-Hidrometeorológica da Defesa Civil do RS, malha municipal do IBGE e relevo Terrarium (Mapzen/AWS).
+Hidrometeorológica da Defesa Civil do RS, Agência Nacional de Águas (HidroWebService), malha municipal do IBGE e relevo Terrarium (Mapzen/AWS).
 
 ## Autor
 
@@ -116,4 +123,4 @@ Lucas de Mélo Berra, desenvolvedor Full Stack. [Portfólio](https://lukinas1417
 ## Licença
 
 O código é distribuído sob a licença [MIT](LICENSE). Os **dados** não são cobertos por ela: pertencem
-ao CEMADEN, à Defesa Civil do RS e ao IBGE, e seguem os termos de cada órgão.
+ao CEMADEN, à Defesa Civil do RS, à ANA e ao IBGE, e seguem os termos de cada órgão.

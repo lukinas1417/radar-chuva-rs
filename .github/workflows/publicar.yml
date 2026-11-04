@@ -35,6 +35,14 @@ jobs:
       - name: Buscar nível dos rios (Defesa Civil RS)
         run: node scripts/fetch-rios.mjs
         continue-on-error: true
+      # Rios da ANA (HidroWebService): complementam a Defesa Civil com a leitura da régua, sem classificação de risco.
+      # Opcional como os demais: sem as credenciais ou com a ANA fora do ar, o site usa o último dado publicado.
+      - name: Buscar nível dos rios (ANA)
+        env:
+          ANA_IDENTIFICADOR: ${{ secrets.ANA_IDENTIFICADOR }}
+          ANA_SENHA: ${{ secrets.ANA_SENHA }}
+        run: node scripts/fetch-ana.mjs
+        continue-on-error: true
       # Estimativa por modelo (Open-Meteo): API gratuita com limite de chamadas, então só é refeita a cada 3 h;
       # nas demais execuções o arquivo já publicado é reaproveitado pelo próprio script.
       - name: Buscar estimativa de chuva (Open-Meteo)
@@ -51,7 +59,7 @@ jobs:
           BASE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data
         run: |
           mkdir -p data
-          for arq in chuva-rs.json rios-rs.json estimativa-rs.json noticias-rs.json; do
+          for arq in chuva-rs.json rios-rs.json rios-ana.json estimativa-rs.json noticias-rs.json; do
             if [ ! -f "data/$arq" ]; then
               echo "coleta de $arq falhou; tentando reaproveitar o publicado"
               curl -fsS --retry 3 "$BASE/$arq" -o "data/$arq" || rm -f "data/$arq"

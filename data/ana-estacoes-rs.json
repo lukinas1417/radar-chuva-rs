@@ -1,0 +1,3246 @@
+{
+ "geradoEm": "2026-11-04T20:29:02.653Z",
+ "fonte": "ANA HidroWebService",
+ "estacoes": [
+  {
+   "codigo": "70120000",
+   "nome": "UHE Barra Grande Faxinal Preto",
+   "rio": "Rio Pelotas",
+   "bacia": "Rio Uruguai",
+   "operadora": "BAESA",
+   "lat": -28.4456,
+   "lon": -49.8975
+  },
+  {
+   "codigo": "70150000",
+   "nome": "UHE Barra Grande Passo do Honorato",
+   "rio": "Rio Pelotas",
+   "bacia": "Rio Uruguai",
+   "operadora": "BAESA",
+   "lat": -28.3944,
+   "lon": -50.5756
+  },
+  {
+   "codigo": "70710000",
+   "nome": "UHE Barra Grande Santana",
+   "rio": "Rio Santana",
+   "bacia": "Rio Uruguai",
+   "operadora": "BAESA",
+   "lat": -28.2628,
+   "lon": -50.7608
+  },
+  {
+   "codigo": "70719700",
+   "nome": "CGH Despraiado Barramento",
+   "rio": "Rio Socorro",
+   "bacia": "Rio Uruguai",
+   "operadora": "PILLARES",
+   "lat": -28.3208,
+   "lon": -50.8653
+  },
+  {
+   "codigo": "70719750",
+   "nome": "CGH Despraiado Jusante",
+   "rio": "Rio Socorro",
+   "bacia": "Rio Uruguai",
+   "operadora": "PILLARES",
+   "lat": -28.31,
+   "lon": -50.8592
+  },
+  {
+   "codigo": "70719760",
+   "nome": "CGH Três Marias Barramento",
+   "rio": "Rio Socorro",
+   "bacia": "Rio Uruguai",
+   "operadora": "BORTOLON",
+   "lat": -28.2994,
+   "lon": -50.8553
+  },
+  {
+   "codigo": "70719860",
+   "nome": "CGH Três Marias Jusante",
+   "rio": "Rio Socorro",
+   "bacia": "Rio Uruguai",
+   "operadora": "BORTOLON",
+   "lat": -28.2919,
+   "lon": -50.8481
+  },
+  {
+   "codigo": "70719960",
+   "nome": "CGH Passo do Buraco Barramento",
+   "rio": "Rio Socorro",
+   "bacia": "Rio Uruguai",
+   "operadora": "Z-4 GERAÇÃO",
+   "lat": -28.2858,
+   "lon": -50.84
+  },
+  {
+   "codigo": "70719990",
+   "nome": "CGH Passo do Buraco Jusante",
+   "rio": "Rio Socorro",
+   "bacia": "Rio Uruguai",
+   "operadora": "Z-4 GERAÇÃO",
+   "lat": -28.2872,
+   "lon": -50.8336
+  },
+  {
+   "codigo": "70720000",
+   "nome": "UHE Barra Grande Socorro",
+   "rio": "Rio Socorro",
+   "bacia": "Rio Uruguai",
+   "operadora": "BAESA",
+   "lat": -28.2869,
+   "lon": -50.8333
+  },
+  {
+   "codigo": "70740000",
+   "nome": "CGH Bruna Jusante",
+   "rio": "Rio do Frade",
+   "bacia": "Rio Uruguai",
+   "operadora": "FRADE GERAÇÃO",
+   "lat": -28.02,
+   "lon": -51.0203
+  },
+  {
+   "codigo": "70840080",
+   "nome": "UHE Barra Grande Barramento",
+   "rio": "Rio Pelotas",
+   "bacia": "Rio Uruguai",
+   "operadora": "BAESA",
+   "lat": -27.78,
+   "lon": -51.1917
+  },
+  {
+   "codigo": "70841500",
+   "nome": "PCH Moinho Montante",
+   "rio": "Rio Bernardo José",
+   "bacia": "Rio Uruguai",
+   "operadora": "MOINHO",
+   "lat": -28.0819,
+   "lon": -51.2583
+  },
+  {
+   "codigo": "70842000",
+   "nome": "PCH Esmeralda Montante 2",
+   "rio": "Rio Bernardo José",
+   "bacia": "Rio Uruguai",
+   "operadora": "ESMERALDA",
+   "lat": -27.9631,
+   "lon": -51.3375
+  },
+  {
+   "codigo": "70843000",
+   "nome": "PCH São Bernardo Montante",
+   "rio": "Rio Bernardo José",
+   "bacia": "Rio Uruguai",
+   "operadora": "CJ ENERGETICA",
+   "lat": -27.8569,
+   "lon": -51.3611
+  },
+  {
+   "codigo": "70843500",
+   "nome": "PCH Esmeralda Arroio São Joaquim",
+   "rio": "Arroio São Joaquim",
+   "bacia": "Rio Uruguai",
+   "operadora": "ESMERALDA",
+   "lat": -27.8572,
+   "lon": -51.3814
+  },
+  {
+   "codigo": "70844200",
+   "nome": "PCH Esmeralda Montante 1",
+   "rio": "Rio Bernardo José",
+   "bacia": "Rio Uruguai",
+   "operadora": "ESMERALDA",
+   "lat": -27.8197,
+   "lon": -51.3753
+  },
+  {
+   "codigo": "70844300",
+   "nome": "PCH Esmeralda Barramento",
+   "rio": "Rio Bernardo José",
+   "bacia": "Rio Uruguai",
+   "operadora": "ESMERALDA",
+   "lat": -27.7886,
+   "lon": -51.3469
+  },
+  {
+   "codigo": "70844500",
+   "nome": "PCH Moinho Barramento",
+   "rio": "Rio Bernardo José",
+   "bacia": "Rio Uruguai",
+   "operadora": "MOINHO",
+   "lat": -27.7722,
+   "lon": -51.3333
+  },
+  {
+   "codigo": "70845000",
+   "nome": "PCH São Bernardo Barramento",
+   "rio": "Rio Bernardo José",
+   "bacia": "Rio Uruguai",
+   "operadora": "CJ ENERGETICA",
+   "lat": -27.7381,
+   "lon": -51.3133
+  },
+  {
+   "codigo": "72080000",
+   "nome": "PCH Ouro Montante",
+   "rio": "Rio Marmeleiro",
+   "bacia": "Rio Uruguai",
+   "operadora": "OURO",
+   "lat": -27.6433,
+   "lon": -51.4889
+  },
+  {
+   "codigo": "72090000",
+   "nome": "PCH Ouro Barramento",
+   "rio": "Rio Marmeleiro",
+   "bacia": "Rio Uruguai",
+   "operadora": "OURO",
+   "lat": -27.6367,
+   "lon": -51.4897
+  },
+  {
+   "codigo": "72428000",
+   "nome": "UHE Machadinho Rio Forquilha",
+   "rio": "Rio Forquilha Ou Inhanduva",
+   "bacia": "Rio Uruguai",
+   "operadora": "CONS.MACHADINHO",
+   "lat": -27.8786,
+   "lon": -51.7542
+  },
+  {
+   "codigo": "72450500",
+   "nome": "PCH Forquilha IV Montante",
+   "rio": "Rio Forquilha Ou Inhanduva",
+   "bacia": "Rio Uruguai",
+   "operadora": "CENTRALGERADORA",
+   "lat": -27.7125,
+   "lon": -51.7519
+  },
+  {
+   "codigo": "72451000",
+   "nome": "PCH Forquilha IV Barramento",
+   "rio": "Rio Forquilha Ou Inhanduva",
+   "bacia": "Rio Uruguai",
+   "operadora": "CENTRALGERADORA",
+   "lat": -27.6147,
+   "lon": -51.7508
+  },
+  {
+   "codigo": "72480000",
+   "nome": "PCH Forquilha Montante 2",
+   "rio": "Rio Forquilha Ou Inhanduva",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.6786,
+   "lon": -51.7369
+  },
+  {
+   "codigo": "72480001",
+   "nome": "PCH Forquilha Barramento",
+   "rio": "Rio Forquilha Ou Inhanduva",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.6589,
+   "lon": -51.7483
+  },
+  {
+   "codigo": "72480100",
+   "nome": "PCH Forquilha Jusante",
+   "rio": "Rio Forquilha Ou Inhanduva",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.6375,
+   "lon": -51.7486
+  },
+  {
+   "codigo": "72519000",
+   "nome": "CGH Ligeiro Barramento",
+   "rio": "Rio Apue Ou Ligeiro",
+   "bacia": "Rio Uruguai",
+   "operadora": "RIO LIGEIRO",
+   "lat": -28.1828,
+   "lon": -51.8403
+  },
+  {
+   "codigo": "72519100",
+   "nome": "CGH Ligeiro Jusante",
+   "rio": "Rio Apue Ou Ligeiro",
+   "bacia": "Rio Uruguai",
+   "operadora": "RIO LIGEIRO",
+   "lat": -28.1739,
+   "lon": -51.8444
+  },
+  {
+   "codigo": "72870900",
+   "nome": "UHE Itá Rio Apuaê",
+   "rio": "Rio Apuaê-mirim",
+   "bacia": "Rio Uruguai",
+   "operadora": "CONS.ITÁ",
+   "lat": -27.5619,
+   "lon": -51.8578
+  },
+  {
+   "codigo": "73200500",
+   "nome": "UHE Foz do Chapecó Rio Paloma",
+   "rio": "Rio Palomas",
+   "bacia": "Rio Uruguai",
+   "operadora": "FOZ DO CHAPECÓ",
+   "lat": -27.3139,
+   "lon": -52.3964
+  },
+  {
+   "codigo": "73220000",
+   "nome": "UHE Foz do Chapecó Rio Douradinho",
+   "rio": "Rio Douradinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "FOZ DO CHAPECÓ",
+   "lat": -27.3,
+   "lon": -52.5303
+  },
+  {
+   "codigo": "73389000",
+   "nome": "UHE Passo Fundo Rio Inhupaçá",
+   "rio": "Rio Inhupaca",
+   "bacia": "Rio Uruguai",
+   "operadora": "ENGIE",
+   "lat": -27.9547,
+   "lon": -52.5383
+  },
+  {
+   "codigo": "73390000",
+   "nome": "UHE Passo Fundo Montante",
+   "rio": "Rio Passo Fundo",
+   "bacia": "Rio Uruguai",
+   "operadora": "ENGIE",
+   "lat": -27.9453,
+   "lon": -52.5811
+  },
+  {
+   "codigo": "73420080",
+   "nome": "UHE Passo Fundo Barramento",
+   "rio": "Rio Passo Fundo",
+   "bacia": "Rio Uruguai",
+   "operadora": "ENGIE",
+   "lat": -27.5539,
+   "lon": -52.7425
+  },
+  {
+   "codigo": "73436000",
+   "nome": "PCH Albano Machado Barramento",
+   "rio": "Rio Lajeado do Lobo",
+   "bacia": "Rio Uruguai",
+   "operadora": "CERV-PET",
+   "lat": -27.5022,
+   "lon": -52.8106
+  },
+  {
+   "codigo": "73437000",
+   "nome": "PCH Albano Machado Jusante",
+   "rio": "Rio Lajeado do Lobo",
+   "bacia": "Rio Uruguai",
+   "operadora": "CERV-PET",
+   "lat": -27.4964,
+   "lon": -52.8031
+  },
+  {
+   "codigo": "73440000",
+   "nome": "UHE Monjolinho Nonoai",
+   "rio": "Rio Passo Fundo",
+   "bacia": "Rio Uruguai",
+   "operadora": "STATKRAFT",
+   "lat": -27.4822,
+   "lon": -52.7797
+  },
+  {
+   "codigo": "73445000",
+   "nome": "UHE Monjolinho Cruzaltense",
+   "rio": "Rio Erechim",
+   "bacia": "Rio Uruguai",
+   "operadora": "STATKRAFT",
+   "lat": -27.6694,
+   "lon": -52.5842
+  },
+  {
+   "codigo": "73448000",
+   "nome": "UHE Monjolinho Rio Erechim",
+   "rio": "Rio Erechim",
+   "bacia": "Rio Uruguai",
+   "operadora": "STATKRAFT",
+   "lat": -27.5703,
+   "lon": -52.6781
+  },
+  {
+   "codigo": "73490000",
+   "nome": "UHE Monjolinho Barramento",
+   "rio": "Rio Passo Fundo",
+   "bacia": "Rio Uruguai",
+   "operadora": "STATKRAFT",
+   "lat": -27.3456,
+   "lon": -52.7336
+  },
+  {
+   "codigo": "73520000",
+   "nome": "PCH Rio dos Índios Barramento",
+   "rio": "Rio dos Índios",
+   "bacia": "Rio Uruguai",
+   "operadora": "CASA DE PEDRA",
+   "lat": -27.2814,
+   "lon": -52.7953
+  },
+  {
+   "codigo": "73528000",
+   "nome": "PCH Rio dos Índios Jusante",
+   "rio": "Rio dos Índios",
+   "bacia": "Rio Uruguai",
+   "operadora": "CASA DE PEDRA",
+   "lat": -27.2456,
+   "lon": -52.7944
+  },
+  {
+   "codigo": "74040080",
+   "nome": "UHE Foz do Chapecó Barramento",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "FOZ DO CHAPECÓ",
+   "lat": -27.14,
+   "lon": -53.0433
+  },
+  {
+   "codigo": "74100000",
+   "nome": "Iraí",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -27.1756,
+   "lon": -53.2297
+  },
+  {
+   "codigo": "74120700",
+   "nome": "CGH Mata Cobra Montante 2",
+   "rio": "Rio da Várzea",
+   "bacia": "Rio Uruguai",
+   "operadora": "LIBRAGA",
+   "lat": -28.2472,
+   "lon": -52.8011
+  },
+  {
+   "codigo": "74120750",
+   "nome": "CGH Mata Cobra Montante 1",
+   "rio": "Rio da Várzea",
+   "bacia": "Rio Uruguai",
+   "operadora": "LIBRAGA",
+   "lat": -28.2653,
+   "lon": -52.8969
+  },
+  {
+   "codigo": "74120900",
+   "nome": "CGH Mata Cobra Barramento",
+   "rio": "Rio da Várzea",
+   "bacia": "Rio Uruguai",
+   "operadora": "LIBRAGA",
+   "lat": -28.1031,
+   "lon": -53.0147
+  },
+  {
+   "codigo": "74130000",
+   "nome": "CGH Mata Cobra Jusante",
+   "rio": "Rio da Várzea",
+   "bacia": "Rio Uruguai",
+   "operadora": "LIBRAGA",
+   "lat": -28.0986,
+   "lon": -53.0156
+  },
+  {
+   "codigo": "74339000",
+   "nome": "PCH Guarita João Amado Montante",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.8344,
+   "lon": -53.5144
+  },
+  {
+   "codigo": "74340000",
+   "nome": "PCH Guarita Barramento João Amado",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.7653,
+   "lon": -53.5575
+  },
+  {
+   "codigo": "74345000",
+   "nome": "PCH Guarita Montante",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.6283,
+   "lon": -53.5725
+  },
+  {
+   "codigo": "74350000",
+   "nome": "PCH Guarita Barramento",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.6139,
+   "lon": -53.5714
+  },
+  {
+   "codigo": "74350100",
+   "nome": "PCH Guarita Jusante",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.6067,
+   "lon": -53.5742
+  },
+  {
+   "codigo": "74350900",
+   "nome": "PCH Ferradura Barramento",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "BT GERADORA",
+   "lat": -27.5606,
+   "lon": -53.5789
+  },
+  {
+   "codigo": "74351000",
+   "nome": "PCH Ferradura Jusante",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "BT GERADORA",
+   "lat": -27.5589,
+   "lon": -53.5764
+  },
+  {
+   "codigo": "74352000",
+   "nome": "CGH das Cabras Barramento",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "CABRAS",
+   "lat": -27.5367,
+   "lon": -53.5697
+  },
+  {
+   "codigo": "74352200",
+   "nome": "CGH das Cabras Jusante",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "CABRAS",
+   "lat": -27.5344,
+   "lon": -53.565
+  },
+  {
+   "codigo": "74355000",
+   "nome": "PCH Tambaú Barramento",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "TAMBAÚ",
+   "lat": -27.44,
+   "lon": -53.5614
+  },
+  {
+   "codigo": "74356000",
+   "nome": "PCH Tambaú Jusante",
+   "rio": "Rio Guarita",
+   "bacia": "Rio Uruguai",
+   "operadora": "TAMBAÚ",
+   "lat": -27.4303,
+   "lon": -53.5611
+  },
+  {
+   "codigo": "74359000",
+   "nome": "CGH Carlos Bevilácqua Barramento",
+   "rio": "Arroio Fortaleza",
+   "bacia": "Rio Uruguai",
+   "operadora": "CRELUZ G",
+   "lat": -27.6028,
+   "lon": -53.3917
+  },
+  {
+   "codigo": "74359600",
+   "nome": "CGH Frederico João Cerutti Jusante",
+   "rio": "Arroio Fortaleza",
+   "bacia": "Rio Uruguai",
+   "operadora": "FREDERICO",
+   "lat": -27.5086,
+   "lon": -53.4314
+  },
+  {
+   "codigo": "74360010",
+   "nome": "Ponte Comandaí Guarani das Missões",
+   "rio": "Rio Comandaí",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -28.1397,
+   "lon": -54.5603
+  },
+  {
+   "codigo": "74360080",
+   "nome": "CGH Rio Fortaleza Barramento",
+   "rio": "Arroio Fortaleza",
+   "bacia": "Rio Uruguai",
+   "operadora": "CRELUZ G",
+   "lat": -27.4736,
+   "lon": -53.4578
+  },
+  {
+   "codigo": "74361000",
+   "nome": "CGH Granja Velha Montante",
+   "rio": "Arroio Fortaleza",
+   "bacia": "Rio Uruguai",
+   "operadora": "CRELUZ G",
+   "lat": -27.4233,
+   "lon": -53.5406
+  },
+  {
+   "codigo": "74460000",
+   "nome": "Ponte do Rio Turvo",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -27.8247,
+   "lon": -53.7303
+  },
+  {
+   "codigo": "74462000",
+   "nome": "PCH Carlos Gonzatto Ponte Turvo",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "CN ENERGIA",
+   "lat": -27.8203,
+   "lon": -53.7328
+  },
+  {
+   "codigo": "74463000",
+   "nome": "PCH Carlos Gonzatto Vila Turvo",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "CN ENERGIA",
+   "lat": -27.7089,
+   "lon": -53.775
+  },
+  {
+   "codigo": "74464500",
+   "nome": "PCH Carlos Gonzatto Barramento",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "CN ENERGIA",
+   "lat": -27.6247,
+   "lon": -53.8028
+  },
+  {
+   "codigo": "74465000",
+   "nome": "PCH Carlos Gonzatto Jusante",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "CN ENERGIA",
+   "lat": -27.6231,
+   "lon": -53.8008
+  },
+  {
+   "codigo": "74466000",
+   "nome": "PCH Marco Baldo Barramento",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "SPE TURVO",
+   "lat": -27.575,
+   "lon": -53.7897
+  },
+  {
+   "codigo": "74467000",
+   "nome": "PCH Marco Baldo Jusante",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "SPE TURVO",
+   "lat": -27.5647,
+   "lon": -53.7869
+  },
+  {
+   "codigo": "74468000",
+   "nome": "PCH Toca do Tigre Barramento",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "CJ HIDRO",
+   "lat": -27.5453,
+   "lon": -53.8069
+  },
+  {
+   "codigo": "74468500",
+   "nome": "PCH Toca do Tigre Jusante",
+   "rio": "Rio Turvo",
+   "bacia": "Rio Uruguai",
+   "operadora": "CJ HIDRO",
+   "lat": -27.5353,
+   "lon": -53.815
+  },
+  {
+   "codigo": "74500000",
+   "nome": "Alto Uruguai",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -27.3019,
+   "lon": -54.1397
+  },
+  {
+   "codigo": "74505200",
+   "nome": "CGH Caa Yari Barramento",
+   "rio": "Lajeado Grande",
+   "bacia": "Rio Uruguai",
+   "operadora": "CRELUZ G",
+   "lat": -27.4286,
+   "lon": -54.1217
+  },
+  {
+   "codigo": "74505400",
+   "nome": "CGH Crissiumal Jusante",
+   "rio": "Lajeado Grande",
+   "bacia": "Rio Uruguai",
+   "operadora": "M.H.N",
+   "lat": -27.405,
+   "lon": -54.1681
+  },
+  {
+   "codigo": "74549990",
+   "nome": "CGH Buricá Barramento",
+   "rio": "Rio Buricá",
+   "bacia": "Rio Uruguai",
+   "operadora": "CERTHIL",
+   "lat": -27.8969,
+   "lon": -54.1072
+  },
+  {
+   "codigo": "74550000",
+   "nome": "CGH Buricá Jusante",
+   "rio": "Rio Buricá",
+   "bacia": "Rio Uruguai",
+   "operadora": "CERTHIL",
+   "lat": -27.8914,
+   "lon": -54.1028
+  },
+  {
+   "codigo": "74600900",
+   "nome": "Cascata Buricá",
+   "rio": "Rio Buricá",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -27.5222,
+   "lon": -54.2333
+  },
+  {
+   "codigo": "74670000",
+   "nome": "CGH Bela União Barramento",
+   "rio": "Rio Santa Rosa",
+   "bacia": "Rio Uruguai",
+   "operadora": "COOPERLUZ",
+   "lat": -27.7811,
+   "lon": -54.3736
+  },
+  {
+   "codigo": "74675000",
+   "nome": "CGH Bela União Jusante",
+   "rio": "Rio Santa Rosa",
+   "bacia": "Rio Uruguai",
+   "operadora": "COOPERLUZ",
+   "lat": -27.78,
+   "lon": -54.3736
+  },
+  {
+   "codigo": "74690001",
+   "nome": "CGH Santa Rosa Barramento",
+   "rio": "Rio Santa Rosa",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.7714,
+   "lon": -54.3889
+  },
+  {
+   "codigo": "74690100",
+   "nome": "CGH Santa Rosa Jusante 3",
+   "rio": "Rio Santa Rosa",
+   "bacia": "Rio Uruguai",
+   "operadora": "CEEE",
+   "lat": -27.7703,
+   "lon": -54.3897
+  },
+  {
+   "codigo": "74694000",
+   "nome": "CGH Santo Antônio Barramento",
+   "rio": "Rio Santa Rosa",
+   "bacia": "Rio Uruguai",
+   "operadora": "COOPERLUZ",
+   "lat": -27.7303,
+   "lon": -54.4083
+  },
+  {
+   "codigo": "74695000",
+   "nome": "CGH Santo Antônio Jusante",
+   "rio": "Rio Santa Rosa",
+   "bacia": "Rio Uruguai",
+   "operadora": "COOPERLUZ",
+   "lat": -27.7294,
+   "lon": -54.4094
+  },
+  {
+   "codigo": "74720000",
+   "nome": "Porto Mauá",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -27.5781,
+   "lon": -54.6831
+  },
+  {
+   "codigo": "74800000",
+   "nome": "Porto Lucena",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -27.8525,
+   "lon": -55.0256
+  },
+  {
+   "codigo": "75050000",
+   "nome": "PCH José Barasuol Montante",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "JB GERAÇÃO",
+   "lat": -28.2739,
+   "lon": -53.6486
+  },
+  {
+   "codigo": "75060000",
+   "nome": "CGH Caxambú Barramento",
+   "rio": "Rio Caxambu",
+   "bacia": "Rio Uruguai",
+   "operadora": "FOCKINK",
+   "lat": -28.3969,
+   "lon": -53.4583
+  },
+  {
+   "codigo": "75120000",
+   "nome": "PCH Passo de Ajuricaba Barramento",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "DEMEI GERAÇÃO",
+   "lat": -28.2825,
+   "lon": -53.8103
+  },
+  {
+   "codigo": "75155010",
+   "nome": "PCH Passo do Ajuricaba Montante",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "DEMEI GERAÇÃO",
+   "lat": -28.2869,
+   "lon": -53.7803
+  },
+  {
+   "codigo": "75175100",
+   "nome": "PCH Sede II Montante",
+   "rio": "Rio Potiribu",
+   "bacia": "Rio Uruguai",
+   "operadora": "IJUÍ",
+   "lat": -28.4008,
+   "lon": -53.8283
+  },
+  {
+   "codigo": "75178000",
+   "nome": "PCH José Barasuol Barramento",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "JB GERAÇÃO",
+   "lat": -28.2925,
+   "lon": -53.8778
+  },
+  {
+   "codigo": "75180000",
+   "nome": "PCH Rs-155 Barramento",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "RS155 GERAÇÃO",
+   "lat": -28.3128,
+   "lon": -53.8964
+  },
+  {
+   "codigo": "75181000",
+   "nome": "PCH Rs-155 Jusante",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "RS155 GERAÇÃO",
+   "lat": -28.3128,
+   "lon": -53.9131
+  },
+  {
+   "codigo": "75185200",
+   "nome": "PCH Sede II Barramento",
+   "rio": "Rio Potiribu",
+   "bacia": "Rio Uruguai",
+   "operadora": "IJUÍ",
+   "lat": -28.3711,
+   "lon": -53.8792
+  },
+  {
+   "codigo": "75186660",
+   "nome": "PCH Linha Onze Oeste Barramento",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "LINHA_ONZE",
+   "lat": -28.3511,
+   "lon": -54.0047
+  },
+  {
+   "codigo": "75186900",
+   "nome": "PCH Linha Onze Oeste Jusante",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "LINHA_ONZE",
+   "lat": -28.3558,
+   "lon": -54.0464
+  },
+  {
+   "codigo": "75186960",
+   "nome": "CGH Esquina Gaúcha Jusante",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "ESQUINA GAÚCHA",
+   "lat": -28.3397,
+   "lon": -54.1994
+  },
+  {
+   "codigo": "75187000",
+   "nome": "PCH José Barasuol Rio Potiribu",
+   "rio": "Rio Potiribu",
+   "bacia": "Rio Uruguai",
+   "operadora": "JB GERAÇÃO",
+   "lat": -28.3603,
+   "lon": -53.9008
+  },
+  {
+   "codigo": "75187950",
+   "nome": "CGH Formigueiro Barramento",
+   "rio": "Rio Conceição",
+   "bacia": "Rio Uruguai",
+   "operadora": "FORMIGUEIRO",
+   "lat": -28.5369,
+   "lon": -53.8603
+  },
+  {
+   "codigo": "75188050",
+   "nome": "CGH Formigueiro Jusante",
+   "rio": "Rio Conceição",
+   "bacia": "Rio Uruguai",
+   "operadora": "FORMIGUEIRO",
+   "lat": -28.5383,
+   "lon": -53.8633
+  },
+  {
+   "codigo": "75199000",
+   "nome": "CGH Augusto Pestana Barramento",
+   "rio": "Rio Conceição",
+   "bacia": "Rio Uruguai",
+   "operadora": "ARROIO BONITO",
+   "lat": -28.4864,
+   "lon": -53.9503
+  },
+  {
+   "codigo": "75199050",
+   "nome": "CGH Augusto Pestana Jusante",
+   "rio": "Rio Conceição",
+   "bacia": "Rio Uruguai",
+   "operadora": "ARROIO BONITO",
+   "lat": -28.4864,
+   "lon": -53.9514
+  },
+  {
+   "codigo": "75230000",
+   "nome": "Santo Angelo",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -28.3553,
+   "lon": -54.2675
+  },
+  {
+   "codigo": "75269900",
+   "nome": "CGH Igrejinha Barramento",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "CADEADO",
+   "lat": -28.7953,
+   "lon": -53.9714
+  },
+  {
+   "codigo": "75270000",
+   "nome": "PCH Ijuizinho Ponte Queimada",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -28.7778,
+   "lon": -53.9817
+  },
+  {
+   "codigo": "75280100",
+   "nome": "CGH Igrejinha Jusante",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "CADEADO",
+   "lat": -28.7797,
+   "lon": -53.9628
+  },
+  {
+   "codigo": "75287000",
+   "nome": "PCH Ijuizinho Montante",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -28.5433,
+   "lon": -54.1553
+  },
+  {
+   "codigo": "75288000",
+   "nome": "PCH Ijuizinho Barramento",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -28.4417,
+   "lon": -54.2886
+  },
+  {
+   "codigo": "75290000",
+   "nome": "PCH Ijuizinho Cermissões Montante",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "CERMISSÕES",
+   "lat": -28.4122,
+   "lon": -54.3025
+  },
+  {
+   "codigo": "75291000",
+   "nome": "PCH Ijuizinho Cermissões Barramento",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "CERMISSÕES",
+   "lat": -28.4006,
+   "lon": -54.3125
+  },
+  {
+   "codigo": "75305000",
+   "nome": "UHE São José Montante",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "IJUI ENERGIA",
+   "lat": -28.1997,
+   "lon": -54.6431
+  },
+  {
+   "codigo": "75307000",
+   "nome": "UHE São José Arroio Uruqua",
+   "rio": "Arroio Uruqua",
+   "bacia": "Rio Uruguai",
+   "operadora": "IJUI ENERGIA",
+   "lat": -28.2925,
+   "lon": -54.6967
+  },
+  {
+   "codigo": "75318000",
+   "nome": "UHE São José Riacho Fundo",
+   "rio": "Riacho Fundo",
+   "bacia": "Rio Uruguai",
+   "operadora": "IJUI ENERGIA",
+   "lat": -28.2275,
+   "lon": -54.7547
+  },
+  {
+   "codigo": "75325000",
+   "nome": "UHE São José Barramento",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "IJUI ENERGIA",
+   "lat": -28.1778,
+   "lon": -54.8144
+  },
+  {
+   "codigo": "75326000",
+   "nome": "UHE São José Jusante",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "IJUI ENERGIA",
+   "lat": -28.1744,
+   "lon": -54.8192
+  },
+  {
+   "codigo": "75331000",
+   "nome": "UHE Passo São João James",
+   "rio": "Arroio Rolador",
+   "bacia": "Rio Uruguai",
+   "operadora": "AXIA SUL",
+   "lat": -28.2069,
+   "lon": -54.8697
+  },
+  {
+   "codigo": "75342000",
+   "nome": "UHE Passo São João Barramento",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "AXIA SUL",
+   "lat": -28.1325,
+   "lon": -55.0517
+  },
+  {
+   "codigo": "75343000",
+   "nome": "UHE Passo São João Sítio Valdir Coimbra",
+   "rio": "Lajeado das Pedras",
+   "bacia": "Rio Uruguai",
+   "operadora": "AXIA SUL",
+   "lat": -28.1589,
+   "lon": -55.0625
+  },
+  {
+   "codigo": "75344000",
+   "nome": "UHE Passo São João Jusante",
+   "rio": "Rio Ijuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "AXIA SUL",
+   "lat": -28.1239,
+   "lon": -55.0533
+  },
+  {
+   "codigo": "75400010",
+   "nome": "Passo do Dias",
+   "rio": "Rio Piratini",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -28.6567,
+   "lon": -54.4594
+  },
+  {
+   "codigo": "75500001",
+   "nome": "Passo do Sarmento",
+   "rio": "Rio Piratini",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -28.2119,
+   "lon": -55.3197
+  },
+  {
+   "codigo": "75550000",
+   "nome": "Garruchos",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -28.1822,
+   "lon": -55.6433
+  },
+  {
+   "codigo": "75650010",
+   "nome": "Prop. Rural Itacurubi (cprm)",
+   "rio": "Rio Icamaquã",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -28.7425,
+   "lon": -55.1625
+  },
+  {
+   "codigo": "75650900",
+   "nome": "Passo do Novo Sto. Ant. Missões",
+   "rio": "Rio Icamaquã",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -28.6825,
+   "lon": -55.5794
+  },
+  {
+   "codigo": "75780000",
+   "nome": "Passo São Borja",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -28.6244,
+   "lon": -56.0369
+  },
+  {
+   "codigo": "75831000",
+   "nome": "Passo Butuí BR 472 S. Borja",
+   "rio": "Rio Butuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -28.8531,
+   "lon": -56.0861
+  },
+  {
+   "codigo": "75881800",
+   "nome": "PCH Rincão Barramento",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "RINCÃO",
+   "lat": -28.4208,
+   "lon": -54.2978
+  },
+  {
+   "codigo": "75881900",
+   "nome": "PCH Rincão Jusante",
+   "rio": "Rio Ijuizinho",
+   "bacia": "Rio Uruguai",
+   "operadora": "RINCÃO",
+   "lat": -28.4228,
+   "lon": -54.3006
+  },
+  {
+   "codigo": "75900000",
+   "nome": "Itaqui",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.1175,
+   "lon": -56.5544
+  },
+  {
+   "codigo": "76069500",
+   "nome": "PCH Quebra Dentes Montante 1",
+   "rio": "Rio Toropi",
+   "bacia": "Rio Uruguai",
+   "operadora": "QUEVEDOS",
+   "lat": -29.2661,
+   "lon": -53.9483
+  },
+  {
+   "codigo": "76069900",
+   "nome": "PCH Quebra Dentes Barramento",
+   "rio": "Rio Toropi",
+   "bacia": "Rio Uruguai",
+   "operadora": "QUEVEDOS",
+   "lat": -29.3642,
+   "lon": -54.0117
+  },
+  {
+   "codigo": "76070500",
+   "nome": "PCH Quebra Dentes Jusante",
+   "rio": "Rio Toropi",
+   "bacia": "Rio Uruguai",
+   "operadora": "QUEVEDOS",
+   "lat": -29.3897,
+   "lon": -54.0189
+  },
+  {
+   "codigo": "76084000",
+   "nome": "PCH Cachoeira Cinco Veados Barramento",
+   "rio": "Rio Toropi",
+   "bacia": "Rio Uruguai",
+   "operadora": "RINCÃO ALBINOS",
+   "lat": -29.4192,
+   "lon": -54.05
+  },
+  {
+   "codigo": "76084040",
+   "nome": "PCH Cachoeira Cinco Veados Jusante",
+   "rio": "Rio Toropi",
+   "bacia": "Rio Uruguai",
+   "operadora": "RINCÃO ALBINOS",
+   "lat": -29.4208,
+   "lon": -54.0528
+  },
+  {
+   "codigo": "76086000",
+   "nome": "PCH Rincão São Miguel Barramento",
+   "rio": "Rio Toropi",
+   "bacia": "Rio Uruguai",
+   "operadora": "RINCÃOSÃOMIGUEL",
+   "lat": -29.4492,
+   "lon": -54.0922
+  },
+  {
+   "codigo": "76086500",
+   "nome": "PCH Rincão São Miguel Jusante",
+   "rio": "Rio Toropi",
+   "bacia": "Rio Uruguai",
+   "operadora": "RINCÃOSÃOMIGUEL",
+   "lat": -29.4558,
+   "lon": -54.0933
+  },
+  {
+   "codigo": "76111010",
+   "nome": "Passo Santa Vitória",
+   "rio": "Rio Ibicuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -29.8372,
+   "lon": -54.7981
+  },
+  {
+   "codigo": "76112000",
+   "nome": "PCH Salto do Guassupi Arroio Socavão",
+   "rio": "Arroio Socavão",
+   "bacia": "Rio Uruguai",
+   "operadora": "GUASSUPI",
+   "lat": -29.4578,
+   "lon": -54.1278
+  },
+  {
+   "codigo": "76115400",
+   "nome": "PCH Salto do Guassupi Montante",
+   "rio": "Arroio Guassupi",
+   "bacia": "Rio Uruguai",
+   "operadora": "GUASSUPI",
+   "lat": -29.4017,
+   "lon": -53.9408
+  },
+  {
+   "codigo": "76115600",
+   "nome": "PCH Salto do Guassupi Barramento",
+   "rio": "Arroio Guassupi",
+   "bacia": "Rio Uruguai",
+   "operadora": "GUASSUPI",
+   "lat": -29.4092,
+   "lon": -53.9975
+  },
+  {
+   "codigo": "76115800",
+   "nome": "PCH Salto do Guassupi Rio Toropi Mirim",
+   "rio": "Rio Toropi-mirim",
+   "bacia": "Rio Uruguai",
+   "operadora": "GUASSUPI",
+   "lat": -29.4611,
+   "lon": -54.1942
+  },
+  {
+   "codigo": "76150050",
+   "nome": "Ponte Ibirocaí",
+   "rio": "Arroio Ibirocai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -29.4683,
+   "lon": -56.4756
+  },
+  {
+   "codigo": "76220900",
+   "nome": "Passo da Ferraria",
+   "rio": "Rio Santa Maria",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -31.1417,
+   "lon": -54.3806
+  },
+  {
+   "codigo": "76248000",
+   "nome": "Ponte Ponche Verde",
+   "rio": "Arroio Ponche Verde",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -31.1475,
+   "lon": -54.7594
+  },
+  {
+   "codigo": "76251000",
+   "nome": "Dom Pedrito",
+   "rio": "Rio Santa Maria",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -30.9703,
+   "lon": -54.6933
+  },
+  {
+   "codigo": "76290000",
+   "nome": "Passo dos Farrapos",
+   "rio": "Rio Ibicuí da Armada",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -30.5183,
+   "lon": -55.0431
+  },
+  {
+   "codigo": "76300000",
+   "nome": "Ponte Ibicui da Armada",
+   "rio": "Rio Ibicuí da Armada",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -30.2808,
+   "lon": -54.9031
+  },
+  {
+   "codigo": "76310000",
+   "nome": "Rosário do Sul",
+   "rio": "Rio Santa Maria",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -30.2428,
+   "lon": -54.9169
+  },
+  {
+   "codigo": "76430900",
+   "nome": "PCH Furnas do Segredo Barramento",
+   "rio": "Rio Jaguari",
+   "bacia": "Rio Uruguai",
+   "operadora": "JAGUARI",
+   "lat": -29.3656,
+   "lon": -54.5044
+  },
+  {
+   "codigo": "76431000",
+   "nome": "PCH Furnas do Segredo Jusante",
+   "rio": "Rio Jaguari",
+   "bacia": "Rio Uruguai",
+   "operadora": "JAGUARI",
+   "lat": -29.3803,
+   "lon": -54.5103
+  },
+  {
+   "codigo": "76560000",
+   "nome": "Manoel Viana",
+   "rio": "Rio Ibicuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.5958,
+   "lon": -55.4814
+  },
+  {
+   "codigo": "76660900",
+   "nome": "Fundação Maronna",
+   "rio": "Rio Ibirapuitã",
+   "bacia": "Rio Uruguai",
+   "operadora": "SEMA-RS",
+   "lat": -30.0681,
+   "lon": -55.6594
+  },
+  {
+   "codigo": "76700000",
+   "nome": "Passo dos Britos",
+   "rio": "Rio Ibirapuitã",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.9731,
+   "lon": -55.7478
+  },
+  {
+   "codigo": "76742000",
+   "nome": "Passo do Osório",
+   "rio": "Arroio Caverá",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.9511,
+   "lon": -55.6003
+  },
+  {
+   "codigo": "76750000",
+   "nome": "Alegrete",
+   "rio": "Rio Ibirapuitã",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.7683,
+   "lon": -55.7875
+  },
+  {
+   "codigo": "76800000",
+   "nome": "Passo Mariano Pinto",
+   "rio": "Rio Ibicuí",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.3092,
+   "lon": -56.0553
+  },
+  {
+   "codigo": "77150000",
+   "nome": "Uruguaiana",
+   "rio": "Rio Uruguai",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -29.7486,
+   "lon": -57.0886
+  },
+  {
+   "codigo": "77500000",
+   "nome": "Quaraí",
+   "rio": "Rio Quaraí",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -30.3844,
+   "lon": -56.4656
+  },
+  {
+   "codigo": "79400000",
+   "nome": "Estância do Espantoso",
+   "rio": "Rio Negro",
+   "bacia": "Rio Uruguai",
+   "operadora": "SGB-CPRM",
+   "lat": -31.5339,
+   "lon": -54.2944
+  },
+  {
+   "codigo": "84420000",
+   "nome": "Rio do Forno",
+   "rio": "Rio do Forno",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.2933,
+   "lon": -49.8231
+  },
+  {
+   "codigo": "85029000",
+   "nome": "PCH Ernestina Montante",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -28.4056,
+   "lon": -52.4408
+  },
+  {
+   "codigo": "85040000",
+   "nome": "PCH Ernestina Arroio Três Passos",
+   "rio": "Arroio Três Passos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -28.4733,
+   "lon": -52.4047
+  },
+  {
+   "codigo": "85050001",
+   "nome": "PCH Ernestina Barramento",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -28.5556,
+   "lon": -52.545
+  },
+  {
+   "codigo": "85050100",
+   "nome": "PCH Ernestina Jusante 2",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -28.5628,
+   "lon": -52.5536
+  },
+  {
+   "codigo": "85050200",
+   "nome": "PCH Tio Hugo Barramento",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "COPREL",
+   "lat": -28.5903,
+   "lon": -52.5822
+  },
+  {
+   "codigo": "85050300",
+   "nome": "PCH Tio Hugo Jusante",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "COPREL",
+   "lat": -28.5992,
+   "lon": -52.5975
+  },
+  {
+   "codigo": "85050350",
+   "nome": "PCH Santo Antônio do Jacuí Montante",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "COPREL",
+   "lat": -28.6303,
+   "lon": -52.6831
+  },
+  {
+   "codigo": "85051000",
+   "nome": "PCH Santo Antonio do Jacuí Barramento",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "COPREL",
+   "lat": -28.6567,
+   "lon": -52.7044
+  },
+  {
+   "codigo": "85074000",
+   "nome": "PCH Cotovelo do Jacuí Barramento",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "COPREL",
+   "lat": -28.6717,
+   "lon": -52.7267
+  },
+  {
+   "codigo": "85076000",
+   "nome": "PCH Cotovelo do Jacuí Jusante",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "COPREL",
+   "lat": -28.6728,
+   "lon": -52.7311
+  },
+  {
+   "codigo": "85080001",
+   "nome": "UHE Passo Real Montante 2",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "PASSO REAL",
+   "lat": -28.7197,
+   "lon": -52.8492
+  },
+  {
+   "codigo": "85101000",
+   "nome": "Pista de Pouso Arambaré",
+   "rio": "Arroio Velhaco",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.7569,
+   "lon": -51.6242
+  },
+  {
+   "codigo": "85110000",
+   "nome": "CGH Colorado Jusante",
+   "rio": "Rio Colorado",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "LIBRAGA",
+   "lat": -28.6428,
+   "lon": -52.9269
+  },
+  {
+   "codigo": "85130000",
+   "nome": "CGH Rp 1 Barramento",
+   "rio": "Arroio Butiá",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BSBIOS",
+   "lat": -28.84,
+   "lon": -52.7019
+  },
+  {
+   "codigo": "85130400",
+   "nome": "CGH Rp 1 Jusante",
+   "rio": "Arroio Butiá",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BSBIOS",
+   "lat": -28.8406,
+   "lon": -52.7067
+  },
+  {
+   "codigo": "85140000",
+   "nome": "UHE Passo Real Montante 1",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "PASSO REAL",
+   "lat": -28.7492,
+   "lon": -52.9794
+  },
+  {
+   "codigo": "85170100",
+   "nome": "CGH Mirim Barramento",
+   "rio": "Rio Jacuí-mirim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CONQUISTA",
+   "lat": -28.2622,
+   "lon": -53.1217
+  },
+  {
+   "codigo": "85170150",
+   "nome": "CGH Mirim Jusante",
+   "rio": "Rio Jacuí-mirim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CONQUISTA",
+   "lat": -28.2633,
+   "lon": -53.1208
+  },
+  {
+   "codigo": "85180000",
+   "nome": "UHE Passo Real Rio Jacuí-mirim 2",
+   "rio": "Rio Jacuí-mirim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -28.5461,
+   "lon": -53.165
+  },
+  {
+   "codigo": "85240000",
+   "nome": "UHE Passo Real Rio Ingaí 2",
+   "rio": "Rio Ingaí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -28.8361,
+   "lon": -53.3006
+  },
+  {
+   "codigo": "85260001",
+   "nome": "UHE Passo Real Barramento",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "PASSO REAL",
+   "lat": -29.0164,
+   "lon": -53.1886
+  },
+  {
+   "codigo": "85290000",
+   "nome": "UHE Jacuí Arroio Lajeado Pelado",
+   "rio": "Arroio Lajeado Pelado",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -29.0508,
+   "lon": -53.2653
+  },
+  {
+   "codigo": "85300000",
+   "nome": "UHE Jacuí Barramento",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -29.0733,
+   "lon": -53.21
+  },
+  {
+   "codigo": "85306000",
+   "nome": "PCH Ernesto Jorge Dreher Ponte Br158",
+   "rio": "Rio Ivaí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BME ENERGIA",
+   "lat": -28.935,
+   "lon": -53.6433
+  },
+  {
+   "codigo": "85309000",
+   "nome": "PCH Ernesto Jorge Dreher Ponte Rincão do Ivai",
+   "rio": "Rio Ivaí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BME ENERGIA",
+   "lat": -29.0333,
+   "lon": -53.5094
+  },
+  {
+   "codigo": "85310000",
+   "nome": "PCH Ernesto Jorge Dreher Montante 1",
+   "rio": "Rio Ivaí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BME ENERGIA",
+   "lat": -29.1194,
+   "lon": -53.4058
+  },
+  {
+   "codigo": "85311000",
+   "nome": "PCH Ernesto Jorge Dreher Barramento",
+   "rio": "Rio Ivaí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BME ENERGIA",
+   "lat": -29.1203,
+   "lon": -53.3661
+  },
+  {
+   "codigo": "85349000",
+   "nome": "PCH Engenheiro Henrique Kotzian Barramento",
+   "rio": "Rio Ivaí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BME ENERGIA",
+   "lat": -29.1294,
+   "lon": -53.3194
+  },
+  {
+   "codigo": "85350000",
+   "nome": "PCH Engenheiro Henrique Kotzian Jusante",
+   "rio": "Rio Ivaí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BME ENERGIA",
+   "lat": -29.1289,
+   "lon": -53.3178
+  },
+  {
+   "codigo": "85365000",
+   "nome": "UHE Itaúba Barramento",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -29.2597,
+   "lon": -53.2353
+  },
+  {
+   "codigo": "85365500",
+   "nome": "UHE Itaúba Arroio Povinho",
+   "rio": "Arroio Povinho",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -28.555,
+   "lon": -52.4936
+  },
+  {
+   "codigo": "85380500",
+   "nome": "UHE Dona Francisca Rio Jacuizinho",
+   "rio": "Rio Jacuizinho",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CONS.DFRANCISCA",
+   "lat": -29.2311,
+   "lon": -53.1175
+  },
+  {
+   "codigo": "85382000",
+   "nome": "UHE Dona Francisca Arroio Carijinho",
+   "rio": "Arroio Carijinho",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CONS.DFRANCISCA",
+   "lat": -29.3853,
+   "lon": -53.0483
+  },
+  {
+   "codigo": "85395100",
+   "nome": "UHE Dona Francisca Barramento",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CONS.DFRANCISCA",
+   "lat": -29.4475,
+   "lon": -53.2844
+  },
+  {
+   "codigo": "85395300",
+   "nome": "UHE Dona Francisca Jusante",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CONS.DFRANCISCA",
+   "lat": -29.4719,
+   "lon": -53.2814
+  },
+  {
+   "codigo": "85400000",
+   "nome": "Dona Francisca",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.6269,
+   "lon": -53.3528
+  },
+  {
+   "codigo": "85480010",
+   "nome": "Passo do Rocha",
+   "rio": "Rio Vacacaí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.2319,
+   "lon": -53.9856
+  },
+  {
+   "codigo": "85500010",
+   "nome": "CGH Colorado Arroio Bonito",
+   "rio": "Arroio Bonito",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "LIBRAGA",
+   "lat": -28.5272,
+   "lon": -52.8878
+  },
+  {
+   "codigo": "85500100",
+   "nome": "CGH Colorado Montante",
+   "rio": "Rio Colorado",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "LIBRAGA",
+   "lat": -28.5794,
+   "lon": -52.92
+  },
+  {
+   "codigo": "85500990",
+   "nome": "CGH Colorado Barramento",
+   "rio": "Rio Colorado",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "LIBRAGA",
+   "lat": -28.6294,
+   "lon": -52.9356
+  },
+  {
+   "codigo": "85642000",
+   "nome": "Passo São Lourenço",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -30.0078,
+   "lon": -53.0156
+  },
+  {
+   "codigo": "85900000",
+   "nome": "Rio Pardo",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.995,
+   "lon": -52.3756
+  },
+  {
+   "codigo": "86060010",
+   "nome": "CGH Cambará Barramento",
+   "rio": "Arroio Arcada",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "FLORESTAIS",
+   "lat": -28.9489,
+   "lon": -50.0556
+  },
+  {
+   "codigo": "86099000",
+   "nome": "PCH Pezzi Montante",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "PEZZI",
+   "lat": -28.8047,
+   "lon": -50.4936
+  },
+  {
+   "codigo": "86100600",
+   "nome": "PCH Pezzi Arroio Pinheiro Alto",
+   "rio": "Arroio Pinheiro Alto",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "PEZZI",
+   "lat": -28.7575,
+   "lon": -50.5211
+  },
+  {
+   "codigo": "86100800",
+   "nome": "PCH Pezzi Barramento",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "PEZZI",
+   "lat": -28.7922,
+   "lon": -50.5647
+  },
+  {
+   "codigo": "86101000",
+   "nome": "PCH Passo do Meio Montante",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAMPO DE CIMA",
+   "lat": -28.7883,
+   "lon": -50.5611
+  },
+  {
+   "codigo": "86102000",
+   "nome": "PCH Passo do Meio Montante Tainhas",
+   "rio": "Rio Tainhas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAMPO DE CIMA",
+   "lat": -28.8644,
+   "lon": -50.5622
+  },
+  {
+   "codigo": "86109000",
+   "nome": "PCH Passo do Meio Barramento",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAMPO DE CIMA",
+   "lat": -28.8067,
+   "lon": -50.6128
+  },
+  {
+   "codigo": "86110000",
+   "nome": "PCH Passo do Meio Jusante",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAMPO DE CIMA",
+   "lat": -28.8161,
+   "lon": -50.6214
+  },
+  {
+   "codigo": "86117000",
+   "nome": "PCH Serra dos Cavalinhos I Arroio do Governador",
+   "rio": "Arroio do Governador",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAVALINHOS I",
+   "lat": -28.79,
+   "lon": -50.6789
+  },
+  {
+   "codigo": "86118000",
+   "nome": "PCH Serra dos Cavalinhos I Barramento",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAVALINHOS I",
+   "lat": -28.7964,
+   "lon": -50.7294
+  },
+  {
+   "codigo": "86125000",
+   "nome": "CGH Trabuco Jusante",
+   "rio": "Arroio Trabuco",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "IPÊ GERAÇÃO",
+   "lat": -28.6022,
+   "lon": -51.2344
+  },
+  {
+   "codigo": "86125050",
+   "nome": "PCH Morro Grande Montante",
+   "rio": "Rio Ituim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "MORRO GRANDE",
+   "lat": -28.5486,
+   "lon": -51.3017
+  },
+  {
+   "codigo": "86125100",
+   "nome": "PCH Morro Grande Barramento",
+   "rio": "Rio Ituim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "MORRO GRANDE",
+   "lat": -28.5589,
+   "lon": -51.3111
+  },
+  {
+   "codigo": "86125120",
+   "nome": "PCH Morro Grande Jusante 1",
+   "rio": "Rio Ituim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "MORRO GRANDE",
+   "lat": -28.5719,
+   "lon": -51.3111
+  },
+  {
+   "codigo": "86125130",
+   "nome": "PCH Morro Grande Jusante 2",
+   "rio": "Rio Ituim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "MORRO GRANDE",
+   "lat": -28.5919,
+   "lon": -51.3247
+  },
+  {
+   "codigo": "86125160",
+   "nome": "PCH Saltinho Barramento",
+   "rio": "Rio Ituim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SALTINHO",
+   "lat": -28.6114,
+   "lon": -51.3422
+  },
+  {
+   "codigo": "86125165",
+   "nome": "PCH Saltinho Alça",
+   "rio": "Rio Ituim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SALTINHO",
+   "lat": -28.6111,
+   "lon": -51.3486
+  },
+  {
+   "codigo": "86125200",
+   "nome": "PCH Saltinho Jusante",
+   "rio": "Rio Ituim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SALTINHO",
+   "lat": -28.6364,
+   "lon": -51.3806
+  },
+  {
+   "codigo": "86125500",
+   "nome": "PCH Jararaca Barramento",
+   "rio": "Rio Prata",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "VÊNETO",
+   "lat": -28.9381,
+   "lon": -51.4656
+  },
+  {
+   "codigo": "86160000",
+   "nome": "Passo Tainhas",
+   "rio": "Rio Tainhas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -28.8681,
+   "lon": -50.4561
+  },
+  {
+   "codigo": "86162000",
+   "nome": "PCH Serra dos Cavalinhos II Barramento",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAVALINHOS II",
+   "lat": -28.7914,
+   "lon": -50.7458
+  },
+  {
+   "codigo": "86163000",
+   "nome": "PCH Serra dos Cavalinhos II Jusante",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAVALINHOS II",
+   "lat": -28.7869,
+   "lon": -50.7447
+  },
+  {
+   "codigo": "86194900",
+   "nome": "PCH Cazuza Ferreira Montante",
+   "rio": "Lajeado Grande",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAZUZA",
+   "lat": -29.0231,
+   "lon": -50.7156
+  },
+  {
+   "codigo": "86195000",
+   "nome": "PCH Cazuza Ferreira Barramento",
+   "rio": "Lajeado Grande",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAZUZA",
+   "lat": -29.0206,
+   "lon": -50.7314
+  },
+  {
+   "codigo": "86195100",
+   "nome": "PCH Cazuza Ferreira Alça",
+   "rio": "Lajeado Grande",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAZUZA",
+   "lat": -29.0197,
+   "lon": -50.7339
+  },
+  {
+   "codigo": "86200500",
+   "nome": "PCH Cazuza Ferreira Jusante",
+   "rio": "Lajeado Grande",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAZUZA",
+   "lat": -29.0206,
+   "lon": -50.7342
+  },
+  {
+   "codigo": "86200900",
+   "nome": "PCH Criúva Barramento",
+   "rio": "Lajeado Grande",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CRIÚVA",
+   "lat": -28.9653,
+   "lon": -50.7989
+  },
+  {
+   "codigo": "86210900",
+   "nome": "PCH Palanquinho Barramento",
+   "rio": "Lajeado Grande",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SERRANA",
+   "lat": -28.8964,
+   "lon": -50.8108
+  },
+  {
+   "codigo": "86220600",
+   "nome": "PCH Palanquinho Jusante",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SERRANA",
+   "lat": -28.8294,
+   "lon": -51.0092
+  },
+  {
+   "codigo": "86280500",
+   "nome": "PCH Rio São Marcos Barramento",
+   "rio": "Arroio São Marcos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "RIO SÃO MARCOS",
+   "lat": -29.0367,
+   "lon": -51.0956
+  },
+  {
+   "codigo": "86297965",
+   "nome": "PCH Rio São Marcos Jusante",
+   "rio": "Arroio São Marcos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "RIO SÃO MARCOS",
+   "lat": -28.9442,
+   "lon": -51.1758
+  },
+  {
+   "codigo": "86298000",
+   "nome": "UHE Castro Alves Rs-122",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -28.9414,
+   "lon": -51.1892
+  },
+  {
+   "codigo": "86305000",
+   "nome": "UHE Castro Alves Barramento",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.0058,
+   "lon": -51.3853
+  },
+  {
+   "codigo": "86306000",
+   "nome": "UHE Castro Alves Alça",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.0133,
+   "lon": -51.3675
+  },
+  {
+   "codigo": "86321000",
+   "nome": "UHE Castro Alves Tega",
+   "rio": "Rio Tegas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.0633,
+   "lon": -51.3236
+  },
+  {
+   "codigo": "86350000",
+   "nome": "PCH Chimarrão Rio Santa Rita",
+   "rio": "Rio Santa Rita",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CHIMARRÃO",
+   "lat": -28.4725,
+   "lon": -51.36
+  },
+  {
+   "codigo": "86390900",
+   "nome": "PCH Jardim Montante",
+   "rio": "Rio Turvo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "JARDIM",
+   "lat": -28.5328,
+   "lon": -51.4094
+  },
+  {
+   "codigo": "86402000",
+   "nome": "PCH Jardim Barramento",
+   "rio": "Rio Turvo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "JARDIM",
+   "lat": -28.56,
+   "lon": -51.4081
+  },
+  {
+   "codigo": "86403000",
+   "nome": "PCH Jardim Jusante",
+   "rio": "Rio Turvo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "JARDIM",
+   "lat": -28.5692,
+   "lon": -51.4064
+  },
+  {
+   "codigo": "86404100",
+   "nome": "PCH Chimarrão Jusante",
+   "rio": "Rio Turvo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CHIMARRÃO",
+   "lat": -28.6017,
+   "lon": -51.6686
+  },
+  {
+   "codigo": "86404200",
+   "nome": "PCH Chimarrão Barramento",
+   "rio": "Rio Turvo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CHIMARRÃO",
+   "lat": -28.5981,
+   "lon": -51.3992
+  },
+  {
+   "codigo": "86405000",
+   "nome": "PCH Santa Carolina Barramento",
+   "rio": "Rio Turvo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAROLINA",
+   "lat": -28.6153,
+   "lon": -51.4033
+  },
+  {
+   "codigo": "86406000",
+   "nome": "PCH Santa Carolina Jusante",
+   "rio": "Rio Turvo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAROLINA",
+   "lat": -28.6189,
+   "lon": -51.4011
+  },
+  {
+   "codigo": "86410050",
+   "nome": "PCH da Ilha Balsa do Turvo",
+   "rio": "Rio Turvo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "DA ILHA",
+   "lat": -28.8086,
+   "lon": -51.4467
+  },
+  {
+   "codigo": "86410800",
+   "nome": "PCH da Ilha Afluente",
+   "rio": "Arroio Primavera",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "DA ILHA",
+   "lat": -28.7983,
+   "lon": -51.4744
+  },
+  {
+   "codigo": "86430500",
+   "nome": "PCH Jararaca Pratinha",
+   "rio": "Rio Prata",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "VÊNETO",
+   "lat": -28.8225,
+   "lon": -51.4939
+  },
+  {
+   "codigo": "86430900",
+   "nome": "PCH da Ilha Barramento",
+   "rio": "Rio Prata",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "DA ILHA",
+   "lat": -28.8925,
+   "lon": -51.455
+  },
+  {
+   "codigo": "86447000",
+   "nome": "UHE Monte Claro Balsa do Prata",
+   "rio": "Rio Prata",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -28.9714,
+   "lon": -51.4611
+  },
+  {
+   "codigo": "86448000",
+   "nome": "UHE Monte Claro Barramento",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.0292,
+   "lon": -51.5219
+  },
+  {
+   "codigo": "86450000",
+   "nome": "UHE Monte Claro Jusante 1 (alça)",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.075,
+   "lon": -51.5239
+  },
+  {
+   "codigo": "86450500",
+   "nome": "UHE Monte Claro Jusante 2",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.0211,
+   "lon": -51.5333
+  },
+  {
+   "codigo": "86450600",
+   "nome": "CGH Taipinha Barramento",
+   "rio": "Arroio Taipinha",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERFOX",
+   "lat": -28.9364,
+   "lon": -51.5058
+  },
+  {
+   "codigo": "86451000",
+   "nome": "UHE 14 de Julho Montante",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.0156,
+   "lon": -51.5428
+  },
+  {
+   "codigo": "86470800",
+   "nome": "UHE 14 de Julho Barramento",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.0658,
+   "lon": -51.6744
+  },
+  {
+   "codigo": "86470900",
+   "nome": "UHE 14 de Julho Alça",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.07,
+   "lon": -51.6342
+  },
+  {
+   "codigo": "86471000",
+   "nome": "UHE 14 de Julho Jusante",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERAN",
+   "lat": -29.0797,
+   "lon": -51.6814
+  },
+  {
+   "codigo": "86472000",
+   "nome": "Linha José Júlio",
+   "rio": "Rio das Antas",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.0978,
+   "lon": -51.6997
+  },
+  {
+   "codigo": "86472600",
+   "nome": "Santa Tereza",
+   "rio": "Rio Taquari",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.1781,
+   "lon": -51.7322
+  },
+  {
+   "codigo": "86479000",
+   "nome": "PCH Caçador Ponte São Domingos",
+   "rio": "Rio São Domingos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAÇADOR",
+   "lat": -28.5792,
+   "lon": -51.8686
+  },
+  {
+   "codigo": "86488000",
+   "nome": "PCH Caçador Montante",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAÇADOR",
+   "lat": -28.6847,
+   "lon": -51.8506
+  },
+  {
+   "codigo": "86489000",
+   "nome": "PCH Caçador Barramento",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CAÇADOR",
+   "lat": -28.7075,
+   "lon": -51.8503
+  },
+  {
+   "codigo": "86493000",
+   "nome": "PCH Boa Fé Barramento",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "BOA FÉ",
+   "lat": -28.7464,
+   "lon": -51.8536
+  },
+  {
+   "codigo": "86495500",
+   "nome": "PCH São Paulo Barramento",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SÃO PAULO",
+   "lat": -28.775,
+   "lon": -51.8447
+  },
+  {
+   "codigo": "86497400",
+   "nome": "PCH Autódromo Barramento",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "AUTÓDROMO",
+   "lat": -28.8289,
+   "lon": -51.8419
+  },
+  {
+   "codigo": "86500000",
+   "nome": "Passo Carreiro",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -28.8489,
+   "lon": -51.8325
+  },
+  {
+   "codigo": "86504400",
+   "nome": "CGH São Domingos do Prata Barramento",
+   "rio": "Arroio Não Sabia",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "DOMINGOS PRATA",
+   "lat": -28.8092,
+   "lon": -51.7364
+  },
+  {
+   "codigo": "86504500",
+   "nome": "CGH São Domingos do Prata Jusante",
+   "rio": "Arroio Não Sabia",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "DOMINGOS PRATA",
+   "lat": -28.8139,
+   "lon": -51.7381
+  },
+  {
+   "codigo": "86504900",
+   "nome": "PCH Autódromo Jusante",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "AUTÓDROMO",
+   "lat": -28.8817,
+   "lon": -51.7897
+  },
+  {
+   "codigo": "86505400",
+   "nome": "PCH Linha Emilia Barramento",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "LINHA EMILIA",
+   "lat": -28.9411,
+   "lon": -51.7739
+  },
+  {
+   "codigo": "86505500",
+   "nome": "PCH Linha Emilia Jusante",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "LINHA EMILIA",
+   "lat": -28.9414,
+   "lon": -51.7694
+  },
+  {
+   "codigo": "86506000",
+   "nome": "PCH Cotiporã Barramento",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "COTIPORÃ",
+   "lat": -28.9639,
+   "lon": -51.7583
+  },
+  {
+   "codigo": "86507000",
+   "nome": "PCH Cotiporã Jusante",
+   "rio": "Rio Carreiro",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "COTIPORÃ",
+   "lat": -28.9722,
+   "lon": -51.7558
+  },
+  {
+   "codigo": "86510000",
+   "nome": "Muçum",
+   "rio": "Rio Taquari",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.1672,
+   "lon": -51.8686
+  },
+  {
+   "codigo": "86520000",
+   "nome": "PCH Capigui Barramento de Regularização",
+   "rio": "Rio Capigui",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -28.3511,
+   "lon": -52.2147
+  },
+  {
+   "codigo": "86520100",
+   "nome": "PCH Capigui Jusante",
+   "rio": "Rio Capigui",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -28.3825,
+   "lon": -52.2586
+  },
+  {
+   "codigo": "86560000",
+   "nome": "Linha Colombo",
+   "rio": "Rio Guaporé",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -28.9122,
+   "lon": -51.9531
+  },
+  {
+   "codigo": "86720000",
+   "nome": "Encantado",
+   "rio": "Rio Taquari",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.2344,
+   "lon": -51.855
+  },
+  {
+   "codigo": "86743700",
+   "nome": "PCH Rastro de Auto Montante",
+   "rio": "Rio Forqueta",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERTEL RASTRO",
+   "lat": -29.0419,
+   "lon": -52.2222
+  },
+  {
+   "codigo": "86743800",
+   "nome": "PCH Rastro de Auto Barramento",
+   "rio": "Rio Forqueta",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERTEL RASTRO",
+   "lat": -29.0533,
+   "lon": -52.2194
+  },
+  {
+   "codigo": "86743900",
+   "nome": "PCH Salto Forqueta Barramento",
+   "rio": "Rio Forqueta",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERTELTEUTONIA",
+   "lat": -29.0814,
+   "lon": -52.2083
+  },
+  {
+   "codigo": "86743950",
+   "nome": "PCH Salto Forqueta Alça",
+   "rio": "Rio Forqueta",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERTELTEUTONIA",
+   "lat": -29.0833,
+   "lon": -52.2106
+  },
+  {
+   "codigo": "86744110",
+   "nome": "PCH Salto Forqueta Jusante",
+   "rio": "Rio Forqueta",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERTELTEUTONIA",
+   "lat": -29.0947,
+   "lon": -52.2122
+  },
+  {
+   "codigo": "86744650",
+   "nome": "PCH Vale do Leite Jusante",
+   "rio": "Rio Forqueta",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERTEL VALE",
+   "lat": -29.1867,
+   "lon": -52.1756
+  },
+  {
+   "codigo": "86748001",
+   "nome": "CGH Soledade Barramento",
+   "rio": "Rio Fão",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CERFOX",
+   "lat": -28.9378,
+   "lon": -52.4856
+  },
+  {
+   "codigo": "86780000",
+   "nome": "Barra do Fão",
+   "rio": "Rio Forqueta",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.2239,
+   "lon": -52.1622
+  },
+  {
+   "codigo": "86879300",
+   "nome": "Estrela",
+   "rio": "Rio Taquari",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.4717,
+   "lon": -51.965
+  },
+  {
+   "codigo": "86881000",
+   "nome": "Bom Retiro do Sul - Montante",
+   "rio": "Rio Taquari",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.6081,
+   "lon": -51.9511
+  },
+  {
+   "codigo": "86895000",
+   "nome": "Porto Mariante",
+   "rio": "Rio Taquari",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.6922,
+   "lon": -51.97
+  },
+  {
+   "codigo": "86950000",
+   "nome": "Taquari",
+   "rio": "Rio Taquari",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.8069,
+   "lon": -51.8758
+  },
+  {
+   "codigo": "87010000",
+   "nome": "Triunfo",
+   "rio": "Rio Jacuí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.9419,
+   "lon": -51.6942
+  },
+  {
+   "codigo": "87068000",
+   "nome": "UHE Bugres Divisa Montante 2",
+   "rio": "Arroio do Junco",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -29.3,
+   "lon": -50.5211
+  },
+  {
+   "codigo": "87070000",
+   "nome": "UHE Bugres Barramento Divisa",
+   "rio": "Arroio da Divisa",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -29.2994,
+   "lon": -50.5697
+  },
+  {
+   "codigo": "87072000",
+   "nome": "UHE Bugres Blang Montante 1",
+   "rio": "Rio Santa Cruz",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -29.3603,
+   "lon": -50.5258
+  },
+  {
+   "codigo": "87075000",
+   "nome": "UHE Bugres Barramento Blang",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -29.3267,
+   "lon": -50.6178
+  },
+  {
+   "codigo": "87100000",
+   "nome": "UHE Bugres Barramento Salto",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -29.3153,
+   "lon": -50.6806
+  },
+  {
+   "codigo": "87107000",
+   "nome": "CGH Toca Montante",
+   "rio": "Rio Santa Cruz",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -29.3044,
+   "lon": -50.7264
+  },
+  {
+   "codigo": "87110000",
+   "nome": "CGH Toca Barramento",
+   "rio": "Rio Santa Cruz",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -29.2892,
+   "lon": -50.7408
+  },
+  {
+   "codigo": "87120000",
+   "nome": "PCH Passo do Inferno Barramento",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -29.2683,
+   "lon": -50.7467
+  },
+  {
+   "codigo": "87120100",
+   "nome": "PCH Passo do Inferno Jusante",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -29.2694,
+   "lon": -50.7544
+  },
+  {
+   "codigo": "87150000",
+   "nome": "Linha Gonzaga",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.3075,
+   "lon": -50.9958
+  },
+  {
+   "codigo": "87153000",
+   "nome": "CGH Santo Anjo Jusante",
+   "rio": "Arroio Piai",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SANTO ANJO",
+   "lat": -29.205,
+   "lon": -51.09
+  },
+  {
+   "codigo": "87160000",
+   "nome": "Nova Palmira",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.3356,
+   "lon": -51.1889
+  },
+  {
+   "codigo": "87163000",
+   "nome": "Vale Real",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.3997,
+   "lon": -51.2536
+  },
+  {
+   "codigo": "87165001",
+   "nome": "Feliz",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.455,
+   "lon": -51.3061
+  },
+  {
+   "codigo": "87168000",
+   "nome": "São Vendelino",
+   "rio": "Arroio Forromeco",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.3828,
+   "lon": -51.3689
+  },
+  {
+   "codigo": "87168590",
+   "nome": "Bom Princípio",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.5072,
+   "lon": -51.3556
+  },
+  {
+   "codigo": "87170000",
+   "nome": "Barca do Caí",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.59,
+   "lon": -51.3833
+  },
+  {
+   "codigo": "87189000",
+   "nome": "Picada Café",
+   "rio": "Rio Cadeia",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.4614,
+   "lon": -51.14
+  },
+  {
+   "codigo": "87200000",
+   "nome": "PCH Herval Barramento",
+   "rio": "Rio Cadeia",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "CEEE",
+   "lat": -29.5011,
+   "lon": -51.0022
+  },
+  {
+   "codigo": "87219950",
+   "nome": "CGH Picada 48 Jusante",
+   "rio": "Arroio Feitoria",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "PICADA",
+   "lat": -29.5839,
+   "lon": -51.1253
+  },
+  {
+   "codigo": "87228450",
+   "nome": "Corsan Cidreira",
+   "rio": "Canal Corsan Cidreira",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.1569,
+   "lon": -50.2353
+  },
+  {
+   "codigo": "87230000",
+   "nome": "Costa do Rio Cadeia - Montante",
+   "rio": "Rio Cadeia",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.5906,
+   "lon": -51.3136
+  },
+  {
+   "codigo": "87231100",
+   "nome": "Mata Olho Rolante",
+   "rio": "Arroio da Areia",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.5803,
+   "lon": -50.5561
+  },
+  {
+   "codigo": "87241000",
+   "nome": "Lagoa Negra Pq. Itapuã Viamão",
+   "rio": "Lagoa Negra",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.38,
+   "lon": -51.0061
+  },
+  {
+   "codigo": "87242000",
+   "nome": "Terminal Catsul Guaíba",
+   "rio": "Lago Guaíba",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.1075,
+   "lon": -51.3111
+  },
+  {
+   "codigo": "87242010",
+   "nome": "Camping Nascer do Sol",
+   "rio": "Lago Guaíba",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.3017,
+   "lon": -51.2961
+  },
+  {
+   "codigo": "87242020",
+   "nome": "Praia da Pedreira - Pq. Itapuã",
+   "rio": "Lago Guaíba",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.3592,
+   "lon": -51.0464
+  },
+  {
+   "codigo": "87270000",
+   "nome": "Passo Montenegro",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.7011,
+   "lon": -51.4411
+  },
+  {
+   "codigo": "87300000",
+   "nome": "Passo do Caí",
+   "rio": "Rio Caí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.8642,
+   "lon": -51.3639
+  },
+  {
+   "codigo": "87317030",
+   "nome": "Maquiné",
+   "rio": "Rio Maquiné",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.6519,
+   "lon": -50.2092
+  },
+  {
+   "codigo": "87318000",
+   "nome": "Arroio Caraá",
+   "rio": "Arroio Caraá",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.7908,
+   "lon": -50.4217
+  },
+  {
+   "codigo": "87333000",
+   "nome": "Stil Lagoa dos Barros",
+   "rio": "Lagoa dos Barros",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.9094,
+   "lon": -50.4253
+  },
+  {
+   "codigo": "87350000",
+   "nome": "Alto Rolante",
+   "rio": "Rio Rolante",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.645,
+   "lon": -50.5106
+  },
+  {
+   "codigo": "87361000",
+   "nome": "UHE Canastra Barramento",
+   "rio": "Rio Paranhana",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -29.3472,
+   "lon": -50.7014
+  },
+  {
+   "codigo": "87361100",
+   "nome": "UHE Canastra Jusante 2",
+   "rio": "Rio Paranhana",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ITAÚBA-ENERGIA",
+   "lat": -29.3936,
+   "lon": -50.7475
+  },
+  {
+   "codigo": "87376000",
+   "nome": "Foz do Paranhana",
+   "rio": "Rio dos Sinos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.6858,
+   "lon": -50.8122
+  },
+  {
+   "codigo": "87380000",
+   "nome": "Campo Bom",
+   "rio": "Rio dos Sinos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.6917,
+   "lon": -51.0461
+  },
+  {
+   "codigo": "87382000",
+   "nome": "São Leopoldo",
+   "rio": "Rio dos Sinos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.7589,
+   "lon": -51.1483
+  },
+  {
+   "codigo": "87398750",
+   "nome": "4 Irmãos Canal Gravataí",
+   "rio": "Rio Gravataí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.9803,
+   "lon": -50.7439
+  },
+  {
+   "codigo": "87398885",
+   "nome": "Corsan Gravataí",
+   "rio": "Rio Gravataí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.975,
+   "lon": -50.9406
+  },
+  {
+   "codigo": "87399000",
+   "nome": "Passo das Canoas - Auxiliar",
+   "rio": "Rio Gravataí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.9644,
+   "lon": -50.9778
+  },
+  {
+   "codigo": "87401750",
+   "nome": "Corsan Alvorada",
+   "rio": "Rio Gravataí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -29.9683,
+   "lon": -51.0367
+  },
+  {
+   "codigo": "87450004",
+   "nome": "Cais Mauá C6",
+   "rio": "Rio Guaíba",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.0211,
+   "lon": -51.2211
+  },
+  {
+   "codigo": "87450020",
+   "nome": "Usina do Gasômetro",
+   "rio": "Rio Guaíba",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -30.0347,
+   "lon": -51.2419
+  },
+  {
+   "codigo": "87510015",
+   "nome": "Parque P.m. Capivari do Sul",
+   "rio": "Rio Capivari",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.1544,
+   "lon": -50.5528
+  },
+  {
+   "codigo": "87510020",
+   "nome": "Palmares do Sul",
+   "rio": "Rio Palmares",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "DEPRC",
+   "lat": -30.2658,
+   "lon": -50.5164
+  },
+  {
+   "codigo": "87510047",
+   "nome": "CGH Morrinhos Barramento",
+   "rio": "Arroio dos Cachorros",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "MORRINHOS",
+   "lat": -30.3175,
+   "lon": -51.8678
+  },
+  {
+   "codigo": "87510049",
+   "nome": "CGH Morrinhos Jusante",
+   "rio": "Arroio dos Cachorros",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "MORRINHOS",
+   "lat": -30.3106,
+   "lon": -51.8475
+  },
+  {
+   "codigo": "87550050",
+   "nome": "Ponte Camaquã Chico",
+   "rio": "Arroio Camaquã Chico",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -30.9083,
+   "lon": -53.8206
+  },
+  {
+   "codigo": "87785000",
+   "nome": "CGH Abranjo I Montante",
+   "rio": "Arroio Abranjo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ABRANJO",
+   "lat": -30.7492,
+   "lon": -52.6464
+  },
+  {
+   "codigo": "87790000",
+   "nome": "CGH Abranjo I Barramento",
+   "rio": "Arroio Abranjo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ABRANJO",
+   "lat": -30.7883,
+   "lon": -52.6297
+  },
+  {
+   "codigo": "87795000",
+   "nome": "CGH Abranjo I Jusante",
+   "rio": "Arroio Abranjo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "ABRANJO",
+   "lat": -30.7956,
+   "lon": -52.6242
+  },
+  {
+   "codigo": "87905000",
+   "nome": "Passo do Mendonça",
+   "rio": "Rio Camaquã",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -31.0119,
+   "lon": -52.0525
+  },
+  {
+   "codigo": "87920500",
+   "nome": "Passo do Candombe",
+   "rio": "Arroio São Lourenço",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -31.29,
+   "lon": -52.1175
+  },
+  {
+   "codigo": "87955001",
+   "nome": "Laranjal",
+   "rio": "Lagoa dos Patos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "UFPEL",
+   "lat": -31.7725,
+   "lon": -52.2253
+  },
+  {
+   "codigo": "87991100",
+   "nome": "Furg/ccmar",
+   "rio": "Lagoa dos Patos",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "FURG",
+   "lat": -32.0272,
+   "lon": -52.1017
+  },
+  {
+   "codigo": "88009000",
+   "nome": "Geribatu",
+   "rio": "Lagoa Mangueira",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -33.5022,
+   "lon": -53.1478
+  },
+  {
+   "codigo": "88060200",
+   "nome": "Taim Mangueira",
+   "rio": "Canal do Taim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -32.5408,
+   "lon": -52.5394
+  },
+  {
+   "codigo": "88060210",
+   "nome": "Taim Mirim",
+   "rio": "Canal do Taim",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -32.5397,
+   "lon": -52.5392
+  },
+  {
+   "codigo": "88150900",
+   "nome": "Gastaud Mangueira",
+   "rio": "Lagoa Mangueira",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -32.8336,
+   "lon": -52.6436
+  },
+  {
+   "codigo": "88260000",
+   "nome": "Passo das Pedras",
+   "rio": "Rio Jaguarão",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -32.5194,
+   "lon": -53.4558
+  },
+  {
+   "codigo": "88640950",
+   "nome": "Ponte Rio Piratini",
+   "rio": "Rio Piratini",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "UFPEL",
+   "lat": -31.8603,
+   "lon": -52.8167
+  },
+  {
+   "codigo": "88700010",
+   "nome": "Santa Isabel CGH (ufpel)",
+   "rio": "Canal de São Gonçalo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SEMA-RS",
+   "lat": -32.1189,
+   "lon": -52.5936
+  },
+  {
+   "codigo": "88810100",
+   "nome": "Porto de Pelotas",
+   "rio": "Canal de São Gonçalo",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "PELOTAS",
+   "lat": -31.7822,
+   "lon": -52.3333
+  }
+ ]
+}

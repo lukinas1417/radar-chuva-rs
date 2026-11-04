@@ -106,6 +106,111 @@ export function normalizarDefesaCivil(bruto, agoraMs, indice) {
   return { estacoes, pluviometros };
 }
 
+// ---------- ANA (HidroWebService) ----------
+// Estação telemétrica da ANA reporta de hora em hora (algumas a cada 15 min): leitura de até 3 h é "recente".
+export const ANA_RECENTE_MS = 3 * 60 * 60 * 1000;
+// Variação do nível: última leitura contra a mais antiga da janela, desde que haja pelo menos 3 h entre elas.
+export const ANA_VARIACAO_MIN_H = 3;
+// Estado da cota na série "adotada": só 0 e 1 são aceitos como medição. Qualquer outro código (ou ausência de
+// código) fica de fora, em vez de arriscar mostrar valor estimado ou duvidoso como se fosse medido.
+const ANA_STATUS_VALIDOS = new Set(['0', '1']);
+
+// "2026-11-04 12:00:00.0" (horário de Brasília) -> ISO 8601 com offset
+export const paraIsoAna = (t) => (typeof t === 'string' && /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d/.test(t) ? `${t.slice(0, 10)}T${t.slice(11, 19)}-03:00` : null);
+
+const SIGLAS = new Set(['UHE', 'PCH', 'CGH', 'RS', 'BR', 'II', 'III', 'IV', 'V', 'VI']);
+const PARTICULAS = new Set(['DA', 'DE', 'DO', 'DAS', 'DOS', 'E']);
+// "UHE BARRA GRANDE PASSO DO HONORATO" -> "UHE Barra Grande Passo do Honorato"
+export function capitalizar(texto) {
+  return String(texto ?? '')
+    .trim()
+    .split(/\s+/)
+    .map((p, i) => {
+      const maiusculo = p.toUpperCase();
+      if (SIGLAS.has(maiusculo)) return maiusculo;
+      if (i > 0 && PARTICULAS.has(maiusculo)) return p.toLowerCase();
+      return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
+const numeroAna = (v) => {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+// Inventário da ANA -> cadastro enxuto das estações de rio que o mapa usa: fluviométricas, telemétricas e em
+// operação. As operadas pela Defesa Civil RS ficam de fora porque já vêm, em tempo real, da fonte da própria Defesa Civil.
+export function cadastroAna(inventario) {
+  return inventario
+    .filter(
+      (e) =>
+        String(e.Tipo_Estacao_Telemetrica) === '1' &&
+        String(e.Operando) === '1' &&
+        e.Tipo_Estacao === 'Fluviometrica' &&
+        e.Operadora_Sigla !== 'DCRS' &&
+        numeroAna(e.Latitude) !== null &&
+        numeroAna(e.Longitude) !== null,
+    )
+    .map((e) => ({
+      codigo: String(e.codigoestacao),
+      nome: capitalizar(e.Estacao_Nome),
+      rio: e.Rio_Nome ? capitalizar(e.Rio_Nome) : null,
+      bacia: e.Bacia_Nome ? capitalizar(e.Bacia_Nome) : null,
+      operadora: e.Operadora_Sigla ?? null,
+      lat: numeroAna(e.Latitude),
+      lon: numeroAna(e.Longitude),
+    }))
+    .sort((a, b) => a.codigo.localeCompare(b.codigo));
+}
+
+// Cadastro + linhas da série ("adotada") -> estações de rio no mesmo formato das da Defesa Civil.
+// A ANA não divulga limiares de alerta: `situacao` é sempre null (sem classificação), nunca 0 ("normalidade").
+// A cota vem em cm, medida na régua de cada estação (nas de usina, é a altitude do reservatório): não é
+// comparável entre estações. Estação sem nenhuma leitura válida na janela fica de fora.
+export function normalizarAna(cadastro, linhas) {
+  const porEstacao = new Map();
+  for (const l of linhas) {
+    const t = Date.parse(paraIsoAna(l.Data_Hora_Medicao) ?? '');
+    const cotaCm = numeroAna(l.Cota_Adotada);
+    if (!Number.isFinite(t) || cotaCm === null || !ANA_STATUS_VALIDOS.has(l.Cota_Adotada_Status)) continue;
+    const vazao = ANA_STATUS_VALIDOS.has(l.Vazao_Adotada_Status) ? numeroAna(l.Vazao_Adotada) : null;
+    const cod = String(l.codigoestacao);
+    if (!porEstacao.has(cod)) porEstacao.set(cod, []);
+    porEstacao.get(cod).push({ t, cotaCm, vazao });
+  }
+
+  const estacoes = [];
+  for (const c of cadastro) {
+    const pts = (porEstacao.get(c.codigo) ?? []).sort((a, b) => a.t - b.t);
+    if (!pts.length) continue;
+    const ultimo = pts.at(-1);
+    const base = pts[0];
+    const horas = (ultimo.t - base.t) / 3_600_000;
+    const comVariacao = horas >= ANA_VARIACAO_MIN_H;
+    estacoes.push({
+      codigo: `ANA-${c.codigo}`,
+      nome: c.nome,
+      rio: c.rio,
+      bacia: c.bacia,
+      operadora: c.operadora,
+      lat: c.lat,
+      lon: c.lon,
+      ultimaLeitura: new Date(ultimo.t).toISOString(),
+      nivelM: Math.round(ultimo.cotaCm) / 100,
+      variacaoM: comVariacao ? Math.round(ultimo.cotaCm - base.cotaCm) / 100 : null,
+      variacaoH: comVariacao ? Math.round(horas) : null,
+      vazaoM3s: ultimo.vazao,
+      situacao: null,
+      emManutencao: false,
+      sensorValido: true,
+      fonte: 'ANA',
+    });
+  }
+  return estacoes;
+}
+
 // ---------- Open-Meteo (estimativa e previsão por modelo) ----------
 // Formato do arquivo gravado. Mudou quando entrou a previsão: arquivo de outra versão não é usado.
 export const VERSAO_ESTIMATIVA = 2;

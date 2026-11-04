@@ -6,10 +6,11 @@ ambíguo, porque a tela mostra chuva e rios e alguém pode agir com base nela.
 
 ## Contexto
 
-O Radar junta duas fontes oficiais, sem acordo formal com nenhuma delas:
+O Radar junta fontes oficiais, sem acordo formal com elas (a ANA é a exceção: cedeu credencial de acesso à API):
 
 - **CEMADEN**: pluviômetros do país. Usa-se o endpoint público do Mapa Interativo, que não é um serviço documentado.
 - **Defesa Civil do RS**: API GraphQL com o nível de 125 estações de rio e a chuva de seus pluviômetros.
+- **ANA (HidroWebService)**: API REST autenticada com a leitura (cota e vazão) de ~300 estações de rio telemétricas do estado, de hora em hora. Não há limiares de alerta, então essas estações **não têm classificação de risco**.
 
 Mais a malha municipal do IBGE. O resultado é um site estático que mostra, por município, a chuva acumulada e a
 situação dos rios.
@@ -20,6 +21,7 @@ situação dos rios.
 flowchart LR
     CEM["CEMADEN<br/>endpoint público"] --> COL
     DCRS["Defesa Civil RS<br/>API GraphQL"] --> COL
+    ANA["ANA<br/>HidroWebService"] --> COL
     IBGE["IBGE<br/>malha municipal<br/>(versionada no repositório)"] --> COL
     COL["Coleta agendada<br/>GitHub Actions"] -->|JSON normalizado| SITE["GitHub Pages<br/>site estático"]
     COL -. coleta falhou .-> ULT["último dado publicado"]
@@ -54,6 +56,8 @@ JSON e desenha o mapa.
 | Agendador do GitHub atrasa ou descarta execuções (observado: 4 execuções em ~15 h) | Horários fora dos minutos de pico. **Não resolvido**: precisa de gatilho externo | O dado envelhece e o aviso de 1 hora aparece |
 | Significado do `status` de rio é ambíguo na documentação | Rotulado como "situação informada pela Defesa Civil", com nota de que as cotas não são divulgadas | O sistema não afirma o que não sabe |
 | API oficial do CEMADEN (PED): token expira em 4 h e o login tem captcha | Testada e descartada para coleta agendada. O captcha **não é contornado** | Nada: continua no endpoint público |
+| ANA fora do ar, lenta ou com credencial recusada (observado: login de 19 s e um 504) | Login e cada lote têm tempo limite e 3 tentativas; sessão expirada no meio da coleta refaz o login; se mais de 25% dos lotes falharem, a coleta falha e o último dado publicado é mantido; sem credenciais o passo é pulado | Rios da ANA com a hora da leitura visível; a Defesa Civil segue independente |
+| Estação da ANA não tem limiar de alerta | `situacao` é sempre `null` (nunca 0, "normalidade"); não entra no contorno luminoso, no resumo de rios nem na lista de atenção; o cartão diz "sem classificação" e que as cotas não são comparáveis (nas usinas, é a altitude do reservatório) | Leitura e variação em N horas, sem cor de risco |
 | Estação perto de uma divisa cai no município vizinho (malha simplificada) | Limitação documentada; o painel mostra o nome da estação | O usuário pode conferir |
 | Feed de notícias fora do ar | Cada fonte falha sozinha; se nenhuma responde, o último arquivo publicado é reaproveitado. Notícias são opcionais | As últimas notícias, com o horário da coleta (e "Desatualizado" depois de 3 h); sem arquivo, o painel não aparece |
 | Notícia fora de contexto passa pelo filtro de palavras-chave (ex.: um texto sobre o "símbolo da enchente") | Só entra o que tem pontuação mínima e menos de 72 h; limitação **não resolvida**, por ser uma heurística | O "Sobre os dados" avisa que a seleção é automática e pode errar |
@@ -105,7 +109,7 @@ de um servidor falso, o que num site de alertas é inaceitável.
 
 ## Como o sistema é verificado
 
-Há 61 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
+Há 106 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
 coleta, para uma falha de teste nunca bloquear a atualização dos dados. Eles cobrem as regras que, se erradas,
 fazem o mapa afirmar algo falso:
 
@@ -115,7 +119,10 @@ fazem o mapa afirmar algo falso:
 - **Geometria** (`tests/geo.test.js`): ponto fora de qualquer município é `null`, e não o mais próximo; buracos em
   polígonos; municípios com várias partes.
 - **Normalização das fontes** (`tests/normalizar.test.js`): `"-"` vira 0 só em estação ativa; limites de 3 h e de
-  30 min; estação sem limiar cadastrado não vira "normal"; chuva não homologada é descartada.
+  30 min; estação sem limiar cadastrado não vira "normal"; chuva não homologada é descartada. **ANA**: cota em cm
+  vira metros; status que não é medição (estimado, duvidoso, ausente) é descartado; `situacao` nunca é 0; variação
+  só com pelo menos 3 h de histórico; estação sem leitura válida fica de fora; as operadas pela Defesa Civil não
+  entram em duplicidade.
 - **Regras de negócio** (`tests/dados.test.js`): o município mostra o maior acumulado; sem estação ativa é `null`,
   nunca 0; **coleta antiga de rios ainda mostra o risco que registrou** (regressão do erro real); sem leitura de rio
   o risco é `null`, nunca "normal".
@@ -131,7 +138,7 @@ normalidade) e confirmei que a suíte falha em cada um. Essa verificação foi m
 
 - **Não há testes de interface nem de integração com as fontes reais.** A tela foi validada manualmente, em
   navegador (desktop e celular), com cenários de falha forçados. Também não há teste de contrato que avise quando o
-  formato da resposta do CEMADEN ou da Defesa Civil mudar.
+  formato da resposta do CEMADEN, da Defesa Civil ou da ANA mudar.
 - **Não há monitoramento próprio da coleta.** A única sinalização de falha é o aviso de dado velho na tela.
 - **Dependência do agendador do GitHub**, que já se mostrou irregular.
 - **Fontes sem garantia:** o endpoint do CEMADEN não é documentado e pode mudar; a API da Defesa Civil não declara

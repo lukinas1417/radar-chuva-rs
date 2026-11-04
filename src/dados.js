@@ -1,6 +1,6 @@
 // Carrega as fontes e responde perguntas sobre cada município.
 import { distanciaKm, indexarMunicipios, municipioDe } from './geo.js';
-import { ESTIMATIVA_VALIDA_MS, VERSAO_ESTIMATIVA, acumuladosEstimativa, previsaoHoraria } from './normalizar.js';
+import { ANA_RECENTE_MS, ESTIMATIVA_VALIDA_MS, VERSAO_ESTIMATIVA, acumuladosEstimativa, previsaoHoraria } from './normalizar.js';
 
 // Janelas de chuva acumulada (medida ou estimada) e de previsão ("+6h": próximas 6 horas, só do modelo).
 export const JANELAS = ['1h', '6h', '24h'];
@@ -36,11 +36,12 @@ async function carregar(url) {
 }
 
 export async function carregarDados(agoraMs = Date.now()) {
-  // Defesa Civil, estimativa e notícias são opcionais: se a fonte falhar, o mapa de chuva do CEMADEN continua funcionando.
-  const [chuva, malha, rios, noticias, estimativaBruta] = await Promise.all([
+  // Defesa Civil, ANA, estimativa e notícias são opcionais: se a fonte falhar, o mapa de chuva do CEMADEN continua funcionando.
+  const [chuva, malha, rios, riosAna, noticias, estimativaBruta] = await Promise.all([
     carregar('data/chuva-rs.json'),
     carregar('data/municipios-rs.geojson'),
     carregar('data/rios-rs.json').catch(() => null),
+    carregar('data/rios-ana.json').catch(() => null),
     carregar('data/noticias-rs.json').catch(() => null),
     carregar('data/estimativa-rs.json').catch(() => null),
   ]);
@@ -59,14 +60,22 @@ export async function carregarDados(agoraMs = Date.now()) {
 
   // "Recente" é medido contra o momento da coleta, não contra agora: uma coleta antiga é tratada pelo
   // aviso de dados desatualizados, em vez de descartar as estações e passar a falsa ideia de normalidade.
-  const referencia = rios ? Date.parse(rios.geradoEm) : 0;
-  const estacoesRio = new Map(); // codIbge -> estações de rio com leitura recente
-  for (const e of rios?.estacoes ?? []) {
-    const recente = referencia - Date.parse(e.ultimaLeitura) <= LEITURA_RECENTE_MS && !e.emManutencao;
+  const estacoesRio = new Map(); // codIbge -> estações de rio, das duas fontes
+  const adicionarRio = (e, recente) => {
     const municipio = municipioDe(indice, e.lon, e.lat);
-    if (!municipio) continue;
+    if (!municipio) return;
     if (!estacoesRio.has(municipio.codIbge)) estacoesRio.set(municipio.codIbge, []);
     estacoesRio.get(municipio.codIbge).push({ ...e, recente });
+  };
+  const referencia = rios ? Date.parse(rios.geradoEm) : 0;
+  for (const e of rios?.estacoes ?? []) {
+    adicionarRio(e, referencia - Date.parse(e.ultimaLeitura) <= LEITURA_RECENTE_MS && !e.emManutencao);
+  }
+  // A ANA reporta de hora em hora, então a janela de "recente" é maior. Estas estações não têm situação
+  // (a ANA não divulga limiares), por isso não entram em riosComLeitura nem no resumo de risco.
+  const referenciaAna = riosAna ? Date.parse(riosAna.geradoEm) : 0;
+  for (const e of riosAna?.estacoes ?? []) {
+    adicionarRio(e, referenciaAna - Date.parse(e.ultimaLeitura) <= ANA_RECENTE_MS);
   }
 
   const riosComLeitura = [...estacoesRio.values()].flat().filter((e) => e.recente && e.situacao !== null).length;
@@ -84,7 +93,7 @@ export async function carregarDados(agoraMs = Date.now()) {
   };
 
   return {
-    chuva, rios, noticias, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura,
+    chuva, rios, riosAna, noticias, malha, indice, porCodigo, pluviometros, estacoesRio, riosComLeitura,
     estimativa, estimativaGeradoEm: estimativaValida ? estimativaBruta.geradoEm : null, fontesFrescas, agoraMs,
   };
 }
