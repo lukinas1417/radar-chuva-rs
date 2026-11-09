@@ -1,5 +1,5 @@
 // Mapa em tela cheia: relevo 3D, municípios coloridos pela chuva e brilho pulsante nos rios em risco.
-import { SITUACOES, chuvaDoMunicipio, faixaDe, pontosAna as listarPontosAna, riscoDoMunicipio } from './dados.js';
+import { SITUACOES, chuvaDoMunicipio, faixaDe, riscoDoMunicipio } from './dados.js';
 import { TIPOS, caixaDoTile, hachurar, urlWms } from './suscetibilidade.js';
 
 const TILES_RELEVO = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
@@ -9,6 +9,8 @@ const LIMITES_RS = [[-57.7, -33.8], [-49.6, -27.0]];
 const LIMITES_PAN = [[-68, -40], [-39, -20]];
 // Mais que isso só mostra as arestas da malha simplificada; o nível de cidade já é o útil.
 const ZOOM_MAXIMO = 10.5;
+// Zoom a partir do qual as estações da ANA aparecem (o estado inteiro fica por volta de 5,6).
+const ZOOM_ESTACOES = 6;
 const COR_SEM_DADO = '#101c29';
 const INCLINACAO = 36;
 const REDUZIR_MOVIMENTO = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -22,7 +24,7 @@ function margens(comCartao = false) {
   return { top: 56, bottom: 84, left: 340, right: comCartao ? 400 : 30 };
 }
 
-export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar, aoZoom, aoFalharCarta }) {
+export function criarMapa({ container, dados, estacoes = [], htmlEstacao, aoSelecionar, aoPassar, aoAfastar, aoZoom, aoFalharCarta }) {
   const mapa = new maplibregl.Map({
     container,
     style: { version: 8, sources: {}, layers: [{ id: 'fundo', type: 'background', paint: { 'background-color': '#070d14' } }] },
@@ -34,10 +36,45 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     attributionControl: false,
   });
 
+  // Estações da ANA como pontos. As leituras ficam fora do GeoJSON (o MapLibre achata propriedades): a dica as busca
+  // pelo código. O formato do ponto diz o que a estação mede: rio, chuva ou os dois.
+  const estacaoPorCodigo = new Map(estacoes.map((p) => [p.codigo, p]));
   const pontosAna = {
     type: 'FeatureCollection',
-    features: listarPontosAna(dados).map((p) => ({ type: 'Feature', properties: { codigo: p.codigo, nome: p.nome, rio: p.rio, chuva: p.chuva }, geometry: { type: 'Point', coordinates: [p.lon, p.lat] } })),
+    features: estacoes.map((p) => ({ type: 'Feature', properties: { codigo: p.codigo, tipo: p.tipo }, geometry: { type: 'Point', coordinates: [p.lon, p.lat] } })),
   };
+  const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, className: 'estacao-dica', maxWidth: '280px', offset: 12 });
+  let codPopup = null;
+  let popupFixo = false; // fixado por clique/toque: não some ao tirar o mouse, só ao tocar em outro lugar
+  function fecharPopup() {
+    popup.remove();
+    codPopup = null;
+    popupFixo = false;
+  }
+  // Os pontos são pequenos: a área de acerto é maior (e maior ainda no toque).
+  function estacaoEm(ponto) {
+    if (!pronto) return null;
+    const r = TEM_HOVER ? 9 : 14;
+    const achadas = mapa.queryRenderedFeatures([[ponto.x - r, ponto.y - r], [ponto.x + r, ponto.y + r]], { layers: ['estacoes-ana'] });
+    let melhor = null;
+    let menor = Infinity;
+    for (const f of achadas) {
+      const p = estacaoPorCodigo.get(f.properties.codigo);
+      if (!p) continue;
+      const tela = mapa.project([p.lon, p.lat]);
+      const d = Math.hypot(tela.x - ponto.x, tela.y - ponto.y);
+      if (d < menor) {
+        menor = d;
+        melhor = p;
+      }
+    }
+    return melhor;
+  }
+  function mostrarPopup(p) {
+    if (codPopup === p.codigo) return;
+    codPopup = p.codigo;
+    popup.setLngLat([p.lon, p.lat]).setHTML(htmlEstacao(p)).addTo(mapa);
+  }
 
   let relevoLigado = false; // vista de cima por padrão; o relevo 3D é opcional
   let pronto = false;
@@ -195,18 +232,21 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     });
     // Estações da ANA: pontos pequenos, de contorno claro, para não se confundirem com a rampa de chuva nem com as
     // cores de risco. Ficam sob o contorno de seleção e só mostram que ali existe uma estação.
+    // Só a partir de ZOOM_ESTACOES: no estado inteiro seriam centenas de pontos minúsculos, só poluição.
     mapa.addSource('estacoes-ana', { type: 'geojson', data: pontosAna });
     mapa.addLayer({
       id: 'estacoes-ana',
       type: 'circle',
       source: 'estacoes-ana',
+      minzoom: ZOOM_ESTACOES,
       paint: {
-        'circle-radius': ['interpolate', ['linear'], ['zoom'], 5, 2.2, 8, 3.6, 10.5, 5.5],
-        'circle-color': '#0b1520',
-        'circle-opacity': 0.9,
-        'circle-stroke-color': '#e8f3ff',
-        'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 9, 1.6],
-        'circle-stroke-opacity': 0.9,
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3.4, 8, 4.6, 10.5, 6.5],
+        // rio: vazado; chuva: cheio; os dois: cinza. Mesmas cores da legenda.
+        'circle-color': ['match', ['get', 'tipo'], 'rio', '#0b1520', 'chuva', '#e8f3ff', '#7f95a8'],
+        'circle-opacity': 0.95,
+        'circle-stroke-color': ['match', ['get', 'tipo'], 'chuva', '#0b1520', '#e8f3ff'],
+        'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1.2, 9, 1.8],
+        'circle-stroke-opacity': 0.95,
       },
     });
     mapa.addLayer({ id: 'hover', type: 'line', source: 'municipios', filter: nenhum, paint: { 'line-color': '#ffffff', 'line-width': 1.2, 'line-opacity': 0.7 } });
@@ -223,17 +263,37 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
     conferirAfastamento();
 
     mapa.on('click', (ev) => {
+      // Tocar numa estação mostra a leitura dela e fixa a dica; tocar em outro lugar a fecha e segue o fluxo normal.
+      const est = estacaoEm(ev.point);
+      if (est) {
+        mostrarPopup(est);
+        popupFixo = true;
+        return;
+      }
+      fecharPopup();
       const [f] = mapa.queryRenderedFeatures(ev.point, { layers: ['preenchimento'] });
       aoSelecionar(f ? f.properties.codIbge : null);
     });
     if (TEM_HOVER) {
       mapa.on('mousemove', (ev) => {
+        const est = estacaoEm(ev.point);
+        if (est) {
+          mapa.getCanvas().style.cursor = 'pointer';
+          mapa.setFilter('hover', nenhum);
+          aoPassar(null);
+          if (!popupFixo) mostrarPopup(est);
+          return;
+        }
+        if (!popupFixo && codPopup !== null) fecharPopup();
         const [f] = mapa.queryRenderedFeatures(ev.point, { layers: ['preenchimento'] });
         mapa.getCanvas().style.cursor = f ? 'pointer' : '';
         mapa.setFilter('hover', f ? ['==', ['get', 'codIbge'], f.properties.codIbge] : nenhum);
         aoPassar(f ? f.properties.codIbge : null, ev.point);
       });
-      mapa.on('mouseout', () => aoPassar(null));
+      mapa.on('mouseout', () => {
+        aoPassar(null);
+        if (!popupFixo) fecharPopup();
+      });
     }
   });
 
@@ -270,6 +330,7 @@ export function criarMapa({ container, dados, aoSelecionar, aoPassar, aoAfastar,
   return {
     pintar,
     selecionar(cod) {
+      fecharPopup();
       cartaoAberto = cod !== null;
       codSelecionado = cod;
       if (pronto) mapa.setFilter('selecionado', ['==', ['get', 'codIbge'], cod ?? -1]);

@@ -123,13 +123,15 @@ export const paraIsoAna = (t) => (typeof t === 'string' && /^\d{4}-\d\d-\d\d \d\
 const SIGLAS = new Set(['UHE', 'PCH', 'CGH', 'RS', 'BR', 'II', 'III', 'IV', 'V', 'VI']);
 const PARTICULAS = new Set(['DA', 'DE', 'DO', 'DAS', 'DOS', 'E']);
 // "UHE BARRA GRANDE PASSO DO HONORATO" -> "UHE Barra Grande Passo do Honorato"
-export function capitalizar(texto) {
+// `preservar`: palavras que devem ficar em caixa alta (a sigla da operadora, por exemplo "CSG").
+export function capitalizar(texto, preservar = []) {
+  const siglas = new Set(preservar.filter(Boolean).map((s) => String(s).toUpperCase()));
   return String(texto ?? '')
     .trim()
     .split(/\s+/)
     .map((p, i) => {
       const maiusculo = p.toUpperCase();
-      if (SIGLAS.has(maiusculo)) return maiusculo;
+      if (SIGLAS.has(maiusculo) || siglas.has(maiusculo) || /^[A-Z]{2}-\d+$/.test(maiusculo)) return maiusculo; // "RS-122": rodovia
       if (i > 0 && PARTICULAS.has(maiusculo)) return p.toLowerCase();
       return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase();
     })
@@ -157,7 +159,7 @@ function cadastrar(inventario, tipo, operadorasExcluidas) {
     )
     .map((e) => ({
       codigo: String(e.codigoestacao),
-      nome: capitalizar(e.Estacao_Nome),
+      nome: capitalizar(e.Estacao_Nome, [e.Operadora_Sigla]),
       rio: e.Rio_Nome ? capitalizar(e.Rio_Nome) : null,
       bacia: e.Bacia_Nome ? capitalizar(e.Bacia_Nome) : null,
       operadora: e.Operadora_Sigla ?? null,

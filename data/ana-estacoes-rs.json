@@ -1,5 +1,5 @@
 {
- "geradoEm": "2026-11-04T20:55:36.805Z",
+ "geradoEm": "2026-11-09T18:27:30.537Z",
  "fonte": "ANA HidroWebService",
  "estacoes": [
   {
@@ -112,7 +112,7 @@
   },
   {
    "codigo": "70841500",
-   "nome": "PCH Moinho Montante",
+   "nome": "PCH MOINHO Montante",
    "rio": "Rio Bernardo José",
    "bacia": "Rio Uruguai",
    "operadora": "MOINHO",
@@ -121,7 +121,7 @@
   },
   {
    "codigo": "70842000",
-   "nome": "PCH Esmeralda Montante 2",
+   "nome": "PCH ESMERALDA Montante 2",
    "rio": "Rio Bernardo José",
    "bacia": "Rio Uruguai",
    "operadora": "ESMERALDA",
@@ -139,7 +139,7 @@
   },
   {
    "codigo": "70843500",
-   "nome": "PCH Esmeralda Arroio São Joaquim",
+   "nome": "PCH ESMERALDA Arroio São Joaquim",
    "rio": "Arroio São Joaquim",
    "bacia": "Rio Uruguai",
    "operadora": "ESMERALDA",
@@ -148,7 +148,7 @@
   },
   {
    "codigo": "70844200",
-   "nome": "PCH Esmeralda Montante 1",
+   "nome": "PCH ESMERALDA Montante 1",
    "rio": "Rio Bernardo José",
    "bacia": "Rio Uruguai",
    "operadora": "ESMERALDA",
@@ -157,7 +157,7 @@
   },
   {
    "codigo": "70844300",
-   "nome": "PCH Esmeralda Barramento",
+   "nome": "PCH ESMERALDA Barramento",
    "rio": "Rio Bernardo José",
    "bacia": "Rio Uruguai",
    "operadora": "ESMERALDA",
@@ -166,7 +166,7 @@
   },
   {
    "codigo": "70844500",
-   "nome": "PCH Moinho Barramento",
+   "nome": "PCH MOINHO Barramento",
    "rio": "Rio Bernardo José",
    "bacia": "Rio Uruguai",
    "operadora": "MOINHO",
@@ -184,7 +184,7 @@
   },
   {
    "codigo": "72080000",
-   "nome": "PCH Ouro Montante",
+   "nome": "PCH OURO Montante",
    "rio": "Rio Marmeleiro",
    "bacia": "Rio Uruguai",
    "operadora": "OURO",
@@ -193,7 +193,7 @@
   },
   {
    "codigo": "72090000",
-   "nome": "PCH Ouro Barramento",
+   "nome": "PCH OURO Barramento",
    "rio": "Rio Marmeleiro",
    "bacia": "Rio Uruguai",
    "operadora": "OURO",
@@ -517,7 +517,7 @@
   },
   {
    "codigo": "74352000",
-   "nome": "CGH das Cabras Barramento",
+   "nome": "CGH das CABRAS Barramento",
    "rio": "Rio Guarita",
    "bacia": "Rio Uruguai",
    "operadora": "CABRAS",
@@ -526,7 +526,7 @@
   },
   {
    "codigo": "74352200",
-   "nome": "CGH das Cabras Jusante",
+   "nome": "CGH das CABRAS Jusante",
    "rio": "Rio Guarita",
    "bacia": "Rio Uruguai",
    "operadora": "CABRAS",
@@ -535,7 +535,7 @@
   },
   {
    "codigo": "74355000",
-   "nome": "PCH Tambaú Barramento",
+   "nome": "PCH TAMBAÚ Barramento",
    "rio": "Rio Guarita",
    "bacia": "Rio Uruguai",
    "operadora": "TAMBAÚ",
@@ -544,7 +544,7 @@
   },
   {
    "codigo": "74356000",
-   "nome": "PCH Tambaú Jusante",
+   "nome": "PCH TAMBAÚ Jusante",
    "rio": "Rio Guarita",
    "bacia": "Rio Uruguai",
    "operadora": "TAMBAÚ",
@@ -562,7 +562,7 @@
   },
   {
    "codigo": "74359600",
-   "nome": "CGH Frederico João Cerutti Jusante",
+   "nome": "CGH FREDERICO João Cerutti Jusante",
    "rio": "Arroio Fortaleza",
    "bacia": "Rio Uruguai",
    "operadora": "FREDERICO",
@@ -859,7 +859,7 @@
   },
   {
    "codigo": "75180000",
-   "nome": "PCH Rs-155 Barramento",
+   "nome": "PCH RS-155 Barramento",
    "rio": "Rio Ijuí",
    "bacia": "Rio Uruguai",
    "operadora": "RS155 GERAÇÃO",
@@ -868,7 +868,7 @@
   },
   {
    "codigo": "75181000",
-   "nome": "PCH Rs-155 Jusante",
+   "nome": "PCH RS-155 Jusante",
    "rio": "Rio Ijuí",
    "bacia": "Rio Uruguai",
    "operadora": "RS155 GERAÇÃO",
@@ -922,7 +922,7 @@
   },
   {
    "codigo": "75187950",
-   "nome": "CGH Formigueiro Barramento",
+   "nome": "CGH FORMIGUEIRO Barramento",
    "rio": "Rio Conceição",
    "bacia": "Rio Uruguai",
    "operadora": "FORMIGUEIRO",
@@ -931,7 +931,7 @@
   },
   {
    "codigo": "75188050",
-   "nome": "CGH Formigueiro Jusante",
+   "nome": "CGH FORMIGUEIRO Jusante",
    "rio": "Rio Conceição",
    "bacia": "Rio Uruguai",
    "operadora": "FORMIGUEIRO",
@@ -1012,7 +1012,7 @@
   },
   {
    "codigo": "75290000",
-   "nome": "PCH Ijuizinho Cermissões Montante",
+   "nome": "PCH Ijuizinho CERMISSÕES Montante",
    "rio": "Rio Ijuizinho",
    "bacia": "Rio Uruguai",
    "operadora": "CERMISSÕES",
@@ -1021,7 +1021,7 @@
   },
   {
    "codigo": "75291000",
-   "nome": "PCH Ijuizinho Cermissões Barramento",
+   "nome": "PCH Ijuizinho CERMISSÕES Barramento",
    "rio": "Rio Ijuizinho",
    "bacia": "Rio Uruguai",
    "operadora": "CERMISSÕES",
@@ -1174,7 +1174,7 @@
   },
   {
    "codigo": "75881800",
-   "nome": "PCH Rincão Barramento",
+   "nome": "PCH RINCÃO Barramento",
    "rio": "Rio Ijuizinho",
    "bacia": "Rio Uruguai",
    "operadora": "RINCÃO",
@@ -1183,7 +1183,7 @@
   },
   {
    "codigo": "75881900",
-   "nome": "PCH Rincão Jusante",
+   "nome": "PCH RINCÃO Jusante",
    "rio": "Rio Ijuizinho",
    "bacia": "Rio Uruguai",
    "operadora": "RINCÃO",
@@ -1273,7 +1273,7 @@
   },
   {
    "codigo": "76112000",
-   "nome": "PCH Salto do Guassupi Arroio Socavão",
+   "nome": "PCH Salto do GUASSUPI Arroio Socavão",
    "rio": "Arroio Socavão",
    "bacia": "Rio Uruguai",
    "operadora": "GUASSUPI",
@@ -1282,7 +1282,7 @@
   },
   {
    "codigo": "76115400",
-   "nome": "PCH Salto do Guassupi Montante",
+   "nome": "PCH Salto do GUASSUPI Montante",
    "rio": "Arroio Guassupi",
    "bacia": "Rio Uruguai",
    "operadora": "GUASSUPI",
@@ -1291,7 +1291,7 @@
   },
   {
    "codigo": "76115600",
-   "nome": "PCH Salto do Guassupi Barramento",
+   "nome": "PCH Salto do GUASSUPI Barramento",
    "rio": "Arroio Guassupi",
    "bacia": "Rio Uruguai",
    "operadora": "GUASSUPI",
@@ -1300,7 +1300,7 @@
   },
   {
    "codigo": "76115800",
-   "nome": "PCH Salto do Guassupi Rio Toropi Mirim",
+   "nome": "PCH Salto do GUASSUPI Rio Toropi Mirim",
    "rio": "Rio Toropi-mirim",
    "bacia": "Rio Uruguai",
    "operadora": "GUASSUPI",
@@ -1867,7 +1867,7 @@
   },
   {
    "codigo": "86099000",
-   "nome": "PCH Pezzi Montante",
+   "nome": "PCH PEZZI Montante",
    "rio": "Rio das Antas",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "PEZZI",
@@ -1876,7 +1876,7 @@
   },
   {
    "codigo": "86100600",
-   "nome": "PCH Pezzi Arroio Pinheiro Alto",
+   "nome": "PCH PEZZI Arroio Pinheiro Alto",
    "rio": "Arroio Pinheiro Alto",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "PEZZI",
@@ -1885,7 +1885,7 @@
   },
   {
    "codigo": "86100800",
-   "nome": "PCH Pezzi Barramento",
+   "nome": "PCH PEZZI Barramento",
    "rio": "Rio das Antas",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "PEZZI",
@@ -1993,7 +1993,7 @@
   },
   {
    "codigo": "86125160",
-   "nome": "PCH Saltinho Barramento",
+   "nome": "PCH SALTINHO Barramento",
    "rio": "Rio Ituim",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "SALTINHO",
@@ -2002,7 +2002,7 @@
   },
   {
    "codigo": "86125165",
-   "nome": "PCH Saltinho Alça",
+   "nome": "PCH SALTINHO Alça",
    "rio": "Rio Ituim",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "SALTINHO",
@@ -2011,7 +2011,7 @@
   },
   {
    "codigo": "86125200",
-   "nome": "PCH Saltinho Jusante",
+   "nome": "PCH SALTINHO Jusante",
    "rio": "Rio Ituim",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "SALTINHO",
@@ -2056,7 +2056,7 @@
   },
   {
    "codigo": "86194900",
-   "nome": "PCH Cazuza Ferreira Montante",
+   "nome": "PCH CAZUZA Ferreira Montante",
    "rio": "Lajeado Grande",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAZUZA",
@@ -2065,7 +2065,7 @@
   },
   {
    "codigo": "86195000",
-   "nome": "PCH Cazuza Ferreira Barramento",
+   "nome": "PCH CAZUZA Ferreira Barramento",
    "rio": "Lajeado Grande",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAZUZA",
@@ -2074,7 +2074,7 @@
   },
   {
    "codigo": "86195100",
-   "nome": "PCH Cazuza Ferreira Alça",
+   "nome": "PCH CAZUZA Ferreira Alça",
    "rio": "Lajeado Grande",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAZUZA",
@@ -2083,7 +2083,7 @@
   },
   {
    "codigo": "86200500",
-   "nome": "PCH Cazuza Ferreira Jusante",
+   "nome": "PCH CAZUZA Ferreira Jusante",
    "rio": "Lajeado Grande",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAZUZA",
@@ -2092,7 +2092,7 @@
   },
   {
    "codigo": "86200900",
-   "nome": "PCH Criúva Barramento",
+   "nome": "PCH CRIÚVA Barramento",
    "rio": "Lajeado Grande",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CRIÚVA",
@@ -2137,7 +2137,7 @@
   },
   {
    "codigo": "86298000",
-   "nome": "UHE Castro Alves Rs-122",
+   "nome": "UHE Castro Alves RS-122",
    "rio": "Rio das Antas",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CERAN",
@@ -2173,7 +2173,7 @@
   },
   {
    "codigo": "86350000",
-   "nome": "PCH Chimarrão Rio Santa Rita",
+   "nome": "PCH CHIMARRÃO Rio Santa Rita",
    "rio": "Rio Santa Rita",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CHIMARRÃO",
@@ -2182,7 +2182,7 @@
   },
   {
    "codigo": "86390900",
-   "nome": "PCH Jardim Montante",
+   "nome": "PCH JARDIM Montante",
    "rio": "Rio Turvo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "JARDIM",
@@ -2191,7 +2191,7 @@
   },
   {
    "codigo": "86402000",
-   "nome": "PCH Jardim Barramento",
+   "nome": "PCH JARDIM Barramento",
    "rio": "Rio Turvo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "JARDIM",
@@ -2200,7 +2200,7 @@
   },
   {
    "codigo": "86403000",
-   "nome": "PCH Jardim Jusante",
+   "nome": "PCH JARDIM Jusante",
    "rio": "Rio Turvo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "JARDIM",
@@ -2209,7 +2209,7 @@
   },
   {
    "codigo": "86404100",
-   "nome": "PCH Chimarrão Jusante",
+   "nome": "PCH CHIMARRÃO Jusante",
    "rio": "Rio Turvo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CHIMARRÃO",
@@ -2218,7 +2218,7 @@
   },
   {
    "codigo": "86404200",
-   "nome": "PCH Chimarrão Barramento",
+   "nome": "PCH CHIMARRÃO Barramento",
    "rio": "Rio Turvo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CHIMARRÃO",
@@ -2227,7 +2227,7 @@
   },
   {
    "codigo": "86405000",
-   "nome": "PCH Santa Carolina Barramento",
+   "nome": "PCH Santa CAROLINA Barramento",
    "rio": "Rio Turvo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAROLINA",
@@ -2236,7 +2236,7 @@
   },
   {
    "codigo": "86406000",
-   "nome": "PCH Santa Carolina Jusante",
+   "nome": "PCH Santa CAROLINA Jusante",
    "rio": "Rio Turvo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAROLINA",
@@ -2380,7 +2380,7 @@
   },
   {
    "codigo": "86479000",
-   "nome": "PCH Caçador Ponte São Domingos",
+   "nome": "PCH CAÇADOR Ponte São Domingos",
    "rio": "Rio São Domingos",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAÇADOR",
@@ -2389,7 +2389,7 @@
   },
   {
    "codigo": "86488000",
-   "nome": "PCH Caçador Montante",
+   "nome": "PCH CAÇADOR Montante",
    "rio": "Rio Carreiro",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAÇADOR",
@@ -2398,7 +2398,7 @@
   },
   {
    "codigo": "86489000",
-   "nome": "PCH Caçador Barramento",
+   "nome": "PCH CAÇADOR Barramento",
    "rio": "Rio Carreiro",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CAÇADOR",
@@ -2425,7 +2425,7 @@
   },
   {
    "codigo": "86497400",
-   "nome": "PCH Autódromo Barramento",
+   "nome": "PCH AUTÓDROMO Barramento",
    "rio": "Rio Carreiro",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "AUTÓDROMO",
@@ -2461,7 +2461,7 @@
   },
   {
    "codigo": "86504900",
-   "nome": "PCH Autódromo Jusante",
+   "nome": "PCH AUTÓDROMO Jusante",
    "rio": "Rio Carreiro",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "AUTÓDROMO",
@@ -2488,7 +2488,7 @@
   },
   {
    "codigo": "86506000",
-   "nome": "PCH Cotiporã Barramento",
+   "nome": "PCH COTIPORÃ Barramento",
    "rio": "Rio Carreiro",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "COTIPORÃ",
@@ -2497,7 +2497,7 @@
   },
   {
    "codigo": "86507000",
-   "nome": "PCH Cotiporã Jusante",
+   "nome": "PCH COTIPORÃ Jusante",
    "rio": "Rio Carreiro",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "COTIPORÃ",
@@ -2839,7 +2839,7 @@
   },
   {
    "codigo": "87219950",
-   "nome": "CGH Picada 48 Jusante",
+   "nome": "CGH PICADA 48 Jusante",
    "rio": "Arroio Feitoria",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "PICADA",
@@ -3045,6 +3045,15 @@
    "lon": -51.0367
   },
   {
+   "codigo": "87406000",
+   "nome": "Albatroz",
+   "rio": "Rio Gravataí",
+   "bacia": "Atlântico, Trecho Sudeste",
+   "operadora": "SGB-CPRM",
+   "lat": -29.9658,
+   "lon": -51.1656
+  },
+  {
    "codigo": "87450004",
    "nome": "Cais Mauá C6",
    "rio": "Rio Guaíba",
@@ -3082,7 +3091,7 @@
   },
   {
    "codigo": "87510047",
-   "nome": "CGH Morrinhos Barramento",
+   "nome": "CGH MORRINHOS Barramento",
    "rio": "Arroio dos Cachorros",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "MORRINHOS",
@@ -3091,7 +3100,7 @@
   },
   {
    "codigo": "87510049",
-   "nome": "CGH Morrinhos Jusante",
+   "nome": "CGH MORRINHOS Jusante",
    "rio": "Arroio dos Cachorros",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "MORRINHOS",
@@ -3109,7 +3118,7 @@
   },
   {
    "codigo": "87785000",
-   "nome": "CGH Abranjo I Montante",
+   "nome": "CGH ABRANJO I Montante",
    "rio": "Arroio Abranjo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "ABRANJO",
@@ -3118,7 +3127,7 @@
   },
   {
    "codigo": "87790000",
-   "nome": "CGH Abranjo I Barramento",
+   "nome": "CGH ABRANJO I Barramento",
    "rio": "Arroio Abranjo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "ABRANJO",
@@ -3127,7 +3136,7 @@
   },
   {
    "codigo": "87795000",
-   "nome": "CGH Abranjo I Jusante",
+   "nome": "CGH ABRANJO I Jusante",
    "rio": "Arroio Abranjo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "ABRANJO",
@@ -3235,7 +3244,7 @@
   },
   {
    "codigo": "88810100",
-   "nome": "Porto de Pelotas",
+   "nome": "Porto de PELOTAS",
    "rio": "Canal de São Gonçalo",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "PELOTAS",
@@ -3309,7 +3318,7 @@
   },
   {
    "codigo": "2851092",
-   "nome": "Csg Ipê - 1171",
+   "nome": "CSG Ipê - 1171",
    "rio": "N/a",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CSG",
@@ -3318,7 +3327,7 @@
   },
   {
    "codigo": "2851093",
-   "nome": "Csg Antônio Prado - 1248",
+   "nome": "CSG Antônio Prado - 1248",
    "rio": "N/a",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CSG",
@@ -3327,7 +3336,7 @@
   },
   {
    "codigo": "2851156",
-   "nome": "Csg Capela de Santana - 1250",
+   "nome": "CSG Capela de Santana - 1250",
    "rio": "N/a",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CSG",
@@ -3336,7 +3345,7 @@
   },
   {
    "codigo": "2851157",
-   "nome": "Csg São Sebastião do Cai - 1257",
+   "nome": "CSG São Sebastião do Cai - 1257",
    "rio": "N/a",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CSG",
@@ -3381,21 +3390,12 @@
   },
   {
    "codigo": "2854039",
-   "nome": "CGH Coopermil Jusante",
+   "nome": "CGH COOPERMIL Jusante",
    "rio": "N/a",
    "bacia": "Rio Uruguai",
    "operadora": "COOPERMIL",
    "lat": -28.1389,
    "lon": -54.5464
-  },
-  {
-   "codigo": "2950045",
-   "nome": "Capão dos Coxos",
-   "rio": "N/a",
-   "bacia": "Atlântico, Trecho Sudeste",
-   "operadora": "SGB-CPRM",
-   "lat": -29.4083,
-   "lon": -50.5842
   },
   {
    "codigo": "2950108",
@@ -3435,7 +3435,7 @@
   },
   {
    "codigo": "2951154",
-   "nome": "Csg Carlos Barbosa - 1197",
+   "nome": "CSG Carlos Barbosa - 1197",
    "rio": "N/a",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CSG",
@@ -3444,7 +3444,7 @@
   },
   {
    "codigo": "2951155",
-   "nome": "Csg Farroupilha - 1215",
+   "nome": "CSG Farroupilha - 1215",
    "rio": "N/a",
    "bacia": "Atlântico, Trecho Sudeste",
    "operadora": "CSG",

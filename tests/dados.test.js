@@ -369,7 +369,39 @@ test('pontos da ANA: estação de rio com pluviômetro acoplado vira UM ponto, m
   fontes({ chuva: chuvaPadrao, rios: null, riosAna, chuvaAna });
   const pontos = pontosAna(await carregarDados(Date.parse(COLETA) + 60_000));
   assert.equal(pontos.length, 1);
-  assert.deepEqual([pontos[0].rio, pontos[0].chuva], [true, true]);
+  assert.equal(pontos[0].tipo, 'ambos');
+  assert.ok(pontos[0].rio && pontos[0].chuva);
+});
+
+test('pontos da ANA: levam as leituras e o município para a dica, e o tipo diz o que a estação mede', async () => {
+  const riosAna = {
+    geradoEm: COLETA,
+    fonte: 'ANA',
+    estacoes: [{ ...rio('ANA-R', 0.5, 0.5, null, 20), fonte: 'ANA', rio: 'Rio Teste', nivelM: 4.77, variacaoM: 1.95, variacaoH: 5, vazaoM3s: 328.1 }],
+  };
+  const chuvaAna = {
+    geradoEm: COLETA,
+    fonte: 'ANA',
+    pluviometros: [{ ...pluvAna(3, true, { '1h': 2, '6h': 5, '24h': 9 }), codigo: 'ANA-C', nome: 'Pluvio', lon: 0.5, lat: 1.5 }],
+  };
+  fontes({ chuva: chuvaPadrao, rios: null, riosAna, chuvaAna });
+  const pontos = pontosAna(await carregarDados(Date.parse(COLETA) + 60_000));
+  const r = pontos.find((p) => p.codigo === 'ANA-R');
+  const c = pontos.find((p) => p.codigo === 'ANA-C');
+  assert.equal(r.tipo, 'rio');
+  assert.equal(r.chuva, null);
+  assert.equal(r.municipio, 'Alfa');
+  assert.equal(r.corpo, 'Rio Teste');
+  assert.deepEqual([r.rio.nivelM, r.rio.variacaoM, r.rio.variacaoH, r.rio.vazaoM3s], [4.77, 1.95, 5, 328.1]);
+  assert.equal(c.tipo, 'chuva');
+  assert.equal(c.rio, null);
+  assert.equal(c.municipio, 'Ágata');
+  assert.deepEqual(c.chuva.acumuladoMm, { '1h': 2, '6h': 5, '24h': 9 });
+});
+
+test('pontos da ANA: estação de outra fonte (CEMADEN, Defesa Civil) nunca vira ponto da ANA', async () => {
+  fontes({ chuva: chuvaPadrao, rios: { geradoEm: COLETA, estacoes: [{ ...rio('DCRS-1', 0.5, 0.5, 0, 5), lat: 0.5 }], pluviometros: [] } });
+  assert.deepEqual(pontosAna(await carregarDados(Date.parse(COLETA) + 60_000)), []);
 });
 
 test('pontos da ANA: estação sem leitura recente, pluviômetro inativo e dado sem coordenada ficam de fora', async () => {

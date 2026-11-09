@@ -11,6 +11,7 @@ import {
   horaDaPagina,
   faixaDe,
   municipiosEmRisco,
+  pontosAna,
   previsaoDoMunicipio,
   semAcento,
   valorDoMunicipio,
@@ -92,6 +93,8 @@ function atualizarSlider(zoom, minimo, maximo) {
 const mapa = criarMapa({
   container: 'mapa',
   dados,
+  estacoes: pontosAna(dados),
+  htmlEstacao,
   aoSelecionar: (cod) => selecionar(cod, { voar: false }),
   aoPassar: mostrarDica,
   aoAfastar: (afastado) => $('recentrar').classList.toggle('oculto', !afastado),
@@ -105,6 +108,25 @@ slider.addEventListener('input', () => {
 });
 $('recentrar').addEventListener('click', () => mapa.enquadrar());
 mapa.pintar(janela);
+
+// Dica de uma estação da ANA (passar o mouse no computador, tocar no celular): o que ela mede, com a hora da leitura.
+// A ANA não divulga limiares de alerta, então nunca há cor de risco aqui; a cota é da régua da própria estação.
+function htmlEstacao(p) {
+  const linhas = [];
+  if (p.chuva) {
+    const a = p.chuva.acumuladoMm;
+    linhas.push(`<div class="est-linha"><span class="est-rot">Chuva</span><b>${fmtMm(a['24h'])} mm</b><span>em 24 h</span><small>${fmtMm(a['6h'])} mm em 6 h · ${fmtMm(a['1h'])} mm em 1 h</small></div>`);
+  }
+  if (p.rio) {
+    const r = p.rio;
+    const variacao = r.variacaoM === null ? '' : `${r.variacaoM > 0 ? '+' : ''}${r.variacaoM.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m${r.variacaoH ? ` em ${r.variacaoH} h` : ''}`;
+    const vazao = r.vazaoM3s === null ? '' : `vazão ${r.vazaoM3s.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} m³/s`;
+    linhas.push(`<div class="est-linha"><span class="est-rot">Rio</span><b>cota ${fmtM(r.nivelM)}</b>${variacao ? `<span>${variacao}</span>` : ''}${vazao ? `<small>${vazao}</small>` : ''}</div>`);
+  }
+  const leitura = [p.chuva?.ultimaLeitura, p.rio?.ultimaLeitura].filter(Boolean).sort().at(-1);
+  const onde = [p.corpo && !semAcento(p.nome).includes(semAcento(p.corpo)) ? p.corpo : null, p.municipio].filter(Boolean).join(' · ');
+  return `<b class="est-nome">${esc(p.nome)}</b>${onde ? `<div class="est-sub">${esc(onde)}</div>` : ''}${linhas.join('')}<div class="est-pe">leitura ${fmtHora(leitura)} · ANA · sem classificação de risco</div>`;
+}
 
 function mostrarDica(cod, ponto) {
   const dica = $('dica');
@@ -137,7 +159,11 @@ function desenharLegenda() {
         .join('')}
     </div>
     <div class="linha2 ana">
-      <span><i class="ponto-ana"></i>estação da ANA (só leitura, sem alerta)</span>
+      <span class="prefixo">estação da ANA</span>
+      <span><i class="ponto-ana p-rio"></i>rio</span>
+      <span><i class="ponto-ana p-chuva"></i>chuva</span>
+      <span><i class="ponto-ana p-ambos"></i>os dois</span>
+      <span class="nota">aproxime o mapa e passe o mouse ou toque num ponto para ver a leitura</span>
     </div>
     <div class="linha2 carta">
       <span class="carta-nome"><i class="hachura" style="--c:${TIPOS.inundacao.cor_css}"></i><b>Inundação</b></span>

@@ -157,17 +157,31 @@ export function previsaoDoMunicipio(dados, codIbge) {
 
 // Pontos das estações da ANA para o mapa: rios com leitura recente e pluviômetros ativos, sem repetir a estação que é
 // as duas coisas (a maioria das de chuva é estação de rio com pluviômetro acoplado). Sem coordenada, fica de fora.
+// Cada ponto leva as leituras para a dica do mapa: `rio` (cota, variação, vazão) e `chuva` (acumulados), ou null.
 export function pontosAna(dados) {
   const pontos = new Map();
-  const somar = (e, tipo) => {
-    if (!Number.isFinite(e.lat) || !Number.isFinite(e.lon)) return;
-    const p = pontos.get(e.codigo) ?? { codigo: e.codigo, nome: e.nome, lon: e.lon, lat: e.lat, rio: false, chuva: false };
-    p[tipo] = true;
-    pontos.set(e.codigo, p);
+  const ponto = (e, codIbge) => {
+    if (!Number.isFinite(e.lat) || !Number.isFinite(e.lon)) return null;
+    if (!pontos.has(e.codigo)) {
+      pontos.set(e.codigo, { codigo: e.codigo, nome: e.nome, corpo: e.rio ?? null, municipio: dados.porCodigo.get(codIbge)?.nome ?? null, lon: e.lon, lat: e.lat, rio: null, chuva: null });
+    }
+    return pontos.get(e.codigo);
   };
-  for (const lista of dados.estacoesRio.values()) for (const e of lista) if (e.fonte === 'ANA' && e.recente) somar(e, 'rio');
-  for (const lista of dados.pluviometros.values()) for (const e of lista) if (e.fonte === 'ANA' && e.ativa) somar(e, 'chuva');
-  return [...pontos.values()];
+  for (const [cod, lista] of dados.estacoesRio) {
+    for (const e of lista) {
+      if (e.fonte !== 'ANA' || !e.recente) continue;
+      const p = ponto(e, cod);
+      if (p) p.rio = { nivelM: e.nivelM, variacaoM: e.variacaoM ?? null, variacaoH: e.variacaoH ?? null, vazaoM3s: e.vazaoM3s ?? null, ultimaLeitura: e.ultimaLeitura };
+    }
+  }
+  for (const [cod, lista] of dados.pluviometros) {
+    for (const e of lista) {
+      if (e.fonte !== 'ANA' || !e.ativa) continue;
+      const p = ponto(e, cod);
+      if (p) p.chuva = { acumuladoMm: e.acumuladoMm, ultimaLeitura: e.ultimaLeitura };
+    }
+  }
+  return [...pontos.values()].map((p) => ({ ...p, tipo: p.rio && p.chuva ? 'ambos' : p.rio ? 'rio' : 'chuva' }));
 }
 
 // Pior situação de rio entre as estações recentes do município; null se não houver dado.

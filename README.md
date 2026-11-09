@@ -54,7 +54,7 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 - O cartão abre **compacto** (chuva, previsão das próximas 24 h e situação do rio) e expande para barras, gráfico hora a
   hora da previsão, rios e estações. Em municípios sem pluviômetro, mostra a estimativa do modelo e os vizinhos com medição.
 - O link guarda o município e a janela de tempo (`#m=4314902&j=24h`), então dá para compartilhar uma cidade.
-- **Estações da ANA** aparecem como pontos pequenos de contorno claro (rios com leitura recente e pluviômetros ativos), sem cor de risco: só mostram onde há medição. A legenda explica.
+- **Estações da ANA** aparecem como pontos a partir de um zoom médio (no estado inteiro seriam só poluição): vazado = rio, cheio = chuva, cinza = os dois. Passar o mouse (ou tocar, no celular) mostra o nome, o rio, o município, a chuva em 24 h, 6 h e 1 h, a cota com a variação, a vazão e a hora da leitura. Não têm cor de risco, porque a ANA não divulga limiares. A dica escolhe a estação mais próxima do cursor.
 - Vista de cima por padrão; o botão de relevo liga a vista 3D.
 - **Zoom com limites** (nem tão longe que mostre "dois RS", nem tão perto que mostre as arestas da malha), com um
   controle deslizante e o botão "Ver o RS todo". Recarregar a página não aproxima do município.
@@ -67,7 +67,7 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 Requer Node 22+. Sem dependências.
 
 ```sh
-node --test   # 130 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
+node --test   # 133 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
 ```
 
 ```sh

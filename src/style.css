@@ -334,7 +334,22 @@ button { font: inherit; color: inherit; }
 #legenda .linha2.rios span { white-space: nowrap; }
 #legenda .linha2.rios { margin-top: 8px; padding-top: 0; border-top: 0; }
 #legenda .linha2.ana { margin-top: 8px; padding-top: 0; border-top: 0; }
-#legenda .linha2 .ponto-ana { flex: none; width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; background: #0b1520; border: 1.5px solid #e8f3ff; }
+#legenda .linha2 .ponto-ana { flex: none; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; background: #0b1520; border: 1.5px solid #e8f3ff; }
+#legenda .linha2 .ponto-ana.p-chuva { background: #e8f3ff; border-color: #0b1520; box-shadow: 0 0 0 1px rgba(232, 243, 255, 0.5); }
+#legenda .linha2 .ponto-ana.p-ambos { background: #7f95a8; }
+#legenda .linha2.ana .nota { flex-basis: 100%; font-size: 11px; line-height: 1.35; }
+
+/* ---------- dica de uma estação da ANA (passar o mouse / tocar no ponto) ---------- */
+.estacao-dica { z-index: 8; }
+.estacao-dica .maplibregl-popup-content { padding: 10px 12px; background: var(--vidro-forte); color: var(--texto); border: 1px solid var(--linha); border-radius: 12px; font-size: 12.5px; line-height: 1.4; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45); backdrop-filter: blur(14px); pointer-events: none; }
+.estacao-dica .maplibregl-popup-tip { display: none; }
+.estacao-dica .est-nome { display: block; font-size: 13.5px; font-weight: 600; }
+.estacao-dica .est-sub { color: var(--suave); font-size: 12px; margin-top: 1px; }
+.estacao-dica .est-linha { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 7px; margin-top: 8px; }
+.estacao-dica .est-rot { min-width: 34px; color: var(--suave); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.estacao-dica .est-linha b { font-family: var(--mono); font-weight: 500; }
+.estacao-dica .est-linha small { flex-basis: 100%; padding-left: 41px; color: var(--suave); font-size: 11.5px; font-family: var(--mono); }
+.estacao-dica .est-pe { margin-top: 9px; padding-top: 7px; border-top: 1px solid var(--linha); color: var(--suave); font-size: 11px; }
 #legenda .estimado { width: 12px; height: 12px; border-radius: 3px; background: #27b6d9; opacity: 0.5; }
 #legenda .semdado { width: 12px; height: 12px; border-radius: 3px; background: #101c29; border: 1px dashed rgba(200, 220, 240, 0.4); }
 #legenda .brilho { width: 14px; height: 8px; border-radius: 4px; background: var(--c); box-shadow: 0 0 8px var(--c); }

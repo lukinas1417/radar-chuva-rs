@@ -113,7 +113,7 @@ de um servidor falso, o que num site de alertas é inaceitável.
 
 ## Como o sistema é verificado
 
-Há 130 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
+Há 133 testes automatizados (`node --test`, sem dependências), rodados a cada envio por um workflow separado do de
 coleta, para uma falha de teste nunca bloquear a atualização dos dados. Eles cobrem as regras que, se erradas,
 fazem o mapa afirmar algo falso:
 

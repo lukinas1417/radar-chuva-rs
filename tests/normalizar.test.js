@@ -257,6 +257,13 @@ test('data da ANA vira ISO com o fuso de Brasília; texto que não é data vira 
   assert.equal(paraIsoAna('ontem'), null);
 });
 
+test('nomes: a sigla da operadora e as rodovias ficam em caixa alta', () => {
+  assert.equal(capitalizar('CSG ANTÔNIO PRADO - 1248', ['CSG']), 'CSG Antônio Prado - 1248');
+  assert.equal(capitalizar('UHE CASTRO ALVES RS-122'), 'UHE Castro Alves RS-122');
+  assert.equal(capitalizar('RIO DAS ANTAS'), 'Rio das Antas'); // sem sigla para preservar, nada muda
+  assert.equal(capitalizar('CERAN PASSO', [null, undefined]), 'Ceran Passo');
+});
+
 test('nomes em caixa alta ficam legíveis, mantendo siglas e partículas', () => {
   assert.equal(capitalizar('UHE BARRA GRANDE PASSO DO HONORATO'), 'UHE Barra Grande Passo do Honorato');
   assert.equal(capitalizar('RIO DAS ANTAS'), 'Rio das Antas');
