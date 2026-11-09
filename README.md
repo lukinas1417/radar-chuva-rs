@@ -55,6 +55,7 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
   hora da previsão, rios e estações. Em municípios sem pluviômetro, mostra a estimativa do modelo e os vizinhos com medição.
 - O link guarda o município e a janela de tempo (`#m=4314902&j=24h`), então dá para compartilhar uma cidade.
 - **Estações da ANA** aparecem como pontos a partir de um zoom médio (no estado inteiro seriam só poluição): vazado = rio, cheio = chuva, cinza = os dois. Passar o mouse (ou tocar, no celular) mostra o nome, o rio, o município, a chuva em 24 h, 6 h e 1 h, a cota com a variação, a vazão e a hora da leitura. Não têm cor de risco, porque a ANA não divulga limiares. A dica escolhe a estação mais próxima do cursor.
+- **Camadas** (botão no topo, ao lado do relevo): chaves liga/desliga para a chuva nos municípios, o contorno dos rios em risco, as estações da ANA, as duas cartas do SGB, o sombreado do relevo, as notícias e a legenda, mais os atalhos "Só a chuva" e "Tudo". A legenda mostra só o que está ligado, camada oculta não baixa tiles, e um ponto no botão avisa que há algo oculto. A escolha fica salva no navegador (e um valor corrompido volta ao padrão, sem quebrar). O aviso de "municípios com rio fora da normalidade", no topo, não é uma camada e continua visível.
 - Vista de cima por padrão; o botão de relevo liga a vista 3D.
 - **Zoom com limites** (nem tão longe que mostre "dois RS", nem tão perto que mostre as arestas da malha), com um
   controle deslizante e o botão "Ver o RS todo". Recarregar a página não aproxima do município.
@@ -67,7 +68,7 @@ O que o sistema precisa ter para ser confiável, os modos de falha tratados e os
 Requer Node 22+. Sem dependências.
 
 ```sh
-node --test   # 133 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
+node --test   # 141 testes do núcleo (geometria, normalização das fontes, regras de dados e notícias)
 ```
 
 ```sh

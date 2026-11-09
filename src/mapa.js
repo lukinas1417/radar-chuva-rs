@@ -12,6 +12,7 @@ const ZOOM_MAXIMO = 10.5;
 // Zoom a partir do qual as estações da ANA aparecem (o estado inteiro fica por volta de 5,6).
 const ZOOM_ESTACOES = 6;
 const COR_SEM_DADO = '#101c29';
+const COR_MUNICIPIO_NEUTRO = '#16222f';
 const INCLINACAO = 36;
 const REDUZIR_MOVIMENTO = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TEM_HOVER = matchMedia('(hover: hover)').matches;
@@ -24,7 +25,7 @@ function margens(comCartao = false) {
   return { top: 56, bottom: 84, left: 340, right: comCartao ? 400 : 30 };
 }
 
-export function criarMapa({ container, dados, estacoes = [], htmlEstacao, aoSelecionar, aoPassar, aoAfastar, aoZoom, aoFalharCarta }) {
+export function criarMapa({ container, dados, estacoes = [], htmlEstacao, camadas: camadasIniciais = {}, aoSelecionar, aoPassar, aoAfastar, aoZoom, aoFalharCarta }) {
   const mapa = new maplibregl.Map({
     container,
     style: { version: 8, sources: {}, layers: [{ id: 'fundo', type: 'background', paint: { 'background-color': '#070d14' } }] },
@@ -53,7 +54,7 @@ export function criarMapa({ container, dados, estacoes = [], htmlEstacao, aoSele
   }
   // Os pontos são pequenos: a área de acerto é maior (e maior ainda no toque).
   function estacaoEm(ponto) {
-    if (!pronto) return null;
+    if (!pronto || !camadas.ana) return null;
     const r = TEM_HOVER ? 9 : 14;
     const achadas = mapa.queryRenderedFeatures([[ponto.x - r, ponto.y - r], [ponto.x + r, ponto.y + r]], { layers: ['estacoes-ana'] });
     let melhor = null;
@@ -74,6 +75,25 @@ export function criarMapa({ container, dados, estacoes = [], htmlEstacao, aoSele
     if (codPopup === p.codigo) return;
     codPopup = p.codigo;
     popup.setLngLat([p.lon, p.lat]).setHTML(htmlEstacao(p)).addTo(mapa);
+  }
+
+  // Camadas que o usuário liga e desliga (ver camadas.js). `chuva` é a cor dos municípios; as demais são camadas do
+  // mapa. Camada oculta nem baixa tiles (as cartas do SGB vêm de um serviço externo).
+  let camadas = { chuva: true, risco: true, ana: true, inundacao: true, movimento: true, sombra: true, ...camadasIniciais };
+  const CAMADAS_DO_MAPA = {
+    risco: ['risco-brilho', 'risco-linha'],
+    ana: ['estacoes-ana'],
+    inundacao: ['carta-inundacao'],
+    movimento: ['carta-movimento'],
+    sombra: ['sombra'],
+  };
+  function aplicarCamadas() {
+    if (!pronto) return;
+    for (const [chave, ids] of Object.entries(CAMADAS_DO_MAPA)) {
+      for (const id of ids) if (mapa.getLayer(id)) mapa.setLayoutProperty(id, 'visibility', camadas[chave] ? 'visible' : 'none');
+    }
+    if (!camadas.ana) fecharPopup();
+    pintar(janelaAtual); // a cor dos municípios depende da camada de chuva
   }
 
   let relevoLigado = false; // vista de cima por padrão; o relevo 3D é opcional
@@ -115,8 +135,9 @@ export function criarMapa({ container, dados, estacoes = [], htmlEstacao, aoSele
       const chuva = chuvaDoMunicipio(dados, cod, janela);
       const risco = riscoDoMunicipio(dados, cod) ?? 0;
       Object.assign(f.properties, {
-        cor: chuva === null ? COR_SEM_DADO : faixaDe(chuva.mm).cor,
-        op: chuva === null ? 0.62 : chuva.tipo === 'medido' ? 0.84 : 0.5, // estimado e previsto ficam mais transparentes que o medido
+        // Com a camada de chuva desligada, os municípios ficam numa cor única, discreta: só a malha e o que está por cima.
+        cor: !camadas.chuva ? COR_MUNICIPIO_NEUTRO : chuva === null ? COR_SEM_DADO : faixaDe(chuva.mm).cor,
+        op: !camadas.chuva ? 0.55 : chuva === null ? 0.62 : chuva.tipo === 'medido' ? 0.84 : 0.5, // estimado e previsto ficam mais transparentes que o medido
         risco,
         corRisco: SITUACOES.find((s) => s.valor === risco)?.cor ?? '#ffffff',
       });
@@ -255,6 +276,7 @@ export function criarMapa({ container, dados, estacoes = [], htmlEstacao, aoSele
     pronto = true;
     pintar(janelaAtual);
     adicionarCartas();
+    aplicarCamadas();
     if (codSelecionado !== null) mapa.setFilter('selecionado', ['==', ['get', 'codIbge'], codSelecionado]);
     if (codEu !== null) aplicarEu();
     if (relevoLigado) inclinar(true);
@@ -329,6 +351,10 @@ export function criarMapa({ container, dados, estacoes = [], htmlEstacao, aoSele
 
   return {
     pintar,
+    definirCamadas(novas) {
+      camadas = { ...camadas, ...novas };
+      aplicarCamadas();
+    },
     selecionar(cod) {
       fecharPopup();
       cartaoAberto = cod !== null;

@@ -21,6 +21,7 @@ import { areaKm2, municipioDe } from './geo.js';
 import { criarMapa } from './mapa.js';
 import { TIPOS, areasDoMunicipio, temCarta } from './suscetibilidade.js';
 import { noticiasPara } from './noticias.js';
+import { CAMADAS, carregarCamadas, desligadas, gravarCamadas, soChuva, todasLigadas } from './camadas.js';
 
 const $ = (id) => document.getElementById(id);
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -83,6 +84,10 @@ function gravarEstado() {
   history.replaceState(null, '', texto ? `#${texto}` : location.pathname + location.search);
 }
 
+// ---------- camadas (o que aparece na tela) ----------
+// Escolha do usuário, salva no navegador. Tudo ligado é o padrão.
+let camadas = carregarCamadas();
+
 // ---------- mapa ----------
 // O controle deslizante vai do zoom mínimo ao máximo do mapa (que dependem do tamanho da tela).
 const slider = $('zoom-slider');
@@ -95,7 +100,11 @@ const mapa = criarMapa({
   dados,
   estacoes: pontosAna(dados),
   htmlEstacao,
-  aoSelecionar: (cod) => selecionar(cod, { voar: false }),
+  camadas,
+  aoSelecionar: (cod) => {
+    fecharPainelCamadas(); // tocar no mapa fecha o painel, para ver o efeito (no celular ele cobre quase tudo)
+    selecionar(cod, { voar: false });
+  },
   aoPassar: mostrarDica,
   aoAfastar: (afastado) => $('recentrar').classList.toggle('oculto', !afastado),
   aoZoom: atualizarSlider,
@@ -144,32 +153,47 @@ function mostrarDica(cod, ponto) {
 // ---------- legenda ----------
 function desenharLegenda() {
   const marcas = ['0', '10', '30', '60', '100', '100+'];
-  $('legenda').innerHTML = `
+  // A legenda só fala do que está ligado: camada oculta não ocupa espaço nela.
+  const chuva = camadas.chuva
+    ? `
     <div class="titulo"><span>${ehPrevisao(janela) ? 'Previsão de chuva (mm)' : 'Chuva acumulada (mm)'}</span><b>${ehPrevisao(janela) ? `próximas ${janela.slice(1).replace('h', ' h')}` : janela.replace('h', ' h')}</b></div>
     <div class="escala">${FAIXAS.map((f) => `<i style="--c:${f.cor}"></i>`).join('')}</div>
     <div class="marcas">${marcas.map((m) => `<span>${m}</span>`).join('')}</div>
     <div class="linha2">
       <span><i class="semdado"></i>sem dado</span>
       <span><i class="estimado"></i>transparente: estimado</span>
-    </div>
+    </div>`
+    : '';
+  const rios = camadas.risco
+    ? `
     <div class="linha2 rios">
       <span class="prefixo">rio em</span>
       ${SITUACOES.slice(1)
         .map((s) => `<span><i class="brilho" style="--c:${s.cor}"></i>${s.texto}</span>`)
         .join('')}
-    </div>
+    </div>`
+    : '';
+  const ana = camadas.ana
+    ? `
     <div class="linha2 ana">
       <span class="prefixo">estação da ANA</span>
       <span><i class="ponto-ana p-rio"></i>rio</span>
       <span><i class="ponto-ana p-chuva"></i>chuva</span>
       <span><i class="ponto-ana p-ambos"></i>os dois</span>
       <span class="nota">aproxime o mapa e passe o mouse ou toque num ponto para ver a leitura</span>
-    </div>
+    </div>`
+    : '';
+  const cartas =
+    camadas.inundacao || camadas.movimento
+      ? `
     <div class="linha2 carta">
-      <span class="carta-nome"><i class="hachura" style="--c:${TIPOS.inundacao.cor_css}"></i><b>Inundação</b></span>
-      <span class="carta-nome"><i class="hachura mov" style="--c:${TIPOS.movimento.cor_css}"></i><b>Movimento de massa</b> <small>só classes média e alta</small></span>
+      ${camadas.inundacao ? `<span class="carta-nome"><i class="hachura" style="--c:${TIPOS.inundacao.cor_css}"></i><b>Inundação</b></span>` : ''}
+      ${camadas.movimento ? `<span class="carta-nome"><i class="hachura mov" style="--c:${TIPOS.movimento.cor_css}"></i><b>Movimento de massa</b> <small>só classes média e alta</small></span>` : ''}
       <span>cartas do SGB: onde o terreno tende a inundar ou deslizar (linha mais grossa = classe mais alta). Só em alguns municípios; toque num deles para ver mais. Não mostram o que acontece agora.</span>
-    </div>`;
+    </div>`
+      : '';
+  $('legenda').innerHTML = chuva + rios + ana + cartas;
+  $('legenda').hidden = !camadas.legenda || !(chuva + rios + ana + cartas).trim();
 }
 
 // ---------- status e resumo de risco ----------
@@ -458,6 +482,7 @@ function selecionar(cod, { voar = true } = {}) {
     cartao.hidden = false;
     $('sobre').hidden = true;
     $('sobre-botao').setAttribute('aria-expanded', 'false');
+    fecharPainelCamadas();
     if (voar) mapa.voarPara(cod);
   }
   gravarEstado();
@@ -611,11 +636,13 @@ $('sobre-botao').addEventListener('click', () => {
   const abrir = $('sobre').hidden;
   $('sobre').hidden = !abrir;
   $('sobre-botao').setAttribute('aria-expanded', String(abrir));
+  if (abrir) fecharPainelCamadas();
 });
 document.addEventListener('keydown', (ev) => {
   if (ev.key !== 'Escape' || ev.target === campo) return;
   $('sobre').hidden = true;
   $('sobre-botao').setAttribute('aria-expanded', 'false');
+  fecharPainelCamadas();
   $('lista-atencao').hidden = true;
   $('atencao').setAttribute('aria-expanded', 'false');
   if (noticiasAbertas) {
@@ -644,8 +671,8 @@ function desenharNoticias() {
   const painel = $('noticias');
   const botao = $('noticias-botao');
   const todas = dados.noticias?.noticias ?? [];
-  botao.hidden = todas.length === 0; // o CSS só mostra a pílula no celular
-  if (!todas.length) {
+  botao.hidden = todas.length === 0 || !camadas.noticias; // o CSS só mostra a pílula no celular
+  if (!todas.length || !camadas.noticias) {
     painel.hidden = true;
     return;
   }
@@ -686,9 +713,64 @@ $('noticias').addEventListener('click', (ev) => {
 });
 telaPequena.addEventListener('change', desenharNoticias);
 
+// ---------- painel de camadas ----------
+// Chaves liga/desliga para despoluir o mapa, e dois atalhos. O resumo de rios em risco, no topo, não é uma camada:
+// continua avisando mesmo com o contorno desligado.
+function desenharPainelCamadas() {
+  let grupo = null;
+  let html = `<div class="camadas-topo"><h2>Camadas</h2>
+    <div class="atalhos"><button type="button" data-atalho="chuva" title="Desliga tudo, menos a chuva">Só a chuva</button><button type="button" data-atalho="tudo" title="Liga todas as camadas">Tudo</button></div></div>`;
+  for (const c of CAMADAS) {
+    if (c.grupo !== grupo) {
+      grupo = c.grupo;
+      html += `<h3>${esc(grupo)}</h3>`;
+    }
+    html += `<label class="chave"><input type="checkbox" data-camada="${c.id}"><span class="trilho-chave" aria-hidden="true"></span>
+      <span class="rot">${esc(c.rotulo)}${c.nota ? `<small>${esc(c.nota)}</small>` : ''}</span></label>`;
+  }
+  $('camadas').innerHTML = html + '<p class="camadas-pe">Sua escolha fica salva neste navegador.</p>';
+}
+function aplicarCamadas() {
+  mapa.definirCamadas(camadas);
+  desenharLegenda();
+  desenharNoticias();
+  document.querySelectorAll('#camadas input[data-camada]').forEach((i) => (i.checked = camadas[i.dataset.camada]));
+  const ocultas = desligadas(camadas);
+  $('camadas-botao').classList.toggle('com-ocultas', ocultas > 0);
+  $('camadas-botao').title = ocultas ? `Camadas do mapa (${ocultas} oculta${ocultas > 1 ? 's' : ''})` : 'Camadas do mapa';
+}
+function fecharPainelCamadas() {
+  $('camadas').hidden = true;
+  $('camadas-botao').setAttribute('aria-expanded', 'false');
+}
+$('camadas-botao').addEventListener('click', () => {
+  const abrir = $('camadas').hidden;
+  $('camadas').hidden = !abrir;
+  $('camadas-botao').setAttribute('aria-expanded', String(abrir));
+  if (abrir) {
+    $('sobre').hidden = true;
+    $('sobre-botao').setAttribute('aria-expanded', 'false');
+  }
+});
+$('camadas').addEventListener('change', (ev) => {
+  const chave = ev.target.closest('input[data-camada]');
+  if (!chave) return;
+  camadas = { ...camadas, [chave.dataset.camada]: chave.checked };
+  gravarCamadas(camadas);
+  aplicarCamadas();
+});
+$('camadas').addEventListener('click', (ev) => {
+  const atalho = ev.target.closest('button[data-atalho]');
+  if (!atalho) return;
+  camadas = atalho.dataset.atalho === 'chuva' ? soChuva() : todasLigadas();
+  gravarCamadas(camadas);
+  aplicarCamadas();
+});
+desenharPainelCamadas();
+
 // ---------- início ----------
 marcarJanela();
-desenharLegenda();
+aplicarCamadas();
 desenharStatus();
 desenharAtencao();
 

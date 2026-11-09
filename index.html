@@ -45,6 +45,9 @@
   <div id="status" class="vidro">
     <i class="ponto" id="status-ponto"></i>
     <span id="status-texto">Carregando…</span>
+    <button id="camadas-botao" class="icone" type="button" aria-expanded="false" aria-controls="camadas" aria-label="Camadas do mapa" title="Camadas do mapa">
+      <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="m12 4 8.500 4.500L12 13 3.500 8.500 12 4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m3.500 12.500 8.500 4.500 8.500-4.500M3.500 16.500l8.500 4.500 8.500-4.500" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <button id="relevo" class="icone" type="button" aria-pressed="false" aria-label="Alternar relevo 3D" title="Relevo 3D">
       <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="m3 17 5.500-9 4 6 2.500-3.500L21 17Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
     </button>
@@ -88,6 +91,8 @@
   </nav>
 
   <section id="legenda" class="vidro" aria-label="Legenda"></section>
+
+  <section id="camadas" class="vidro" hidden aria-label="Camadas do mapa"></section>
 
   <section id="sobre" class="vidro" hidden>
     <h2>Sobre os dados</h2>
