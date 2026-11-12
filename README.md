@@ -1,4 +1,6 @@
-# Radar de Chuva RS
+# Radar de Chuva RS / Rain Radar RS - Brazil
+
+**English:** the interface opens in English by default (button **PT** in the top bar, or `?lang=pt`, switches to Portuguese). Live map of accumulated rainfall, forecast and river levels for every municipality of Rio Grande do Sul, Brazil, from CEMADEN, the state Civil Defense, ANA and Open-Meteo. News headlines stay in Portuguese (original sources). Not a substitute for official alerts.
 
 **[Ver ao vivo](https://lukinas1417.github.io/radar-chuva-rs/)**
 

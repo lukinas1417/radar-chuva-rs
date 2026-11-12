@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Radar de Chuva RS</title>
-  <meta name="description" content="Chuva acumulada e nível dos rios, município a município, no Rio Grande do Sul. Dados do CEMADEN e da Defesa Civil RS.">
+  <title>Rain Radar RS - Brazil</title>
+  <meta name="description" content="Accumulated rainfall, forecast and river levels, municipality by municipality, in Rio Grande do Sul, Brazil. Data from CEMADEN, the state Civil Defense and ANA.">
   <meta name="theme-color" content="#070d14">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23070d14'/%3E%3Cpath d='M16 6c4 5 6.5 8.2 6.5 11.2a6.5 6.5 0 0 1-13 0C9.5 14.2 12 11 16 6Z' fill='%237dd3fc'/%3E%3C/svg%3E">
   <link rel="preload" href="assets/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="src/style.css">
 </head>
 <body>
-  <div id="mapa" aria-label="Mapa de chuva acumulada e risco de rios por município do Rio Grande do Sul"></div>
+  <div id="mapa" aria-label="Map of accumulated rainfall and river risk by municipality in Rio Grande do Sul, Brazil" data-i18n-attr="aria-label:map.label"></div>
 
   <header id="topo">
     <div class="marca">
@@ -20,14 +20,14 @@
         <path d="M16 5c4.2 5.2 6.8 8.5 6.8 11.7a6.8 6.8 0 0 1-13.6 0C9.2 13.500 11.800 10.200 16 5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
         <path d="M12.800 17.600a3.400 3.400 0 0 0 3.200 3.300" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
-      <span>Radar de Chuva <b>RS</b></span>
+      <span data-i18n="brand" data-i18n-html>Rain Radar <b>RS</b></span>
     </div>
 
     <div class="busca vidro">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.500 4.500" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <input id="busca" type="text" role="combobox" aria-expanded="false" aria-controls="resultados" aria-autocomplete="list"
-             placeholder="Buscar município" autocomplete="off" spellcheck="false">
-      <button id="localizar" class="icone" type="button" aria-label="Usar minha localização" title="Usar minha localização">
+             placeholder="Search municipality" data-i18n-attr="placeholder:search.ph" autocomplete="off" spellcheck="false">
+      <button id="localizar" class="icone" type="button" aria-label="Use my location" title="Use my location" data-i18n-attr="aria-label:locate;title:locate">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.500v4M12 17.500v4M2.500 12h4M17.500 12h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </button>
       <ul id="resultados" role="listbox" hidden></ul>
@@ -35,81 +35,82 @@
 
     <div class="pilulas">
       <button id="atencao" class="pilula vidro" type="button" aria-expanded="false" aria-controls="lista-atencao">
-        <i class="ponto"></i><span id="atencao-texto">Carregando…</span>
+        <i class="ponto"></i><span id="atencao-texto" data-i18n="loading">Loading…</span>
       </button>
-      <button id="noticias-botao" class="pilula vidro" type="button" hidden aria-expanded="false" aria-controls="noticias">Notícias</button>
+      <button id="noticias-botao" class="pilula vidro" type="button" hidden aria-expanded="false" aria-controls="noticias" data-i18n="news.btn">News</button>
     </div>
     <ul id="lista-atencao" class="vidro" hidden></ul>
   </header>
 
   <div id="status" class="vidro">
     <i class="ponto" id="status-ponto"></i>
-    <span id="status-texto">Carregando…</span>
-    <button id="camadas-botao" class="icone" type="button" aria-expanded="false" aria-controls="camadas" aria-label="Camadas do mapa" title="Camadas do mapa">
+    <span id="status-texto" data-i18n="loading">Loading…</span>
+    <button id="camadas-botao" class="icone" type="button" aria-expanded="false" aria-controls="camadas" aria-label="Map layers" title="Map layers" data-i18n-attr="aria-label:layers.label;title:layers.label">
       <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="m12 4 8.500 4.500L12 13 3.500 8.500 12 4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m3.500 12.500 8.500 4.500 8.500-4.500M3.500 16.500l8.500 4.500 8.500-4.500" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button id="relevo" class="icone" type="button" aria-pressed="false" aria-label="Alternar relevo 3D" title="Relevo 3D">
+    <button id="relevo" class="icone" type="button" aria-pressed="false" aria-label="Toggle 3D terrain" title="3D terrain" data-i18n-attr="aria-label:relief.label;title:relief.title">
       <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="m3 17 5.500-9 4 6 2.500-3.500L21 17Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
     </button>
-    <button id="sobre-botao" class="icone" type="button" aria-expanded="false" aria-controls="sobre" aria-label="Sobre os dados" title="Sobre os dados">
+    <button id="idioma" class="icone" type="button" aria-label="Português" title="Ver em português" data-i18n-attr="title:lang.title">PT</button>
+    <button id="sobre-botao" class="icone" type="button" aria-expanded="false" aria-controls="sobre" aria-label="About the data" title="About the data" data-i18n-attr="aria-label:about.label;title:about.label">
       <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5.500M12 7.800v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
   </div>
 
   <div id="controles-zoom">
     <div class="zoom-trilho vidro">
-      <input id="zoom-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Zoom do mapa">
+      <input id="zoom-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Map zoom" data-i18n-attr="aria-label:zoom.label">
     </div>
-    <button id="recentrar" class="vidro oculto" type="button" aria-label="Voltar à visão do estado todo">
+    <button id="recentrar" class="vidro oculto" type="button" aria-label="Back to the whole state" data-i18n-attr="aria-label:recenter.label">
       <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Ver o RS todo</span>
+      <span data-i18n="recenter">See all of RS</span>
     </button>
   </div>
 
   <div id="coluna">
     <aside id="cartao" class="vidro" hidden aria-live="polite"></aside>
-    <aside id="noticias" class="vidro" hidden aria-label="Notícias recentes"></aside>
+    <aside id="noticias" class="vidro" hidden aria-label="Recent news" data-i18n-attr="aria-label:news.panel"></aside>
   </div>
 
   <div id="convite" class="vidro" hidden>
-    <p><b>Quer ver a sua cidade?</b> Usamos a localização aproximada só no seu navegador. Nada é enviado nem guardado.</p>
+    <p><b data-i18n="invite.q">Want to see your city?</b><span data-i18n="invite.body"> We use your approximate location only in your browser. Nothing is sent or stored.</span></p>
     <div>
-      <button id="convite-sim" class="primario" type="button">Usar minha localização</button>
-      <button id="convite-nao" class="discreto" type="button">Agora não</button>
+      <button id="convite-sim" class="primario" type="button" data-i18n="invite.yes">Use my location</button>
+      <button id="convite-nao" class="discreto" type="button" data-i18n="invite.no">Not now</button>
     </div>
   </div>
 
-  <nav id="janelas" class="vidro" aria-label="Janela de chuva: acumulado passado ou previsão">
-    <span class="rotulo">Chuva</span>
+  <nav id="janelas" class="vidro" aria-label="Rain window: past accumulation or forecast" data-i18n-attr="aria-label:win.label">
+    <span class="rotulo" data-i18n="win.rain">Rain</span>
     <div role="group">
-      <button type="button" data-janela="1h" title="Acumulado na última hora">1 h</button>
-      <button type="button" data-janela="6h" title="Acumulado nas últimas 6 horas">6 h</button>
-      <button type="button" data-janela="24h" title="Acumulado nas últimas 24 horas">24 h</button>
-      <button type="button" data-janela="+6h" title="Previsão das próximas 6 horas" aria-label="Previsão das próximas 6 horas">+6 h</button>
-      <button type="button" data-janela="+24h" title="Previsão das próximas 24 horas" aria-label="Previsão das próximas 24 horas">+24 h</button>
+      <button type="button" data-janela="1h" title="Accumulated in the last hour" data-i18n-attr="title:win.1h">1 h</button>
+      <button type="button" data-janela="6h" title="Accumulated in the last 6 hours" data-i18n-attr="title:win.6h">6 h</button>
+      <button type="button" data-janela="24h" title="Accumulated in the last 24 hours" data-i18n-attr="title:win.24h">24 h</button>
+      <button type="button" data-janela="+6h" title="Forecast for the next 6 hours" aria-label="Forecast for the next 6 hours" data-i18n-attr="title:win.+6h;aria-label:win.+6h">+6 h</button>
+      <button type="button" data-janela="+24h" title="Forecast for the next 24 hours" aria-label="Forecast for the next 24 hours" data-i18n-attr="title:win.+24h;aria-label:win.+24h">+24 h</button>
     </div>
   </nav>
 
-  <section id="legenda" class="vidro" aria-label="Legenda"></section>
+  <section id="legenda" class="vidro" aria-label="Legend" data-i18n-attr="aria-label:legend.label"></section>
 
-  <section id="camadas" class="vidro" hidden aria-label="Camadas do mapa"></section>
+  <section id="camadas" class="vidro" hidden aria-label="Map layers" data-i18n-attr="aria-label:layers.label"></section>
 
   <section id="sobre" class="vidro" hidden>
-    <h2>Sobre os dados</h2>
-    <p><b>Chuva.</b> DADOS DA REDE OBSERVACIONAL DO CEMADEN/MCTIC, pluviômetros da Defesa Civil do RS e estações da Agência Nacional de Águas (ANA, a maioria em usinas e barragens). O valor de cada município é o maior acumulado entre as estações ativas dele. Os botões <b>1 h, 6 h e 24 h</b> mostram o que já choveu; <b>+6 h e +24 h</b> mostram a previsão.</p>
-    <p><b>Estimativa e previsão.</b> A previsão vem sempre do modelo. Onde não há medição recente, o mapa mostra (transparente, com “~”) a chuva estimada pelo modelo <a href="https://open-meteo.com/">Open-Meteo</a> (CC BY 4.0) no centro do município. É um modelo, não um pluviômetro: pode errar, principalmente em temporais localizados.</p>
-    <p><b>Rios.</b> Rede Hidrometeorológica da Defesa Civil do RS. O contorno luminoso indica a situação informada por ela (atenção, alerta ou inundação) e pode refletir o maior nível recente, não só o atual. Estações da <a href="https://www.ana.gov.br/hidrowebservice/swagger-ui/index.html">ANA (HidroWebService)</a> complementam com a leitura da régua (cota), de hora em hora, mas a ANA não divulga limiares de alerta: elas <b>não têm classificação de risco</b> e não entram no contorno luminoso nem no resumo de rios.</p>
-    <p><b>Notícias.</b> Títulos e links do G1 RS e da Agência Brasil (feeds RSS públicos), escolhidos automaticamente por palavras-chave, o que pode errar. O conteúdo é dos veículos: os links levam até eles.</p>
-    <p><b>Suscetibilidade.</b> Cartas de Suscetibilidade a Movimentos Gravitacionais de Massa e Inundações do <a href="https://www.sgb.gov.br/pt/web/guest/rio-grande-do-sul-cartografia-de-suscetibilidade">Serviço Geológico do Brasil (SGB/CPRM)</a>, exibidas com citação da fonte, conforme orientação da Ouvidoria do SGB. Mostram onde o terreno tende a inundar ou deslizar, em escala e com finalidade próprias (planejamento territorial): <b>não indicam o que está acontecendo agora</b> nem a chuva do dia. Existem só para alguns municípios; onde não há carta, isso <b>não</b> quer dizer que não há risco. As cartas ficam sempre visíveis, em qualquer zoom; no movimento de massa só as classes média e alta são hachuradas, porque a classe baixa cobre quase todo o município. As cores originais do SGB foram trocadas para não se confundir com a chuva.</p>
-    <p><b>Mapa.</b> Malha municipal do IBGE. Relevo: Mapzen/AWS Terrain Tiles.</p>
-    <p><b>Município em cinza escuro</b> está sem medição e sem estimativa no momento, o que não significa ausência de chuva.</p>
-    <p class="aviso"><b>Este projeto não substitui os alertas oficiais.</b> Em emergência, siga a Defesa Civil: SMS 40199 com seu CEP, ou 199.</p>
-    <p><a href="https://github.com/lukinas1417/radar-chuva-rs">Código aberto no GitHub</a></p>
+    <h2 data-i18n="about.h">About the data</h2>
+    <p data-i18n="about.rain" data-i18n-html><b>Rain.</b> DADOS DA REDE OBSERVACIONAL DO CEMADEN/MCTIC (CEMADEN observational network data), state Civil Defense rain gauges and National Water Agency (ANA) stations, most of them at dams and power plants. A municipality's value is the highest accumulation among its active stations. The <b>1 h, 6 h and 24 h</b> buttons show what has already fallen; <b>+6 h and +24 h</b> show the forecast.</p>
+    <p data-i18n="about.est" data-i18n-html><b>Estimate and forecast.</b> The forecast always comes from the model. Where there is no recent measurement, the map shows (translucent, with “~”) the rainfall estimated by the <a href="https://open-meteo.com/">Open-Meteo</a> model (CC BY 4.0) at the municipality centre. It is a model, not a rain gauge: it can be wrong, especially in localised storms.</p>
+    <p data-i18n="about.rivers" data-i18n-html><b>Rivers.</b> Rio Grande do Sul Civil Defense hydrometeorological network. The glowing outline shows the status it reports (attention, alert or flood) and may reflect the highest recent level, not only the current one. <a href="https://www.ana.gov.br/hidrowebservice/swagger-ui/index.html">ANA (HidroWebService)</a> stations add the hourly gauge reading (stage), but ANA does not publish alert thresholds: they have <b>no risk classification</b> and are not part of the glowing outline or the river summary.</p>
+    <p data-i18n="about.news" data-i18n-html><b>News.</b> Headlines and links from G1 RS and Agência Brasil (public RSS feeds, in Portuguese), picked automatically by keyword, which can be wrong. The content belongs to the outlets: the links lead to them.</p>
+    <p data-i18n="about.terrain" data-i18n-html><b>Susceptibility.</b> Susceptibility charts for gravitational mass movements and floods from the <a href="https://www.sgb.gov.br/pt/web/guest/rio-grande-do-sul-cartografia-de-suscetibilidade">Geological Survey of Brazil (SGB/CPRM)</a>, shown with source credit as advised by the SGB Ombudsman. They show where the terrain tends to flood or slide, at their own scale and for their own purpose (land-use planning): <b>they do not show what is happening now</b> nor today's rain. They exist only for some municipalities; where there is no chart, that does <b>not</b> mean there is no risk. The charts are always visible at any zoom; for mass movement only the medium and high classes are hatched, because the low class covers almost the whole municipality. The original SGB colours were replaced so they are not confused with rainfall.</p>
+    <p data-i18n="about.map" data-i18n-html><b>Map.</b> IBGE municipal boundaries. Terrain: Mapzen/AWS Terrain Tiles.</p>
+    <p data-i18n="about.grey" data-i18n-html><b>A dark grey municipality</b> has no measurement and no estimate at the moment, which does not mean there is no rain.</p>
+    <p class="aviso" data-i18n="about.warn" data-i18n-html><b>This project does not replace official alerts.</b> In an emergency, follow Civil Defense: call 199 (in Brazil) or SMS 40199 with your postcode.</p>
+    <p data-i18n="about.code" data-i18n-html><a href="https://github.com/lukinas1417/radar-chuva-rs">Open source on GitHub</a></p>
   </section>
 
   <footer id="creditos">
-    <span>Não substitui os alertas oficiais · SMS 40199</span>
-    <span class="fontes">Dados: CEMADEN/MCTIC, Defesa Civil RS, ANA, Open-Meteo, IBGE, SGB</span>
+    <span data-i18n="foot.warn">Does not replace official alerts · Brazil emergency 199</span>
+    <span class="fontes" data-i18n="foot.src">Data: CEMADEN/MCTIC, Civil Defense RS, ANA, Open-Meteo, IBGE, SGB</span>
   </footer>
 
   <div id="dica" role="tooltip" hidden></div>

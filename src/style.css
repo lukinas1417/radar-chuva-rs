@@ -458,3 +458,6 @@ button { font: inherit; color: inherit; }
 .carta-barra .baixa { opacity: 0.3; }
 .carta-classes { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 5px !important; font-size: 12px; }
 .carta-classes b { color: var(--texto); font-weight: 500; }
+
+/* botão de idioma (mostra o idioma para o qual troca) */
+#idioma { font: 600 11.5px/1 var(--mono); letter-spacing: 0.04em; }

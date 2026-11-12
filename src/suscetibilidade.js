@@ -24,6 +24,7 @@ const PERIODO = 16; // px no tile de 1024: 8 px de tela, o mesmo espaçamento em
 export const TIPOS = {
   inundacao: {
     rotulo: 'Inundação',
+    rotuloEn: 'Flood',
     camada: 'gestao-territorial:suscet_inundacao',
     cor: [255, 184, 77], // âmbar
     cor_css: '#ffb84d',
@@ -33,6 +34,7 @@ export const TIPOS = {
   },
   movimento: {
     rotulo: 'Movimento de massa',
+    rotuloEn: 'Mass movement',
     camada: 'gestao-territorial:suscet_movimento_de_massa',
     cor: [255, 107, 154], // rosa
     cor_css: '#ff6b9a',

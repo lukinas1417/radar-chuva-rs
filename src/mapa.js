@@ -1,4 +1,5 @@
 // Mapa em tela cheia: relevo 3D, municípios coloridos pela chuva e brilho pulsante nos rios em risco.
+import { L } from './i18n.js';
 import { SITUACOES, chuvaDoMunicipio, faixaDe, riscoDoMunicipio } from './dados.js';
 import { TIPOS, caixaDoTile, hachurar, urlWms } from './suscetibilidade.js';
 
@@ -391,7 +392,7 @@ export function criarMapa({ container, dados, estacoes = [], htmlEstacao, camada
       marcadorLocal?.remove();
       const el = document.createElement('div');
       el.className = 'eu';
-      el.title = 'Você está aqui';
+      el.title = L('Você está aqui', 'You are here');
       marcadorLocal = new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(mapa);
     },
     alternarRelevo() {

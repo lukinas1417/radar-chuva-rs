@@ -3,14 +3,14 @@
 
 // `grupo` só organiza o painel. A ordem é a de exibição.
 export const CAMADAS = [
-  { id: 'chuva', grupo: 'Chuva e rios', rotulo: 'Chuva nos municípios', nota: 'a cor de cada município' },
-  { id: 'risco', grupo: 'Chuva e rios', rotulo: 'Contorno dos rios em risco', nota: 'Defesa Civil; o aviso no topo continua' },
-  { id: 'ana', grupo: 'Chuva e rios', rotulo: 'Estações da ANA', nota: 'pontos com a leitura, ao aproximar o mapa' },
-  { id: 'inundacao', grupo: 'Terreno', rotulo: 'Carta de inundação', nota: 'SGB, só em alguns municípios' },
-  { id: 'movimento', grupo: 'Terreno', rotulo: 'Carta de movimento de massa', nota: 'SGB, só em alguns municípios' },
-  { id: 'sombra', grupo: 'Terreno', rotulo: 'Sombreado do relevo', nota: '' },
-  { id: 'noticias', grupo: 'Painéis', rotulo: 'Notícias', nota: '' },
-  { id: 'legenda', grupo: 'Painéis', rotulo: 'Legenda', nota: '' },
+  { id: 'chuva', grupo: 'Chuva e rios', grupoEn: 'Rain and rivers', rotulo: 'Chuva nos municípios', rotuloEn: 'Rain by municipality', nota: 'a cor de cada município', notaEn: 'the colour of each municipality' },
+  { id: 'risco', grupo: 'Chuva e rios', grupoEn: 'Rain and rivers', rotulo: 'Contorno dos rios em risco', rotuloEn: 'Outline of rivers at risk', nota: 'Defesa Civil; o aviso no topo continua', notaEn: 'Civil Defense; the notice at the top stays' },
+  { id: 'ana', grupo: 'Chuva e rios', grupoEn: 'Rain and rivers', rotulo: 'Estações da ANA', rotuloEn: 'ANA stations', nota: 'pontos com a leitura, ao aproximar o mapa', notaEn: 'dots with the reading, when zoomed in' },
+  { id: 'inundacao', grupo: 'Terreno', grupoEn: 'Terrain', rotulo: 'Carta de inundação', rotuloEn: 'Flood chart', nota: 'SGB, só em alguns municípios', notaEn: 'SGB, only some municipalities' },
+  { id: 'movimento', grupo: 'Terreno', grupoEn: 'Terrain', rotulo: 'Carta de movimento de massa', rotuloEn: 'Mass movement chart', nota: 'SGB, só em alguns municípios', notaEn: 'SGB, only some municipalities' },
+  { id: 'sombra', grupo: 'Terreno', grupoEn: 'Terrain', rotulo: 'Sombreado do relevo', rotuloEn: 'Terrain shading', nota: '', notaEn: '' },
+  { id: 'noticias', grupo: 'Painéis', grupoEn: 'Panels', rotulo: 'Notícias', rotuloEn: 'News', nota: '', notaEn: '' },
+  { id: 'legenda', grupo: 'Painéis', grupoEn: 'Panels', rotulo: 'Legenda', rotuloEn: 'Legend', nota: '', notaEn: '' },
 ];
 
 const IDS = CAMADAS.map((c) => c.id);

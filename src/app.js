@@ -21,33 +21,46 @@ import { areaKm2, municipioDe } from './geo.js';
 import { criarMapa } from './mapa.js';
 import { TIPOS, areasDoMunicipio, temCarta } from './suscetibilidade.js';
 import { noticiasPara } from './noticias.js';
+import { L, LOCALE, aplicarHtml, idioma, trocarIdioma } from './i18n.js';
 import { CAMADAS, carregarCamadas, desligadas, gravarCamadas, soChuva, todasLigadas } from './camadas.js';
 
 const $ = (id) => document.getElementById(id);
+aplicarHtml();
+{
+  const b = document.getElementById('idioma');
+  b.textContent = idioma === 'en' ? 'PT' : 'EN';
+  b.setAttribute('aria-label', idioma === 'en' ? 'Português' : 'English');
+  b.title = idioma === 'en' ? 'Ver em português' : 'Switch to English';
+  b.addEventListener('click', trocarIdioma);
+}
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ESCAPES[c]);
 
-const fmtMm = (v) => (v === 0 ? '0' : v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+const fmtMm = (v) => (v === 0 ? '0' : v.toLocaleString(LOCALE, { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
 // Estimativa por modelo leva "~" e "(est.)": nunca se confunde com medição.
-const SELO = { estimado: ' (est.)', previsto: ' (prev.)' };
-const textoMm = (c) => (c === null ? 'sem dado' : `${c.tipo === 'medido' ? '' : '~'}${fmtMm(c.mm)} mm${SELO[c.tipo] ?? ''}`);
-const fmtM = (v) => `${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
+const SELO = { estimado: L(' (est.)', ' (est.)'), previsto: L(' (prev.)', ' (fcst.)') };
+const textoMm = (c) => (c === null ? L('sem dado', 'no data') : `${c.tipo === 'medido' ? '' : '~'}${fmtMm(c.mm)} mm${SELO[c.tipo] ?? ''}`);
+const fmtM = (v) => `${v.toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
 const mesmoDia = (a, b) => a.toDateString() === b.toDateString();
 function fmtHora(iso) {
   const d = new Date(iso);
-  const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  return mesmoDia(d, new Date()) ? hora : `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} ${hora}`;
+  const hora = d.toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
+  return mesmoDia(d, new Date()) ? hora : `${d.toLocaleDateString(LOCALE, { day: '2-digit', month: '2-digit' })} ${hora}`;
 }
 
 const TEXTO_JANELA = {
-  '1h': 'na última hora',
-  '6h': 'nas últimas 6 horas',
-  '24h': 'nas últimas 24 horas',
-  '+6h': 'previstos para as próximas 6 horas',
-  '+24h': 'previstos para as próximas 24 horas',
+  '1h': L('na última hora', 'in the last hour'),
+  '6h': L('nas últimas 6 horas', 'in the last 6 hours'),
+  '24h': L('nas últimas 24 horas', 'in the last 24 hours'),
+  '+6h': L('previstos para as próximas 6 horas', 'forecast for the next 6 hours'),
+  '+24h': L('previstos para as próximas 24 horas', 'forecast for the next 24 hours'),
 };
-const GRAVIDADE = ['normalidade', 'atenção', 'alerta', 'inundação'];
+// Nome da situação do rio no idioma da página (dados.js guarda o português, que os testes usam).
+const SITUACAO_EN = ['normal', 'attention', 'alert', 'flood'];
+const nomeSituacao = (nivel) => L(SITUACOES[nivel].texto, SITUACAO_EN[nivel]);
+const GRAVIDADE = SITUACOES.map((_, i) => nomeSituacao(i));
 const COR_ALERTA = '#ffd23f';
+const tipoNome = (t) => L(TIPOS[t].rotulo, TIPOS[t].rotuloEn);
 
 // ---------- aviso temporário ----------
 let temporizadorAviso;
@@ -66,8 +79,8 @@ try {
   dados = await carregarDados();
 } catch (erro) {
   console.error(erro);
-  $('status-texto').textContent = 'Sem dados';
-  mostrarAviso('Não foi possível carregar os dados agora. Tente novamente em instantes.', true, 15000);
+  $('status-texto').textContent = L('Sem dados', 'No data');
+  mostrarAviso(L('Não foi possível carregar os dados agora. Tente novamente em instantes.', 'Could not load the data right now. Please try again in a moment.'), true, 15000);
   throw erro;
 }
 
@@ -108,7 +121,7 @@ const mapa = criarMapa({
   aoPassar: mostrarDica,
   aoAfastar: (afastado) => $('recentrar').classList.toggle('oculto', !afastado),
   aoZoom: atualizarSlider,
-  aoFalharCarta: () => mostrarAviso('As cartas de suscetibilidade do SGB estão indisponíveis agora. O resto do mapa segue normal.', true),
+  aoFalharCarta: () => mostrarAviso(L('As cartas de suscetibilidade do SGB estão indisponíveis agora. O resto do mapa segue normal.', 'The SGB susceptibility charts are unavailable right now. The rest of the map works normally.'), true),
 });
 
 slider.addEventListener('input', () => {
@@ -124,17 +137,17 @@ function htmlEstacao(p) {
   const linhas = [];
   if (p.chuva) {
     const a = p.chuva.acumuladoMm;
-    linhas.push(`<div class="est-linha"><span class="est-rot">Chuva</span><b>${fmtMm(a['24h'])} mm</b><span>em 24 h</span><small>${fmtMm(a['6h'])} mm em 6 h · ${fmtMm(a['1h'])} mm em 1 h</small></div>`);
+    linhas.push(`<div class="est-linha"><span class="est-rot">${L('Chuva', 'Rain')}</span><b>${fmtMm(a['24h'])} mm</b><span>${L('em 24 h', 'in 24 h')}</span><small>${fmtMm(a['6h'])} mm ${L('em 6 h', 'in 6 h')} · ${fmtMm(a['1h'])} mm ${L('em 1 h', 'in 1 h')}</small></div>`);
   }
   if (p.rio) {
     const r = p.rio;
-    const variacao = r.variacaoM === null ? '' : `${r.variacaoM > 0 ? '+' : ''}${r.variacaoM.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m${r.variacaoH ? ` em ${r.variacaoH} h` : ''}`;
-    const vazao = r.vazaoM3s === null ? '' : `vazão ${r.vazaoM3s.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} m³/s`;
-    linhas.push(`<div class="est-linha"><span class="est-rot">Rio</span><b>cota ${fmtM(r.nivelM)}</b>${variacao ? `<span>${variacao}</span>` : ''}${vazao ? `<small>${vazao}</small>` : ''}</div>`);
+    const variacao = r.variacaoM === null ? '' : `${r.variacaoM > 0 ? '+' : ''}${r.variacaoM.toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m${r.variacaoH ? ` ${L('em', 'in')} ${r.variacaoH} h` : ''}`;
+    const vazao = r.vazaoM3s === null ? '' : `${L('vazão', 'discharge')} ${r.vazaoM3s.toLocaleString(LOCALE, { maximumFractionDigits: 1 })} m³/s`;
+    linhas.push(`<div class="est-linha"><span class="est-rot">${L('Rio', 'River')}</span><b>${L('cota', 'stage')} ${fmtM(r.nivelM)}</b>${variacao ? `<span>${variacao}</span>` : ''}${vazao ? `<small>${vazao}</small>` : ''}</div>`);
   }
   const leitura = [p.chuva?.ultimaLeitura, p.rio?.ultimaLeitura].filter(Boolean).sort().at(-1);
   const onde = [p.corpo && !semAcento(p.nome).includes(semAcento(p.corpo)) ? p.corpo : null, p.municipio].filter(Boolean).join(' · ');
-  return `<b class="est-nome">${esc(p.nome)}</b>${onde ? `<div class="est-sub">${esc(onde)}</div>` : ''}${linhas.join('')}<div class="est-pe">leitura ${fmtHora(leitura)} · ANA · sem classificação de risco</div>`;
+  return `<b class="est-nome">${esc(p.nome)}</b>${onde ? `<div class="est-sub">${esc(onde)}</div>` : ''}${linhas.join('')}<div class="est-pe">${L('leitura', 'reading')} ${fmtHora(leitura)} · ANA · ${L('sem classificação de risco', 'no risk classification')}</div>`;
 }
 
 function mostrarDica(cod, ponto) {
@@ -156,40 +169,40 @@ function desenharLegenda() {
   // A legenda só fala do que está ligado: camada oculta não ocupa espaço nela.
   const chuva = camadas.chuva
     ? `
-    <div class="titulo"><span>${ehPrevisao(janela) ? 'Previsão de chuva (mm)' : 'Chuva acumulada (mm)'}</span><b>${ehPrevisao(janela) ? `próximas ${janela.slice(1).replace('h', ' h')}` : janela.replace('h', ' h')}</b></div>
+    <div class="titulo"><span>${ehPrevisao(janela) ? L('Previsão de chuva (mm)', 'Rain forecast (mm)') : L('Chuva acumulada (mm)', 'Accumulated rain (mm)')}</span><b>${ehPrevisao(janela) ? `${L('próximas', 'next')} ${janela.slice(1).replace('h', ' h')}` : janela.replace('h', ' h')}</b></div>
     <div class="escala">${FAIXAS.map((f) => `<i style="--c:${f.cor}"></i>`).join('')}</div>
     <div class="marcas">${marcas.map((m) => `<span>${m}</span>`).join('')}</div>
     <div class="linha2">
-      <span><i class="semdado"></i>sem dado</span>
-      <span><i class="estimado"></i>transparente: estimado</span>
+      <span><i class="semdado"></i>${L('sem dado', 'no data')}</span>
+      <span><i class="estimado"></i>${L('transparente: estimado', 'translucent: estimated')}</span>
     </div>`
     : '';
   const rios = camadas.risco
     ? `
     <div class="linha2 rios">
-      <span class="prefixo">rio em</span>
+      <span class="prefixo">${L('rio em', 'river in')}</span>
       ${SITUACOES.slice(1)
-        .map((s) => `<span><i class="brilho" style="--c:${s.cor}"></i>${s.texto}</span>`)
+        .map((s) => `<span><i class="brilho" style="--c:${s.cor}"></i>${nomeSituacao(s.valor)}</span>`)
         .join('')}
     </div>`
     : '';
   const ana = camadas.ana
     ? `
     <div class="linha2 ana">
-      <span class="prefixo">estação da ANA</span>
-      <span><i class="ponto-ana p-rio"></i>rio</span>
-      <span><i class="ponto-ana p-chuva"></i>chuva</span>
-      <span><i class="ponto-ana p-ambos"></i>os dois</span>
-      <span class="nota">aproxime o mapa e passe o mouse ou toque num ponto para ver a leitura</span>
+      <span class="prefixo">${L('estação da ANA', 'ANA station')}</span>
+      <span><i class="ponto-ana p-rio"></i>${L('rio', 'river')}</span>
+      <span><i class="ponto-ana p-chuva"></i>${L('chuva', 'rain')}</span>
+      <span><i class="ponto-ana p-ambos"></i>${L('os dois', 'both')}</span>
+      <span class="nota">${L('aproxime o mapa e passe o mouse ou toque num ponto para ver a leitura', 'zoom in and hover or tap a dot to see the reading')}</span>
     </div>`
     : '';
   const cartas =
     camadas.inundacao || camadas.movimento
       ? `
     <div class="linha2 carta">
-      ${camadas.inundacao ? `<span class="carta-nome"><i class="hachura" style="--c:${TIPOS.inundacao.cor_css}"></i><b>Inundação</b></span>` : ''}
-      ${camadas.movimento ? `<span class="carta-nome"><i class="hachura mov" style="--c:${TIPOS.movimento.cor_css}"></i><b>Movimento de massa</b> <small>só classes média e alta</small></span>` : ''}
-      <span>cartas do SGB: onde o terreno tende a inundar ou deslizar (linha mais grossa = classe mais alta). Só em alguns municípios; toque num deles para ver mais. Não mostram o que acontece agora.</span>
+      ${camadas.inundacao ? `<span class="carta-nome"><i class="hachura" style="--c:${TIPOS.inundacao.cor_css}"></i><b>${tipoNome('inundacao')}</b></span>` : ''}
+      ${camadas.movimento ? `<span class="carta-nome"><i class="hachura mov" style="--c:${TIPOS.movimento.cor_css}"></i><b>${tipoNome('movimento')}</b> <small>${L('só classes média e alta', 'medium and high classes only')}</small></span>` : ''}
+      <span>${L('cartas do SGB: onde o terreno tende a inundar ou deslizar (linha mais grossa = classe mais alta). Só em alguns municípios; toque num deles para ver mais. Não mostram o que acontece agora.', 'SGB charts: where the terrain tends to flood or slide (thicker line = higher class). Only some municipalities; tap one to see more. They do not show what is happening now.')}</span>
     </div>`
       : '';
   $('legenda').innerHTML = chuva + rios + ana + cartas;
@@ -197,6 +210,8 @@ function desenharLegenda() {
 }
 
 // ---------- status e resumo de risco ----------
+const DESATUALIZADA = L(' (desatualizada)', ' (outdated)');
+const INDISPONIVEL = L('indisponível', 'unavailable');
 const dadoVelho = (iso) => Date.now() - Date.parse(iso) > DADO_VELHO_MS;
 const chuvaVelha = dadoVelho(dados.chuva.geradoEm);
 const riosVelhos = dados.rios ? dadoVelho(dados.rios.geradoEm) : false;
@@ -209,16 +224,16 @@ function desenharStatus() {
   const ponto = $('status-ponto');
   ponto.style.setProperty('--c', velho ? COR_ALERTA : '#69d38a');
   ponto.classList.toggle('pulsa', velho);
-  $('status-texto').innerHTML = `<span class="palavra">${velho ? 'Desatualizado ' : 'Atualizado '}</span><b>${fmtHora(mostrada)}</b>`;
+  $('status-texto').innerHTML = `<span class="palavra">${velho ? L('Desatualizado ', 'Outdated ') : L('Atualizado ', 'Updated ')}</span><b>${fmtHora(mostrada)}</b>`;
   $('status').title = [
-    `Chuva do CEMADEN: ${fmtHora(dados.chuva.geradoEm)}${chuvaVelha ? ' (desatualizada)' : ''}`,
-    dados.rios ? `Defesa Civil RS (chuva e rios): ${fmtHora(dados.rios.geradoEm)}${riosVelhos ? ' (desatualizada)' : ''}` : 'Defesa Civil RS: indisponível',
-    dados.riosAna ? `ANA (rios): ${fmtHora(dados.riosAna.geradoEm)}${dadoVelho(dados.riosAna.geradoEm) ? ' (desatualizada)' : ''}` : 'ANA (rios): indisponível',
-    dados.chuvaAna ? `ANA (chuva): ${fmtHora(dados.chuvaAna.geradoEm)}${dadoVelho(dados.chuvaAna.geradoEm) ? ' (desatualizada)' : ''}` : 'ANA (chuva): indisponível',
-    dados.estimativaGeradoEm ? `Estimativa Open-Meteo (modelo): ${fmtHora(dados.estimativaGeradoEm)}` : 'Estimativa Open-Meteo: indisponível',
+    `${L('Chuva do CEMADEN', 'CEMADEN rain')}: ${fmtHora(dados.chuva.geradoEm)}${chuvaVelha ? DESATUALIZADA : ''}`,
+    dados.rios ? `${L('Defesa Civil RS (chuva e rios)', 'Civil Defense RS (rain and rivers)')}: ${fmtHora(dados.rios.geradoEm)}${riosVelhos ? DESATUALIZADA : ''}` : `${L('Defesa Civil RS', 'Civil Defense RS')}: ${INDISPONIVEL}`,
+    dados.riosAna ? `ANA (${L('rios', 'rivers')}): ${fmtHora(dados.riosAna.geradoEm)}${dadoVelho(dados.riosAna.geradoEm) ? DESATUALIZADA : ''}` : `ANA (${L('rios', 'rivers')}): ${INDISPONIVEL}`,
+    dados.chuvaAna ? `ANA (${L('chuva', 'rain')}): ${fmtHora(dados.chuvaAna.geradoEm)}${dadoVelho(dados.chuvaAna.geradoEm) ? DESATUALIZADA : ''}` : `ANA (${L('chuva', 'rain')}): ${INDISPONIVEL}`,
+    dados.estimativaGeradoEm ? `${L('Estimativa Open-Meteo (modelo)', 'Open-Meteo estimate (model)')}: ${fmtHora(dados.estimativaGeradoEm)}` : `${L('Estimativa Open-Meteo', 'Open-Meteo estimate')}: ${INDISPONIVEL}`,
   ].join('\n');
   if (velho) {
-    mostrarAviso(`Dados de chuva desatualizados (desde ${fmtHora(mostrada)}): as fontes estão instáveis e o que aparece pode não refletir a situação atual. Consulte a Defesa Civil.`, true, 15000);
+    mostrarAviso(L(`Dados de chuva desatualizados (desde ${fmtHora(mostrada)}): as fontes estão instáveis e o que aparece pode não refletir a situação atual. Consulte a Defesa Civil.`, `Rain data is outdated (since ${fmtHora(mostrada)}): the sources are unstable and what is shown may not reflect the current situation. Check with Civil Defense.`), true, 15000);
   }
 }
 
@@ -228,20 +243,20 @@ function desenharAtencao() {
   const ponto = botao.querySelector('.ponto');
   if (!dados.rios) {
     ponto.style.setProperty('--c', COR_ALERTA);
-    $('atencao-texto').textContent = 'Rios indisponíveis';
+    $('atencao-texto').textContent = L('Rios indisponíveis', 'Rivers unavailable');
     return;
   }
   if (!dados.riosComLeitura) {
     ponto.style.setProperty('--c', COR_ALERTA);
-    $('atencao-texto').textContent = 'Sem leitura recente dos rios';
+    $('atencao-texto').textContent = L('Sem leitura recente dos rios', 'No recent river readings');
     botao.disabled = true;
     return;
   }
   // Com a coleta de rios antiga, o resumo diz de quando é o dado, em vez de parecer atual.
-  const prefixo = riosVelhos ? `Rios de ${fmtHora(dados.rios.geradoEm)}: ` : '';
+  const prefixo = riosVelhos ? L(`Rios de ${fmtHora(dados.rios.geradoEm)}: `, `Rivers as of ${fmtHora(dados.rios.geradoEm)}: `) : '';
   if (!emRisco.length) {
     ponto.style.setProperty('--c', riosVelhos ? COR_ALERTA : '#69d38a');
-    $('atencao-texto').textContent = `${prefixo}${riosVelhos ? 'nenhum fora da normalidade' : 'Nenhum rio fora da normalidade'}`;
+    $('atencao-texto').textContent = `${prefixo}${riosVelhos ? L('nenhum fora da normalidade', 'none outside normal') : L('Nenhum rio fora da normalidade', 'No river outside normal')}`;
     botao.disabled = true;
     return;
   }
@@ -249,7 +264,7 @@ function desenharAtencao() {
   ponto.style.setProperty('--c', pior.cor);
   ponto.classList.add('pulsa');
   const n = emRisco.length;
-  $('atencao-texto').textContent = `${prefixo}${n} ${n === 1 ? 'município' : 'municípios'} com rio fora da normalidade`;
+  $('atencao-texto').textContent = `${prefixo}${L(`${n} ${n === 1 ? 'município' : 'municípios'} com rio fora da normalidade`, `${n} ${n === 1 ? 'municipality' : 'municipalities'} with a river outside normal`)}`;
   $('lista-atencao').innerHTML = emRisco
     .map(
       ({ municipio, nivel }) => `<li><button type="button" data-ir="${municipio.codIbge}">
@@ -273,6 +288,8 @@ $('lista-atencao').addEventListener('click', (ev) => {
 // ---------- cartão do município ----------
 // O cartão abre compacto (nome, chuva e rio) e expande os detalhes sob demanda; a escolha vale na sessão.
 let cartaoExpandido = false;
+const TXT_OCULTAR = L('Ocultar detalhes', 'Hide details');
+const TXT_VER = L('Ver detalhes', 'Show details');
 
 // Gráfico das próximas horas previstas. Uma cor só, para não parecer a escala de risco.
 function htmlPrevisao(horas) {
@@ -280,40 +297,40 @@ function htmlPrevisao(horas) {
   const total = validas.reduce((a, h) => a + h.mm, 0);
   const pico = validas.reduce((a, h) => (h.mm > a.mm ? h : a), validas[0]);
   const escala = Math.max(2, pico.mm); // 2 mm/h como piso, para garoa não virar barra cheia
-  const hora = (t) => new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const hora = (t) => new Date(t).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
   const barras = horas
-    .map((h) => `<i title="até ${hora(h.t)} · ${h.mm === null ? 'sem dado' : `${fmtMm(h.mm)} mm`}" style="height:${h.mm === null ? 0 : Math.max(3, (h.mm / escala) * 100)}%"></i>`)
+    .map((h) => `<i title="${L('até', 'until')} ${hora(h.t)} · ${h.mm === null ? L('sem dado', 'no data') : `${fmtMm(h.mm)} mm`}" style="height:${h.mm === null ? 0 : Math.max(3, (h.mm / escala) * 100)}%"></i>`)
     .join('');
-  const resumo = pico.mm > 0 ? `Total ~${fmtMm(total)} mm · pico ~${fmtMm(pico.mm)} mm/h perto de ${hora(pico.t)}` : 'Sem chuva prevista nas próximas 24 h';
-  return `<h3>Previsão · próximas 24 h</h3>
+  const resumo = pico.mm > 0 ? L(`Total ~${fmtMm(total)} mm · pico ~${fmtMm(pico.mm)} mm/h perto de ${hora(pico.t)}`, `Total ~${fmtMm(total)} mm · peak ~${fmtMm(pico.mm)} mm/h around ${hora(pico.t)}`) : L('Sem chuva prevista nas próximas 24 h', 'No rain forecast for the next 24 h');
+  return `<h3>${L('Previsão · próximas 24 h', 'Forecast · next 24 h')}</h3>
     <div class="previsao"><div class="horas">${barras}</div>
-    <div class="eixo"><span>agora</span><span>+6 h</span><span>+12 h</span><span>+18 h</span><span>+24 h</span></div>
+    <div class="eixo"><span>${L('agora', 'now')}</span><span>+6 h</span><span>+12 h</span><span>+18 h</span><span>+24 h</span></div>
     <p class="cartao-pe">${resumo}</p></div>`;
 }
 
 // Dizer "sem carta" é importante: o município sem carta não é um município sem risco.
 const comCarta = (nome) => Object.keys(TIPOS).filter((t) => temCarta(t, nome));
 function htmlCarta(nome) {
-  if (!comCarta(nome).length) return '<p class="resumo-carta sem">Sem carta de terreno (inundação ou deslizamento) do SGB. Isso <b>não</b> significa ausência de risco.</p>';
-  return '<p class="resumo-carta" data-carta-resumo>Terreno (SGB): consultando…</p>';
+  if (!comCarta(nome).length) return `<p class="resumo-carta sem">${L('Sem carta de terreno (inundação ou deslizamento) do SGB. Isso <b>não</b> significa ausência de risco.', 'No SGB terrain chart (flood or landslide) for this municipality. This does <b>not</b> mean there is no risk.')}</p>`;
+  return `<p class="resumo-carta" data-carta-resumo>${L('Terreno (SGB): consultando…', 'Terrain (SGB): checking…')}</p>`;
 }
 // Explicação e detalhes só aparecem em "Ver detalhes", para o cartão não tomar o lugar das notícias.
 function htmlCartaDetalhe(nome) {
   if (!comCarta(nome).length) return '';
-  return '<h3>Terreno: inundação e deslizamento</h3><div data-carta-detalhe></div>';
+  return `<h3>${L('Terreno: inundação e deslizamento', 'Terrain: flood and landslide')}</h3><div data-carta-detalhe></div>`;
 }
 
 const pct = (parte, todo) => {
   const p = (100 * parte) / todo;
-  return p < 1 ? 'menos de 1%' : Math.round(Math.min(100, p)) + '%';
+  return p < 1 ? L('menos de 1%', 'less than 1%') : Math.round(Math.min(100, p)) + '%';
 };
-const NOME_CLASSE = { alta: 'alta', media: 'média', baixa: 'baixa' };
+const NOME_CLASSE = { alta: L('alta', 'high'), media: L('média', 'medium'), baixa: L('baixa', 'low') };
 
 // Frases em linguagem de cidadão a partir das áreas por classe, em proporção do município (não em km²).
 function frase(tipo, r, areaMunicipio) {
-  if (tipo === 'inundacao') return r.total / areaMunicipio < 0.01 ? 'quase nenhuma área sujeita a inundar' : pct(r.total, areaMunicipio) + ' do município em terreno sujeito a inundar';
-  if (r.alta / areaMunicipio < 0.01) return 'quase nenhuma área de alta suscetibilidade a deslizamento';
-  return 'alta suscetibilidade a deslizamento em ' + pct(r.alta, areaMunicipio) + ' do município';
+  if (tipo === 'inundacao') return r.total / areaMunicipio < 0.01 ? L('quase nenhuma área sujeita a inundar', 'almost no area prone to flooding') : L(pct(r.total, areaMunicipio) + ' do município em terreno sujeito a inundar', pct(r.total, areaMunicipio) + ' of the municipality is flood-prone terrain');
+  if (r.alta / areaMunicipio < 0.01) return L('quase nenhuma área de alta suscetibilidade a deslizamento', 'almost no area of high landslide susceptibility');
+  return L('alta suscetibilidade a deslizamento em ' + pct(r.alta, areaMunicipio) + ' do município', 'high landslide susceptibility in ' + pct(r.alta, areaMunicipio) + ' of the municipality');
 }
 
 async function preencherCartaInfo(cod) {
@@ -329,8 +346,8 @@ async function preencherCartaInfo(cod) {
   const ok = areas.every((r) => r.status === 'fulfilled' && r.value.total > 0);
   if (resumo) {
     resumo.innerHTML = ok
-      ? '<b>Terreno (SGB):</b> ' + tipos.map((t, i) => frase(t, areas[i].value, areaMun)).join('; ') + '.'
-      : 'Terreno (SGB): não foi possível consultar a carta agora.';
+      ? '<b>' + L('Terreno (SGB):', 'Terrain (SGB):') + '</b> ' + tipos.map((t, i) => frase(t, areas[i].value, areaMun)).join('; ') + '.'
+      : L('Terreno (SGB): não foi possível consultar a carta agora.', 'Terrain (SGB): could not query the chart right now.');
   }
   if (!detalhe || !ok) return;
   const anos = new Set();
@@ -338,14 +355,20 @@ async function preencherCartaInfo(cod) {
   tipos.forEach((t, i) => {
     const r = areas[i].value;
     r.anos.forEach((x) => anos.add(x));
-    html += '<div class="carta-tipo"><i class="hachura' + (t === 'movimento' ? ' mov' : '') + '" style="--c:' + TIPOS[t].cor_css + '"></i><b>' + TIPOS[t].rotulo + '</b></div>'
+    html += '<div class="carta-tipo"><i class="hachura' + (t === 'movimento' ? ' mov' : '') + '" style="--c:' + TIPOS[t].cor_css + '"></i><b>' + tipoNome(t) + '</b></div>'
       + '<div class="carta-barra" style="--c:' + TIPOS[t].cor_css + '">' + ['alta', 'media', 'baixa'].map((c) => '<i class="' + c + '" style="flex:' + r[c] + '"></i>').join('') + '</div>'
       + '<p class="carta-classes">' + ['alta', 'media', 'baixa'].map((c) => '<span><b>' + NOME_CLASSE[c] + '</b> ' + pct(r[c], areaMun) + '</span>').join('') + '</p>';
   });
-  html += '<p class="cartao-pe">É um mapa do <b>terreno</b>, não do tempo: mostra, pela inclinação, pelo solo e pela proximidade dos rios, onde é mais fácil inundar ou deslizar quando chove forte. '
+  html += '<p class="cartao-pe">' + L(
+    'É um mapa do <b>terreno</b>, não do tempo: mostra, pela inclinação, pelo solo e pela proximidade dos rios, onde é mais fácil inundar ou deslizar quando chove forte. '
     + 'Não é uma previsão nem o registro de algo que aconteceu, e não diz o que está acontecendo agora. As porcentagens são do município inteiro. '
     + (anos.size ? 'Levantamento de ' + [...anos].join(', ') + '. ' : '')
-    + 'Fonte: Serviço Geológico do Brasil (SGB), em escala regional: serve para planejamento, não para dizer se a sua rua alaga ou desliza.</p>';
+    + 'Fonte: Serviço Geológico do Brasil (SGB), em escala regional: serve para planejamento, não para dizer se a sua rua alaga ou desliza.',
+    'This is a map of the <b>terrain</b>, not of the weather: from slope, soil and proximity to rivers it shows where flooding or landslides are more likely in heavy rain. '
+    + 'It is not a forecast nor a record of something that happened, and it does not say what is happening now. Percentages refer to the whole municipality. '
+    + (anos.size ? 'Survey from ' + [...anos].join(', ') + '. ' : '')
+    + 'Source: Geological Survey of Brazil (SGB), at regional scale: it is for planning, not for telling whether your street floods or slides.',
+  ) + '</p>';
   detalhe.innerHTML = html;
 }
 
@@ -365,29 +388,29 @@ function htmlCartao(cod, euEstou) {
     <div class="cartao-topo">
       <div>
         <h2>${esc(m.nome)}</h2>
-        ${euEstou ? '<span class="etiqueta">Você está aqui</span>' : ''}
+        ${euEstou ? `<span class="etiqueta">${L('Você está aqui', 'You are here')}</span>` : ''}
       </div>
-      <button class="icone" type="button" data-fechar aria-label="Fechar">
+      <button class="icone" type="button" data-fechar aria-label="${L('Fechar', 'Close')}">
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </button>
     </div>`;
 
   if (chuva) {
     const origem = previsto
-      ? 'previsão do modelo'
+      ? L('previsão do modelo', 'model forecast')
       : estimado
-      ? 'estimativa do modelo, não é medição'
-      : `${estacoes.length} ${estacoes.length === 1 ? 'estação' : 'estações'}`;
+      ? L('estimativa do modelo, não é medição', 'model estimate, not a measurement')
+      : L(`${estacoes.length} ${estacoes.length === 1 ? 'estação' : 'estações'}`, `${estacoes.length} ${estacoes.length === 1 ? 'station' : 'stations'}`);
     html += `
-      <p class="grande"><span class="num">${estimado || previsto ? '~' : ''}${fmtMm(chuva.mm)}</span><span class="un">mm</span>${estimado || previsto ? `<span class="selo-estimado">${previsto ? 'previsto' : 'estimado'}</span>` : ''}</p>
+      <p class="grande"><span class="num">${estimado || previsto ? '~' : ''}${fmtMm(chuva.mm)}</span><span class="un">mm</span>${estimado || previsto ? `<span class="selo-estimado">${previsto ? L('previsto', 'forecast') : L('estimado', 'estimated')}</span>` : ''}</p>
       <p class="sub">${TEXTO_JANELA[janela]} · ${origem}</p>`;
   } else {
-    html += `<p class="sub" style="margin-top:12px">${ehPrevisao(janela) ? 'Sem previsão disponível no momento.' : 'Sem pluviômetro ativo neste município. Isso não significa que não está chovendo.'}</p>`;
+    html += `<p class="sub" style="margin-top:12px">${ehPrevisao(janela) ? L('Sem previsão disponível no momento.', 'No forecast available at the moment.') : L('Sem pluviômetro ativo neste município. Isso não significa que não está chovendo.', 'No active rain gauge in this municipality. That does not mean it is not raining.')}</p>`;
   }
   // Quem olha o passado também precisa saber o que vem: a previsão das próximas 24 h fica sempre à vista.
   const prox = chuvaDoMunicipio(dados, cod, '+24h');
   if (prox && !ehPrevisao(janela)) {
-    html += `<p class="resumo-previsao">Próximas 24 h: <b>~${fmtMm(prox.mm)} mm</b> <span>previstos</span></p>`;
+    html += `<p class="resumo-previsao">${L('Próximas 24 h', 'Next 24 h')}: <b>~${fmtMm(prox.mm)} mm</b> <span>${L('previstos', 'forecast')}</span></p>`;
   }
 
   html += htmlCarta(m.nome);
@@ -396,11 +419,11 @@ function htmlCartao(cod, euEstou) {
   if (principal) {
     const sit = SITUACOES.find((x) => x.valor === principal.situacao);
     const outros = rios.length > 1 ? ` +${rios.length - 1}` : '';
-    html += `<p class="resumo-rio"><span class="chip" style="--c:${sit.cor}">rio em ${sit.texto}</span><span>${esc(principal.nome)}${outros}</span></p>`;
+    html += `<p class="resumo-rio"><span class="chip" style="--c:${sit.cor}">${L('rio em', 'river in')} ${nomeSituacao(sit.valor)}</span><span>${esc(principal.nome)}${outros}</span></p>`;
   }
 
   html += `<button class="expandir" type="button" data-expandir aria-expanded="${cartaoExpandido}">
-      <span>${cartaoExpandido ? 'Ocultar detalhes' : 'Ver detalhes'}</span>
+      <span>${cartaoExpandido ? TXT_OCULTAR : TXT_VER}</span>
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>`;
 
@@ -418,7 +441,7 @@ function htmlCartao(cod, euEstou) {
   }
   if (previsao?.length) html += htmlPrevisao(previsao);
   if (vizinhos.length) {
-    html += `<h3>Medição mais próxima</h3>${vizinhos
+    html += `<h3>${L('Medição mais próxima', 'Nearest measurement')}</h3>${vizinhos
       .map(({ municipio, km }) => {
         const v = valorDoMunicipio(dados, municipio.codIbge, janela);
         return `<button class="vizinho" type="button" data-ir="${municipio.codIbge}"><span>${esc(municipio.nome)}</span>
@@ -428,40 +451,40 @@ function htmlCartao(cod, euEstou) {
   }
 
   if (rios.length) {
-    html += `<h3>Rios</h3>${rios
+    html += `<h3>${L('Rios', 'Rivers')}</h3>${rios
       .map((e) => {
         const sit = SITUACOES.find((x) => x.valor === e.situacao);
         const cor = e.recente && sit ? sit.cor : '#93a6b8';
-        const texto = !e.recente ? 'sem leitura recente' : sit ? sit.texto : 'sem limiar';
+        const texto = !e.recente ? L('sem leitura recente', 'no recent reading') : sit ? nomeSituacao(sit.valor) : L('sem limiar', 'no threshold');
         const ana = e.fonte === 'ANA';
         // A ANA mede de hora em hora e a variação é de uma janela longa: o texto diz a janela e a hora da leitura.
-        const janelaVariacao = e.variacaoH ? ` em ${e.variacaoH} h` : '';
-        const variacao = e.variacaoM === null ? '' : ` · variação ${e.variacaoM > 0 ? '+' : ''}${e.variacaoM.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m${janelaVariacao}`;
+        const janelaVariacao = e.variacaoH ? ` ${L('em', 'in')} ${e.variacaoH} h` : '';
+        const variacao = e.variacaoM === null ? '' : ` · ${L('variação', 'change')} ${e.variacaoM > 0 ? '+' : ''}${e.variacaoM.toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m${janelaVariacao}`;
         const nome = ana && e.rio && !semAcento(e.nome).includes(semAcento(e.rio)) ? `${e.nome} · ${e.rio}` : e.nome;
-        return `<div class="rio"><span>${esc(nome)}</span><span class="chip" style="--c:${cor}">${ana && e.recente ? 'sem classificação' : texto}</span>
-          <span class="detalhe">${ana ? 'cota' : 'nível'} ${fmtM(e.nivelM)}${variacao}${ana ? ` · leitura ${fmtHora(e.ultimaLeitura)} · ANA` : ''}</span></div>`;
+        return `<div class="rio"><span>${esc(nome)}</span><span class="chip" style="--c:${cor}">${ana && e.recente ? L('sem classificação', 'unclassified') : texto}</span>
+          <span class="detalhe">${ana ? L('cota', 'stage') : L('nível', 'level')} ${fmtM(e.nivelM)}${variacao}${ana ? ` · ${L('leitura', 'reading')} ${fmtHora(e.ultimaLeitura)} · ANA` : ''}</span></div>`;
       })
       .join('')}`;
     if (rios.some((e) => e.fonte === 'ANA')) {
-      html += '<p class="cartao-pe">Estações da ANA mostram só a leitura da régua (cota), sem classificação de risco: a ANA não divulga limiares de alerta. A cota de uma estação não é comparável à de outra, e nas de usinas hidrelétricas pode ser a altitude do reservatório.</p>';
+      html += `<p class="cartao-pe">${L('Estações da ANA mostram só a leitura da régua (cota), sem classificação de risco: a ANA não divulga limiares de alerta. A cota de uma estação não é comparável à de outra, e nas de usinas hidrelétricas pode ser a altitude do reservatório.', 'ANA stations show only the gauge reading (stage), with no risk classification: ANA does not publish alert thresholds. One station\'s stage is not comparable to another\'s, and at hydroelectric plants it may be the reservoir altitude.')}</p>`;
     }
     if (rios.some((e) => e.recente && e.situacao >= 1)) {
-      html += '<p class="cartao-pe">A situação é a classificação da Defesa Civil, comparada às cotas de cada estação, e pode refletir o maior nível recente, não só o atual. As cotas não são divulgadas pela API.</p>';
+      html += `<p class="cartao-pe">${L('A situação é a classificação da Defesa Civil, comparada às cotas de cada estação, e pode refletir o maior nível recente, não só o atual. As cotas não são divulgadas pela API.', 'The status is the Civil Defense classification, compared with each station\'s thresholds, and may reflect the highest recent level, not only the current one. The thresholds are not published by the API.')}</p>`;
     }
   }
 
   if (estacoes.length) {
-    html += `<details><summary>Estações de chuva (${estacoes.length})</summary>
-      <table><thead><tr><th>Estação</th>${JANELAS.map((j) => `<th>${j}</th>`).join('')}</tr></thead><tbody>
+    html += `<details><summary>${L('Estações de chuva', 'Rain stations')} (${estacoes.length})</summary>
+      <table><thead><tr><th>${L('Estação', 'Station')}</th>${JANELAS.map((j) => `<th>${j}</th>`).join('')}</tr></thead><tbody>
       ${estacoes
         .map((e) => `<tr><td>${esc(e.nome)}<small>${esc(e.fonte)}</small></td>${JANELAS.map((j) => `<td>${fmtMm(e.acumuladoMm[j] ?? 0)}</td>`).join('')}</tr>`)
         .join('')}
       </tbody></table></details>`;
     const ultima = estacoes.map((e) => e.ultimaLeitura).sort().at(-1);
-    html += `<p class="cartao-pe">Leitura mais recente: ${fmtHora(ultima)}</p>`;
+    html += `<p class="cartao-pe">${L('Leitura mais recente', 'Latest reading')}: ${fmtHora(ultima)}</p>`;
   }
   if (estimado || previsto || previsao) {
-    html += `<p class="cartao-pe">${previsto || previsao ? 'Previsão e estimativa' : 'Estimativa'} do modelo <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> (CC BY 4.0) para o centro do município, calculada às ${fmtHora(dados.estimativaGeradoEm)}. Pode diferir do que choveu de fato, principalmente em temporais localizados.</p>`;
+    html += `<p class="cartao-pe">${L(`${previsto || previsao ? 'Previsão e estimativa' : 'Estimativa'} do modelo <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> (CC BY 4.0) para o centro do município, calculada às ${fmtHora(dados.estimativaGeradoEm)}. Pode diferir do que choveu de fato, principalmente em temporais localizados.`, `${previsto || previsao ? 'Forecast and estimate' : 'Estimate'} from the <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a> model (CC BY 4.0) for the municipality centre, computed at ${fmtHora(dados.estimativaGeradoEm)}. It may differ from what actually fell, especially in localised storms.`)}</p>`;
   }
   return html + '</div>';
 }
@@ -495,7 +518,7 @@ $('cartao').addEventListener('click', (ev) => {
     $('cartao').classList.toggle('expandido', cartaoExpandido);
     const botao = $('cartao').querySelector('[data-expandir]');
     botao.setAttribute('aria-expanded', String(cartaoExpandido));
-    botao.querySelector('span').textContent = cartaoExpandido ? 'Ocultar detalhes' : 'Ver detalhes';
+    botao.querySelector('span').textContent = cartaoExpandido ? TXT_OCULTAR : TXT_VER;
     return;
   }
   const alvo = ev.target.closest('[data-ir]');
@@ -526,7 +549,7 @@ function atualizarOpcoes() {
           return `<li role="option" data-cod="${m.codIbge}" aria-selected="${i === ativa}">${esc(m.nome)}<small>${textoMm(chuvaDoMunicipio(dados, m.codIbge, janela))}</small></li>`;
         })
         .join('')
-    : '<li class="vazio" role="option" aria-disabled="true">Nenhum município encontrado</li>';
+    : `<li class="vazio" role="option" aria-disabled="true">${L('Nenhum município encontrado', 'No municipality found')}</li>`;
   lista.hidden = false;
   campo.setAttribute('aria-expanded', 'true');
 }
@@ -565,7 +588,7 @@ campo.addEventListener('blur', () => setTimeout(fecharLista, 120));
 // `abrirCartao: false` é o modo discreto (recarregar a página já autorizada): só marca onde o usuário está,
 // sem mexer na seleção e sem avisos.
 function localizar({ abrirCartao = true } = {}) {
-  if (!navigator.geolocation) return abrirCartao && mostrarAviso('Seu navegador não oferece localização. Use a busca para escolher o município.', true);
+  if (!navigator.geolocation) return abrirCartao && mostrarAviso(L('Seu navegador não oferece localização. Use a busca para escolher o município.', 'Your browser does not offer location. Use the search to choose a municipality.'), true);
   const botao = $('localizar');
   botao.disabled = true;
   navigator.geolocation.getCurrentPosition(
@@ -573,7 +596,7 @@ function localizar({ abrirCartao = true } = {}) {
       botao.disabled = false;
       // A posição só é usada aqui, no navegador, para achar o município. Nada é enviado nem guardado.
       const municipio = municipioDe(dados.indice, coords.longitude, coords.latitude);
-      if (!municipio) return abrirCartao && mostrarAviso('Você parece estar fora do Rio Grande do Sul. Use a busca para escolher um município gaúcho.', true);
+      if (!municipio) return abrirCartao && mostrarAviso(L('Você parece estar fora do Rio Grande do Sul. Use a busca para escolher um município gaúcho.', 'You seem to be outside Rio Grande do Sul. Use the search to choose a municipality in the state.'), true);
       // Sem zoom: a cidade do usuário pisca de leve no mapa.
       euEstouEm = municipio.codIbge;
       mapa.marcarLocal([coords.longitude, coords.latitude]);
@@ -588,8 +611,8 @@ function localizar({ abrirCartao = true } = {}) {
       if (!abrirCartao) return;
       mostrarAviso(
         erro.code === erro.PERMISSION_DENIED
-          ? 'Sem permissão para usar a localização. Você ainda pode buscar o município acima.'
-          : 'Não consegui obter sua localização agora. Tente a busca por município.',
+          ? L('Sem permissão para usar a localização. Você ainda pode buscar o município acima.', 'Permission to use location was denied. You can still search for a municipality above.')
+          : L('Não consegui obter sua localização agora. Tente a busca por município.', 'Could not get your location right now. Try searching for a municipality.'),
         true,
       );
     },
@@ -662,9 +685,9 @@ let noticiasAbertas = false; // só no celular
 
 function haQuanto(iso) {
   const min = Math.round((Date.now() - Date.parse(iso)) / 60000);
-  if (min < 60) return `há ${Math.max(min, 1)} min`;
-  if (min < 24 * 60) return `há ${Math.round(min / 60)} h`;
-  return `há ${Math.round(min / (24 * 60))} d`;
+  if (min < 60) return L(`há ${Math.max(min, 1)} min`, `${Math.max(min, 1)} min ago`);
+  if (min < 24 * 60) return L(`há ${Math.round(min / 60)} h`, `${Math.round(min / 60)} h ago`);
+  return L(`há ${Math.round(min / (24 * 60))} d`, `${Math.round(min / (24 * 60))} d ago`);
 }
 
 function desenharNoticias() {
@@ -681,13 +704,13 @@ function desenharNoticias() {
 
   const nome = selecionado !== null ? dados.porCodigo.get(selecionado).nome : null;
   const { doMunicipio, lista } = noticiasPara(todas, nome, { agoraMs: Date.now() });
-  const titulo = doMunicipio ? `Notícias · <b>${esc(nome)}</b>` : 'Notícias · <b>RS</b>';
-  const nota = nome && !doMunicipio ? `<p class="noticias-nota">Nenhuma notícia recente sobre ${esc(nome)} nas fontes consultadas. Destaques do estado:</p>` : '';
+  const titulo = doMunicipio ? `${L('Notícias', 'News')} · <b>${esc(nome)}</b>` : `${L('Notícias', 'News')} · <b>RS</b>`;
+  const nota = nome && !doMunicipio ? `<p class="noticias-nota">${L(`Nenhuma notícia recente sobre ${esc(nome)} nas fontes consultadas. Destaques do estado:`, `No recent news about ${esc(nome)} in the sources checked. Highlights from the state:`)}</p>` : '';
   const velha = Date.now() - Date.parse(dados.noticias.geradoEm) > NOTICIA_VELHA_MS;
   painel.innerHTML = `
     <div class="noticias-topo">
       <h2>${titulo}</h2>
-      ${telaPequena.matches ? '<button class="icone" type="button" data-fechar-noticias aria-label="Fechar notícias"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>' : ''}
+      ${telaPequena.matches ? `<button class="icone" type="button" data-fechar-noticias aria-label="${L('Fechar notícias', 'Close news')}"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : ''}
     </div>
     ${nota}
     <ul class="lista-noticias">${lista
@@ -697,7 +720,7 @@ function desenharNoticias() {
           <span class="titulo">${esc(n.titulo)}</span><span class="fonte">${esc(n.fonte)} · ${haQuanto(n.publicadoEm)}</span></a></li>`,
       )
       .join('')}</ul>
-    <p class="noticias-rodape">${velha ? 'Desatualizado: ' : ''}Fontes: ${esc(dados.noticias.fontes.join(', '))}, coletado às ${fmtHora(dados.noticias.geradoEm)}. Seleção automática por palavras-chave; os links levam aos veículos.</p>`;
+    <p class="noticias-rodape">${L(`${velha ? 'Desatualizado: ' : ''}Fontes: ${esc(dados.noticias.fontes.join(', '))}, coletado às ${fmtHora(dados.noticias.geradoEm)}. Seleção automática por palavras-chave; os links levam aos veículos.`, `${velha ? 'Outdated: ' : ''}Sources: ${esc(dados.noticias.fontes.join(', '))}, collected at ${fmtHora(dados.noticias.geradoEm)}. Headlines are in Portuguese; picked automatically by keyword; links lead to the outlets.`)}</p>`;
 }
 
 $('noticias-botao').addEventListener('click', () => {
@@ -718,17 +741,17 @@ telaPequena.addEventListener('change', desenharNoticias);
 // continua avisando mesmo com o contorno desligado.
 function desenharPainelCamadas() {
   let grupo = null;
-  let html = `<div class="camadas-topo"><h2>Camadas</h2>
-    <div class="atalhos"><button type="button" data-atalho="chuva" title="Desliga tudo, menos a chuva">Só a chuva</button><button type="button" data-atalho="tudo" title="Liga todas as camadas">Tudo</button></div></div>`;
+  let html = `<div class="camadas-topo"><h2>${L('Camadas', 'Layers')}</h2>
+    <div class="atalhos"><button type="button" data-atalho="chuva" title="${L('Desliga tudo, menos a chuva', 'Turns everything off except rain')}">${L('Só a chuva', 'Rain only')}</button><button type="button" data-atalho="tudo" title="${L('Liga todas as camadas', 'Turns all layers on')}">${L('Tudo', 'All')}</button></div></div>`;
   for (const c of CAMADAS) {
     if (c.grupo !== grupo) {
       grupo = c.grupo;
-      html += `<h3>${esc(grupo)}</h3>`;
+      html += `<h3>${esc(L(grupo, c.grupoEn))}</h3>`;
     }
     html += `<label class="chave"><input type="checkbox" data-camada="${c.id}"><span class="trilho-chave" aria-hidden="true"></span>
-      <span class="rot">${esc(c.rotulo)}${c.nota ? `<small>${esc(c.nota)}</small>` : ''}</span></label>`;
+      <span class="rot">${esc(L(c.rotulo, c.rotuloEn))}${c.nota ? `<small>${esc(L(c.nota, c.notaEn))}</small>` : ''}</span></label>`;
   }
-  $('camadas').innerHTML = html + '<p class="camadas-pe">Sua escolha fica salva neste navegador.</p>';
+  $('camadas').innerHTML = html + `<p class="camadas-pe">${L('Sua escolha fica salva neste navegador.', 'Your choice is saved in this browser.')}</p>`;
 }
 function aplicarCamadas() {
   mapa.definirCamadas(camadas);
@@ -737,7 +760,7 @@ function aplicarCamadas() {
   document.querySelectorAll('#camadas input[data-camada]').forEach((i) => (i.checked = camadas[i.dataset.camada]));
   const ocultas = desligadas(camadas);
   $('camadas-botao').classList.toggle('com-ocultas', ocultas > 0);
-  $('camadas-botao').title = ocultas ? `Camadas do mapa (${ocultas} oculta${ocultas > 1 ? 's' : ''})` : 'Camadas do mapa';
+  $('camadas-botao').title = ocultas ? L(`Camadas do mapa (${ocultas} oculta${ocultas > 1 ? 's' : ''})`, `Map layers (${ocultas} hidden)`) : L('Camadas do mapa', 'Map layers');
 }
 function fecharPainelCamadas() {
   $('camadas').hidden = true;
