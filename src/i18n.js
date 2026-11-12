@@ -27,7 +27,7 @@ export function trocarIdioma() {
 // Português do HTML estático (o inglês é o próprio HTML). Chave = data-i18n; data-i18n-attr troca atributos.
 export const PT_HTML = {
   'doc.title': 'Radar de Chuva RS - Brasil',
-  'doc.desc': 'Chuva acumulada, previsão e nível dos rios, município a município, no Rio Grande do Sul. Dados do CEMADEN, da Defesa Civil RS e da ANA.',
+  'doc.desc': 'Chuva, previsão, nível dos rios e suscetibilidade a inundação e deslizamento, município a município, no Rio Grande do Sul. Dados do CEMADEN, da Defesa Civil RS e da ANA.',
   'brand': 'Radar de Chuva <b>RS</b>',
   'map.label': 'Mapa de chuva acumulada e risco de rios por município do Rio Grande do Sul',
   'search.ph': 'Buscar município',

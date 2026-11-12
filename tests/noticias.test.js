@@ -156,3 +156,24 @@ test('sem município selecionado, mostra as do estado, um pouco mais', () => {
   assert.equal(noticiasPara(lista, null, { agoraMs: AGORA, limite: 3 }).lista.length, 5);
   assert.equal(noticiasPara(lista, 'Pelotas', { agoraMs: AGORA, limite: 3 }).lista.length, 3);
 });
+
+test('tradução: reaproveita por link e só traduz o que é novo', async () => {
+  const { reaproveitarTraducoes } = await import('../src/noticias.js');
+  const antigas = [{ url: 'a', titulo: 'A', tituloEn: 'A-en' }, { url: 'b', titulo: 'B' }];
+  const novas = [{ url: 'a', titulo: 'A' }, { url: 'b', titulo: 'B' }, { url: 'c', titulo: 'C' }];
+  const r = reaproveitarTraducoes(novas, antigas);
+  assert.equal(r[0].tituloEn, 'A-en');
+  assert.equal(r[1].tituloEn, undefined);
+  assert.equal(r[2].tituloEn, undefined);
+  assert.deepEqual(reaproveitarTraducoes(novas, undefined).map((n) => n.tituloEn), [undefined, undefined, undefined]);
+});
+
+test('tradução: aviso de cota, erro e eco do original são rejeitados', async () => {
+  const { lerTraducao } = await import('../src/noticias.js');
+  const ok = (t, s = 200) => ({ responseStatus: s, responseData: { translatedText: t } });
+  assert.equal(lerTraducao(ok('Storm warning'), 'Aviso de temporal'), 'Storm warning');
+  assert.equal(lerTraducao(ok('MYMEMORY WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY'), 'x'), null);
+  assert.equal(lerTraducao(ok('Aviso de temporal'), 'Aviso de temporal'), null);
+  assert.equal(lerTraducao(ok('Storm', 403), 'x'), null);
+  assert.equal(lerTraducao(null, 'x'), null);
+});

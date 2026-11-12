@@ -21,7 +21,7 @@ import { areaKm2, municipioDe } from './geo.js';
 import { criarMapa } from './mapa.js';
 import { TIPOS, areasDoMunicipio, temCarta } from './suscetibilidade.js';
 import { noticiasPara } from './noticias.js';
-import { L, LOCALE, aplicarHtml, idioma, trocarIdioma } from './i18n.js';
+import { EN, L, LOCALE, aplicarHtml, idioma, trocarIdioma } from './i18n.js';
 import { CAMADAS, carregarCamadas, desligadas, gravarCamadas, soChuva, todasLigadas } from './camadas.js';
 
 const $ = (id) => document.getElementById(id);
@@ -717,10 +717,10 @@ function desenharNoticias() {
       .filter((n) => /^https?:\/\//.test(n.url))
       .map(
         (n) => `<li><a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">
-          <span class="titulo">${esc(n.titulo)}</span><span class="fonte">${esc(n.fonte)} · ${haQuanto(n.publicadoEm)}</span></a></li>`,
+          <span class="titulo">${esc(EN && n.tituloEn ? n.tituloEn : n.titulo)}</span><span class="fonte">${esc(n.fonte)} · ${haQuanto(n.publicadoEm)}</span></a></li>`,
       )
       .join('')}</ul>
-    <p class="noticias-rodape">${L(`${velha ? 'Desatualizado: ' : ''}Fontes: ${esc(dados.noticias.fontes.join(', '))}, coletado às ${fmtHora(dados.noticias.geradoEm)}. Seleção automática por palavras-chave; os links levam aos veículos.`, `${velha ? 'Outdated: ' : ''}Sources: ${esc(dados.noticias.fontes.join(', '))}, collected at ${fmtHora(dados.noticias.geradoEm)}. Headlines are in Portuguese; picked automatically by keyword; links lead to the outlets.`)}</p>`;
+    <p class="noticias-rodape">${L(`${velha ? 'Desatualizado: ' : ''}Fontes: ${esc(dados.noticias.fontes.join(', '))}, coletado às ${fmtHora(dados.noticias.geradoEm)}. Seleção automática por palavras-chave; os links levam aos veículos.`, `${velha ? 'Outdated: ' : ''}Sources: ${esc(dados.noticias.fontes.join(', '))}, collected at ${fmtHora(dados.noticias.geradoEm)}. Headlines machine-translated from Portuguese (links open the original); picked automatically by keyword.`)}</p>`;
 }
 
 $('noticias-botao').addEventListener('click', () => {

@@ -119,3 +119,22 @@ export function noticiasPara(noticias, nomeMunicipio, { agoraMs, limite = 3 } = 
   }
   return { doMunicipio: false, lista: ordenadas.slice(0, nomeMunicipio ? limite : limite + 2) };
 }
+
+// ---------- tradução dos títulos ----------
+// O site abre em inglês, mas as notícias são em português. A tradução é feita na coleta (não no navegador do visitante)
+// e guardada por link: um título já traduzido numa coleta anterior não é traduzido de novo, o que poupa a cota do serviço.
+// Sem tradução (serviço fora do ar ou cota esgotada), o campo `tituloEn` simplesmente não existe e o site mostra o original.
+export function reaproveitarTraducoes(novas, antigas) {
+  const porUrl = new Map((antigas ?? []).filter((n) => n.tituloEn).map((n) => [n.url, n.tituloEn]));
+  return novas.map((n) => (porUrl.has(n.url) ? { ...n, tituloEn: porUrl.get(n.url) } : n));
+}
+
+// Resposta do MyMemory -> texto traduzido, ou null. Rejeita o aviso de cota (vem como se fosse a tradução) e eco do original.
+export function lerTraducao(resposta, original) {
+  const texto = resposta?.responseData?.translatedText;
+  if (Number(resposta?.responseStatus) !== 200 || typeof texto !== 'string') return null;
+  const limpo = texto.trim();
+  if (!limpo || /MYMEMORY WARNING|QUERY LENGTH LIMIT|INVALID/i.test(limpo)) return null;
+  if (limpo.toLowerCase() === original.trim().toLowerCase()) return null;
+  return limpo;
+}

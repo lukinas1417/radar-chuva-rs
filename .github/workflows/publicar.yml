@@ -52,6 +52,8 @@ jobs:
         continue-on-error: true
       # Notícias são opcionais, como os rios: se as fontes falharem, o site mostra as últimas coletadas.
       - name: Buscar notícias (G1 RS e Agência Brasil)
+        env:
+          PUBLICADO: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/noticias-rs.json
         run: node scripts/fetch-noticias.mjs
         continue-on-error: true
       - name: Reaproveitar último dado publicado se a coleta falhou

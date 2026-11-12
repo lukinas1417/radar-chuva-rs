@@ -1,8 +1,8 @@
 // Coleta notícias recentes sobre chuva, cheia e Defesa Civil no RS e grava data/noticias-rs.json.
 // Só título, trecho curto, fonte, link e data: o site mostra o título e leva o leitor ao veículo.
 // Fontes: feeds RSS públicos do G1 RS e da Agência Brasil (esta só entra se citar o RS).
-import { mkdir, writeFile } from 'node:fs/promises';
-import { lerRss, normalizarNoticias, selecionarNoticias } from '../src/noticias.js';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { lerRss, lerTraducao, normalizarNoticias, reaproveitarTraducoes, selecionarNoticias } from '../src/noticias.js';
 
 const FONTES = [
   { nome: 'G1 RS', url: 'https://g1.globo.com/rss/g1/rs/rio-grande-do-sul/', exigirRS: false },
@@ -47,9 +47,40 @@ if (!fontesOk.length) {
   process.exit(1);
 }
 
+// Títulos em inglês: reaproveita os já traduzidos (arquivo local ou publicado) e traduz só os novos, com teto por execução
+// para respeitar a cota gratuita do MyMemory (sem chave, sem e-mail: só o título público da notícia é enviado).
+const MAX_TRADUCOES = 12;
+async function arquivoAnterior() {
+  try {
+    if (process.env.PUBLICADO) {
+      const res = await fetch(process.env.PUBLICADO, { signal: AbortSignal.timeout(20_000) });
+      if (res.ok) return (await res.json()).noticias;
+    }
+    return JSON.parse(await readFile(SAIDA, 'utf8')).noticias;
+  } catch {
+    return [];
+  }
+}
+async function traduzir(titulo) {
+  try {
+    const url = 'https://api.mymemory.translated.net/get?langpair=pt|en&q=' + encodeURIComponent(titulo);
+    const res = await fetch(url, { headers: { 'user-agent': USER_AGENT }, signal: AbortSignal.timeout(15_000) });
+    return res.ok ? lerTraducao(await res.json(), titulo) : null;
+  } catch {
+    return null;
+  }
+}
+
+const escolhidas = reaproveitarTraducoes(selecionarNoticias(noticias, agora), await arquivoAnterior());
+let feitas = 0;
+for (const n of escolhidas) {
+  if (n.tituloEn || feitas >= MAX_TRADUCOES) continue;
+  feitas++;
+  const en = await traduzir(n.titulo);
+  if (en) n.tituloEn = en;
+}
+console.log(`${escolhidas.filter((n) => n.tituloEn).length}/${escolhidas.length} títulos com tradução (${feitas} tentativas nesta execução)`);
+
 await mkdir(new URL('../data/', import.meta.url), { recursive: true });
-await writeFile(
-  SAIDA,
-  JSON.stringify({ geradoEm: new Date(agora).toISOString(), fontes: fontesOk, noticias: selecionarNoticias(noticias, agora) }, null, 1),
-);
-console.log(`${selecionarNoticias(noticias, agora).length} notícias -> data/noticias-rs.json (fontes: ${fontesOk.join(', ')})`);
+await writeFile(SAIDA, JSON.stringify({ geradoEm: new Date(agora).toISOString(), fontes: fontesOk, noticias: escolhidas }, null, 1));
+console.log(`${escolhidas.length} notícias -> data/noticias-rs.json (fontes: ${fontesOk.join(', ')})`);
